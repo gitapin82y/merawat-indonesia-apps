@@ -98,9 +98,14 @@ Route::get('/kampanye/{title}/donasi', [DonationController::class, 'showDonation
 
 Route::post('/donations/process', [DonationController::class, 'processDonation'])->name('donations.process');
 Route::get('/donations/{id}/status', [DonationController::class, 'status'])->name('donations.status');
+Route::post('/donations/{id}/mark-expired', [DonationController::class, 'markExpired'])->name('donations.mark-expired');
 
 Route::get('/donations/check-status/{reference}', [DonationController::class, 'checkStatus'])
     ->name('donations.check-status');
+
+Route::get('/donations/{id}/payment-method', [DonationController::class, 'selectPaymentMethod'])->name('donations.select-payment-method');
+Route::post('/donations/process-payment', [DonationController::class, 'processPayment'])->name('donations.process-payment');
+Route::post('/donations/process-manual-payment', [DonationController::class, 'processManualPayment'])->name('donations.process-manual-payment');
 
 // Callback URL untuk Tripay (harus diakses secara publik)
 Route::post('/tripay/callback', [DonationController::class, 'callback'])->name('tripay.callback')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
@@ -138,6 +143,13 @@ Route::prefix('super-admin')->group(function () {
     Route::get('ceklis-donasi', [DonationController::class, 'ceklis'])->name('ceklis-donasi.index');
     Route::post('ceklis-donasi/{id}', [DonationController::class, 'destroy'])->name('ceklis-donasi.destroy');
     Route::post('/donasi/update-status', [DonationController::class, 'updateStatus'])->name('donasi.updateStatus');  
+
+    Route::get('/manual-payment-methods', [ManualPaymentMethodController::class, 'index'])->name('manual-payment-methods.index');
+    Route::post('/manual-payment-methods', [ManualPaymentMethodController::class, 'store'])->name('manual-payment-methods.store');
+    Route::get('/manual-payment-methods/{id}', [ManualPaymentMethodController::class, 'show'])->name('manual-payment-methods.show');
+    Route::put('/manual-payment-methods/{id}', [ManualPaymentMethodController::class, 'update'])->name('manual-payment-methods.update');
+    Route::delete('/manual-payment-methods/{id}', [ManualPaymentMethodController::class, 'destroy'])->name('manual-payment-methods.destroy');
+    Route::patch('/manual-payment-methods/{id}/toggle-status', [ManualPaymentMethodController::class, 'toggleStatus'])->name('manual-payment-methods.toggle-status');
 });
 
 // custom route

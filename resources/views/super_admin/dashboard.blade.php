@@ -43,24 +43,95 @@
             </a>
         </div>
 
-        {{-- untuk modal payment kurang lebih sama seperti banner manage slider yang dimana dapat melihat list data, dapat hapus dan dapat menambah payment --}}
-        <div class="modal fade" id="managePayment" tabindex="-1" aria-labelledby="bannerLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-              <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                  <h5 class="modal-title" id="bannerLabel">Manage Payment</h5>
-                  <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                    {{-- tampilkan list payment --}}
-                  <div id="paymentList"></div>
-                  <button type="button" class="btn btn-danger mt-3 w-100 btn-tambah-payment">Tambah Payment methods</button>
-                </div>
+       <!-- Modal Untuk Manajemen Metode Pembayaran Manual -->
+<div class="modal fade" id="managePayment" tabindex="-1" aria-labelledby="paymentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="paymentLabel">Manage Metode Pembayaran Manual</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Tampilkan list payment methods -->
+          <div id="paymentList">
+            <!-- Akan diisi dengan AJAX -->
+            <div class="text-center py-3">
+              <div class="spinner-border text-danger" role="status">
+                <span class="sr-only">Loading...</span>
               </div>
             </div>
           </div>
+          <button type="button" class="btn btn-danger mt-3 w-100 btn-tambah-payment">Tambah Metode Pembayaran</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal Form Tambah/Edit Metode Pembayaran -->
+  <div class="modal fade" id="paymentFormModal" tabindex="-1" aria-labelledby="paymentFormModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="paymentFormModalLabel">Tambah Metode Pembayaran</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="paymentForm" enctype="multipart/form-data">
+            <input type="hidden" id="payment_id" name="payment_id">
+            
+            <div class="form-group mb-3">
+              <label for="payment_name">Nama Bank/E-Wallet <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="payment_name" name="name" required>
+              <div id="error-name" class="invalid-feedback"></div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label for="account_number">Nomor Rekening/ID <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="account_number" name="account_number" required>
+              <div id="error-account_number" class="invalid-feedback"></div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label for="account_name">Atas Nama <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="account_name" name="account_name" required>
+              <div id="error-account_name" class="invalid-feedback"></div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label for="instructions">Instruksi Tambahan</label>
+              <textarea class="form-control" id="instructions" name="instructions" rows="3"></textarea>
+              <div id="error-instructions" class="invalid-feedback"></div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label for="payment_icon">Logo/Icon</label>
+              <input type="file" class="form-control" id="payment_icon" name="icon" accept="image/*">
+              <small class="form-text text-muted">Format: JPG, PNG, GIF (Max. 2MB)</small>
+              <div id="error-icon" class="invalid-feedback"></div>
+            </div>
+            
+            <div class="form-group mb-3" id="icon_preview_container">
+              <img id="icon_preview" src="" alt="Preview" class="img-thumbnail mt-2" style="max-height: 100px; display: none;">
+            </div>
+            
+            <div class="form-group form-check mb-3">
+              <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
+              <label class="form-check-label" for="is_active">Aktif</label>
+            </div>
+            
+            <div class="text-end">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-danger">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
 @include('modal_dashboard.adsense')
 @include('modal_dashboard.kategori')
@@ -733,5 +804,247 @@ $(document).ready(function() {
     });
     
 </script>
-
+<!-- Tambahkan kode ini di bagian @push('after-script') pada dashboard.blade.php -->
+<script>
+    // Fungsi untuk memuat daftar metode pembayaran
+    function loadPaymentMethods() {
+        $.ajax({
+            url: '/super-admin/manual-payment-methods',
+            method: 'GET',
+            beforeSend: function() {
+                $('#paymentList').html(`
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-danger" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                `);
+            },
+            success: function(response) {
+                let html = '';
+                
+                if (response.length === 0) {
+                    html = `
+                        <div class="alert alert-info">
+                            <i class="fa fa-info-circle me-2"></i> Belum ada metode pembayaran manual yang ditambahkan.
+                        </div>
+                    `;
+                } else {
+                    response.forEach(function(method) {
+                        const statusBadge = method.is_active 
+                            ? '<span class="badge bg-success text-white">Aktif</span>' 
+                            : '<span class="badge bg-secondary text-white">Nonaktif</span>';
+                            
+                        html += `
+                            <div class="card mb-2">
+                                <div class="card-body p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            ${method.icon 
+                                                ? `<img src="/storage/${method.icon}" alt="${method.name}" height="40">` 
+                                                : `<div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px"><i class="fa fa-building text-muted"></i></div>`
+                                            }
+                                        </div>
+                                        <div class="col">
+                                            <h6 class="mb-0">${method.name} ${statusBadge}</h6>
+                                            <small class="text-muted">${method.account_number} (${method.account_name})</small>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-warning btn-edit-payment" 
+                                                    data-id="${method.id}" 
+                                                    data-name="${method.name}"
+                                                    data-account-number="${method.account_number}"
+                                                    data-account-name="${method.account_name}"
+                                                    data-instructions="${method.instructions || ''}"
+                                                    data-icon="${method.icon || ''}"
+                                                    data-is-active="${method.is_active ? 1 : 0}">
+                                                    <i class="fa fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-danger btn-delete-payment" data-id="${method.id}">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                $('#paymentList').html(html);
+            },
+            error: function() {
+                $('#paymentList').html(`
+                    <div class="alert alert-danger">
+                        <i class="fa fa-exclamation-circle me-2"></i> Gagal memuat data metode pembayaran.
+                    </div>
+                `);
+            }
+        });
+    }
+    
+    $(document).ready(function() {
+        // Setup AJAX headers
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        
+        // Load payment methods ketika modal dibuka
+        $('#managePayment').on('show.bs.modal', function() {
+            loadPaymentMethods();
+        });
+        
+        // Tambah metode pembayaran
+        $('.btn-tambah-payment').click(function() {
+            $('#paymentForm')[0].reset();
+            $('#payment_id').val('');
+            $('#icon_preview').hide();
+            $('#paymentFormModalLabel').text('Tambah Metode Pembayaran');
+            $('#is_active').prop('checked', true);
+            $('#paymentFormModal').modal('show');
+        });
+        
+        // Edit metode pembayaran
+        $(document).on('click', '.btn-edit-payment', function() {
+            const data = $(this).data();
+            
+            $('#payment_id').val(data.id);
+            $('#payment_name').val(data.name);
+            $('#account_number').val(data.accountNumber);
+            $('#account_name').val(data.accountName);
+            $('#instructions').val(data.instructions);
+            $('#is_active').prop('checked', data.isActive === 1);
+            
+            if (data.icon) {
+                $('#icon_preview').attr('src', '/storage/' + data.icon).show();
+            } else {
+                $('#icon_preview').hide();
+            }
+            
+            $('#paymentFormModalLabel').text('Edit Metode Pembayaran');
+            $('#paymentFormModal').modal('show');
+        });
+        
+        // Preview image saat memilih file
+        $('#payment_icon').change(function(e) {
+            if (this.files && this.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(event) {
+                    $('#icon_preview').attr('src', event.target.result).show();
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Submit form metode pembayaran
+        $('#paymentForm').submit(function(e) {
+            e.preventDefault();
+            
+            let formData = new FormData(this);
+            formData.append('is_active', $('#is_active').is(':checked') ? 1 : 0);
+            
+            const id = $('#payment_id').val();
+            const url = id 
+                ? `/super-admin/manual-payment-methods/${id}` 
+                : '/super-admin/manual-payment-methods';
+            const method = id ? 'PUT' : 'POST';
+            
+            // Reset error messages
+            $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').text('');
+            
+            $.ajax({
+                url: url,
+                method: method,
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: response.message,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000
+                    }).then(() => {
+                        $('#paymentFormModal').modal('hide');
+                        loadPaymentMethods();
+                    });
+                },
+                error: function(xhr) {
+                    const errors = xhr.responseJSON?.errors;
+                    
+                    if (errors) {
+                        Object.keys(errors).forEach(function(key) {
+                            $(`#${key}`).addClass('is-invalid');
+                            $(`#error-${key}`).text(errors[key][0]);
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: xhr.responseJSON?.message || 'Terjadi kesalahan sistem.',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    }
+                }
+            });
+        });
+        
+        // Delete metode pembayaran
+        $(document).on('click', '.btn-delete-payment', function() {
+            const id = $(this).data('id');
+            
+            Swal.fire({
+                title: 'Hapus Metode Pembayaran',
+                text: 'Apakah Anda yakin ingin menghapus metode pembayaran ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/super-admin/manual-payment-methods/${id}`,
+                        method: 'DELETE',
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: response.message,
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                            loadPaymentMethods();
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: 'Terjadi kesalahan saat menghapus metode pembayaran.',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
 @endpush

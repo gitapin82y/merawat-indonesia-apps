@@ -236,9 +236,10 @@ class CampaignController extends Controller
             },
             'admin', 
             'donations' => function ($query) {
-                $query->where('status', 'sukses');
+                $query->where('status', 'sukses')
+                      ->orderBy('created_at', 'desc');  // Menambahkan pengurutan berdasarkan waktu terbaru
             }
-        ])->where('title',$title)->first();
+        ])->where('title', $title)->first();
 
     $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();
     
@@ -248,7 +249,8 @@ class CampaignController extends Controller
     $comments = Donation::where('campaign_id', $campaign->id)
     ->where('status', 'sukses')
     ->whereNotNull('doa')
-    ->paginate(3);
+    ->orderBy('created_at', 'desc')  // Menambahkan pengurutan berdasarkan waktu terbaru
+    ->paginate(6);
 
     if ($request->ajax()) {
         return response()->json([
@@ -273,8 +275,12 @@ class CampaignController extends Controller
             'kabarPencairan' => function ($query) {
                 $query->where('status', 'disetujui');
             },
-            'donations'
-        ])->where('title',$title)->first();
+            'admin', 
+            'donations' => function ($query) {
+                $query->where('status', 'sukses')
+                      ->orderBy('created_at', 'desc');  // Menambahkan pengurutan berdasarkan waktu terbaru
+            }
+        ])->where('title', $title)->first();
 
         return view('admin.kampanye.detail-kampanye', [
             'campaign' => $campaign,

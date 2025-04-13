@@ -113,24 +113,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Metode Pembayaran -->
-                            <div class="row container m-0 pb-5">
-                                <h3>Pilih Metode Pembayaran</h3>
-                                <div class="payment-methods">
-                                    @foreach($channels as $channel)
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="radio" name="payment_method" id="payment_method_{{ $channel['code'] }}" value="{{ $channel['code'] }}" required>
-                                        <label class="form-check-label d-flex align-items-center" for="payment_method_{{ $channel['code'] }}">
-                                            @if(isset($channel['icon_url']) && $channel['icon_url'])
-                                                <img src="{{ $channel['icon_url'] }}" alt="{{ $channel['name'] }}" height="30" class="me-2">
-                                            @endif
-                                            {{ $channel['name'] }}
-                                        </label>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                            
                             <div class="footer mb-5 text-center">
                                 <div class="main-menu row col-12 mx-0 justify-content-between d-flex ">
                                     <button type="submit" id="submitForm" class="button w-100 d-flex align-items-center justify-content-center text-white shadow-sm">
@@ -196,20 +178,6 @@
                 return false;
             }
             
-            if (!$('input[name="payment_method"]:checked').val()) {
-                e.preventDefault();
-
-                Swal.fire({
-                    icon: 'info',
-                    text: 'Silakan pilih metode pembayaran',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-
-                return false;
-            }
             $('#donationForm').submit();
         });
     });

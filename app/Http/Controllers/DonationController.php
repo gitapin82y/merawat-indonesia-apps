@@ -6,6 +6,7 @@ use App\Models\Donation;
 use App\Models\Campaign;
 use App\Models\Fundraising;
 use App\Models\Commission;
+use App\Models\ManualPaymentMethod;
 
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -16,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 
 class DonationController extends Controller
 {
@@ -33,25 +35,62 @@ class DonationController extends Controller
         $this->apiUrl = env('TRIPAY_API_URL', 'https://tripay.co.id/api-sandbox/');
     }
 
+
     public function showDonationForm($title)
     {
         $campaign = Campaign::where('title',$title)->first();
         
+        return view('donatur.donasi.index', compact('campaign'));
+    }
+
+    public function selectPaymentMethod($id)
+    {
+        $donation = Donation::with('campaign')->findOrFail($id);
+        $campaign = $donation->campaign;
+        
         // Ambil daftar channel pembayaran dari Tripay
         $channels = $this->getPaymentChannels();
+        
+        // Ambil daftar metode pembayaran manual
+        $manualMethods = ManualPaymentMethod::where('is_active', true)->get();
+        
+        return view('donatur.donasi.payment-method', compact('donation', 'campaign', 'channels', 'manualMethods'));
+    }
 
-        return view('donatur.donasi.index', compact('campaign', 'channels'));
+    public function processPayment(Request $request)
+    {
+        $validated = $request->validate([
+            'donation_id' => 'required|exists:donations,id',
+            'payment_type' => 'required|string|in:payment_gateway',
+            'selected_payment_method' => 'required|string'
+        ]);
+        
+        $donation = Donation::with('campaign')->findOrFail($request->donation_id);
+        $campaign = $donation->campaign;
+        
+        // Update metode pembayaran donasi
+        $donation->payment_type = $request->payment_type;
+        $donation->payment_method = $request->selected_payment_method;
+        $donation->save();
+        
+        // Buat transaksi di Tripay
+        $transaction = $this->createTransaction($donation, $campaign);
+        
+        if (isset($transaction['success']) && $transaction['success'] && isset($transaction['data'])) {
+            // Update donasi dengan reference dan checkout URL
+            $donation->snap_token = $transaction['data']['reference'];
+            $donation->save();
+            
+            // Redirect ke halaman pembayaran Tripay
+            return redirect($transaction['data']['checkout_url']);
+        } else {
+            // Jika gagal, tampilkan error
+            return redirect()->back()->with('error', 'Gagal membuat transaksi pembayaran: ' . ($transaction['message'] ?? 'Terjadi kesalahan sistem'));
+        }
     }
 
     public function processDonation(Request $request)
     {
-
-        if($request->has('is_anonymous') && $request['is_anonymous'] == "on"){
-            $request['is_anonymous'] = true;
-        }else{
-            $request['is_anonymous'] = false;
-        }
-
         // Validasi input
         $validated = $request->validate([
             'campaign_id' => 'required|exists:campaigns,id',
@@ -60,8 +99,7 @@ class DonationController extends Controller
             'phone' => 'required|string',
             'email' => 'required',
             'is_anonymous' => 'nullable',
-            'doa' => 'nullable|string',
-            'payment_method' => 'required|string'
+            'doa' => 'nullable|string'
         ]);
         
         $campaign = Campaign::findOrFail($request->campaign_id);
@@ -77,7 +115,6 @@ class DonationController extends Controller
                 $fundraisingId = $fundraising->id;
             }
         }
-
         
         // Buat donasi baru dengan status pending
         $donation = Donation::create([
@@ -89,29 +126,140 @@ class DonationController extends Controller
             'doa' => $request->doa,
             'is_anonymous' => $request->has('is_anonymous'),
             'amount' => $request->amount,
-            'payment_type' => 'payment_gateway',
-            'payment_method' => $request->payment_method,
+            'payment_type' => null, // Akan diupdate setelah memilih metode pembayaran
+            'payment_method' => null, // Akan diupdate setelah memilih metode pembayaran
             'status' => 'pending',
             'snap_token' => Str::random(32) // Placeholder untuk snap_token
         ]);
-
-
         
-        // Buat transaksi di Tripay
-        $transaction = $this->createTransaction($donation, $campaign);
+        return redirect()->route('donations.select-payment-method', $donation->id);
+    }
+
+    public function markExpired($id)
+{
+    try {
+        $donation = Donation::findOrFail($id);
         
-        if (isset($transaction['success']) && $transaction['success'] && isset($transaction['data'])) {
-            // Update donasi dengan reference dan checkout URL
-            $donation->snap_token = $transaction['data']['reference'];
+        // Only update if donation is still pending
+        if ($donation->status === 'pending') {
+            $donation->status = 'gagal';
             $donation->save();
             
-            // Redirect ke halaman pembayaran Tripay
-            return redirect($transaction['data']['checkout_url']);
-        } else {
-            // Jika gagal, hapus donasi dan tampilkan error
-            $donation->delete();
-            return redirect()->back()->with('error', 'Gagal membuat transaksi pembayaran: ' . ($transaction['message'] ?? 'Terjadi kesalahan sistem'));
+            return response()->json([
+                'success' => true,
+                'message' => 'Donation marked as expired'
+            ]);
         }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Donation is not in pending status'
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error marking donation as expired: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Error updating donation status'
+        ], 500);
+    }
+}
+
+
+    // public function processDonation(Request $request)
+    // {
+
+    //     if($request->has('is_anonymous') && $request['is_anonymous'] == "on"){
+    //         $request['is_anonymous'] = true;
+    //     }else{
+    //         $request['is_anonymous'] = false;
+    //     }
+
+    //     // Validasi input
+    //     $validated = $request->validate([
+    //         'campaign_id' => 'required|exists:campaigns,id',
+    //         'amount' => 'required|numeric|min:10000',
+    //         'name' => 'required|string|max:255',
+    //         'phone' => 'required|string',
+    //         'email' => 'required',
+    //         'is_anonymous' => 'nullable',
+    //         'doa' => 'nullable|string',
+    //         'payment_method' => 'required|string'
+    //     ]);
+        
+    //     $campaign = Campaign::findOrFail($request->campaign_id);
+        
+    //     // Cek apakah ada referral code di session
+    //     $referralCode = session('referral_code');
+    //     $fundraisingId = null;
+        
+    //     // Jika ada referral code, dapatkan fundraisingId
+    //     if ($referralCode) {
+    //         $fundraising = Fundraising::where('code_link', $referralCode)->first();
+    //         if ($fundraising) {
+    //             $fundraisingId = $fundraising->id;
+    //         }
+    //     }
+
+        
+    //     // Buat donasi baru dengan status pending
+    //     $donation = Donation::create([
+    //         'campaign_id' => $request->campaign_id,
+    //         'user_id' => auth()->id(), // Jika user login
+    //         'name' => $request->name,
+    //         'phone' => $request->phone,
+    //         'email' => $request->email,
+    //         'doa' => $request->doa,
+    //         'is_anonymous' => $request->has('is_anonymous'),
+    //         'amount' => $request->amount,
+    //         'payment_type' => 'payment_gateway',
+    //         'payment_method' => $request->payment_method,
+    //         'status' => 'pending',
+    //         'snap_token' => Str::random(32) // Placeholder untuk snap_token
+    //     ]);
+
+
+        
+    //     // Buat transaksi di Tripay
+    //     $transaction = $this->createTransaction($donation, $campaign);
+        
+    //     if (isset($transaction['success']) && $transaction['success'] && isset($transaction['data'])) {
+    //         // Update donasi dengan reference dan checkout URL
+    //         $donation->snap_token = $transaction['data']['reference'];
+    //         $donation->save();
+            
+    //         // Redirect ke halaman pembayaran Tripay
+    //         return redirect($transaction['data']['checkout_url']);
+    //     } else {
+    //         // Jika gagal, hapus donasi dan tampilkan error
+    //         $donation->delete();
+    //         return redirect()->back()->with('error', 'Gagal membuat transaksi pembayaran: ' . ($transaction['message'] ?? 'Terjadi kesalahan sistem'));
+    //     }
+    // }
+    public function processManualPayment(Request $request)
+    {
+        $validated = $request->validate([
+            'donation_id' => 'required|exists:donations,id',
+            'payment_type' => 'required|string|in:manual',
+            'selected_payment_method' => 'required|exists:manual_payment_methods,id',
+            'payment_proof' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+        
+        $donation = Donation::with('campaign')->findOrFail($request->donation_id);
+        
+        // Simpan bukti pembayaran
+        if ($request->hasFile('payment_proof')) {
+            $path = $request->file('payment_proof')->store('payment_proofs', 'public');
+            $donation->payment_proof = $path;
+        }
+        
+        // Update metode pembayaran donasi
+        $donation->payment_type = $request->payment_type;
+        $donation->payment_method = 'manual';
+        $donation->manual_payment_method_id = $request->selected_payment_method;
+        $donation->save();
+        
+        return redirect()->route('donations.status', ['id' => $donation->id]);
     }
 
     protected function getPaymentChannels()
@@ -140,6 +288,33 @@ class DonationController extends Controller
             return [];
         }
     }
+
+    // protected function getPaymentChannels()
+    // {
+    //     try {
+    //         // Pastikan URL berakhir dengan slash
+    //         $apiUrl = rtrim($this->apiUrl, '/') . '/';
+    //         $endpoint = 'merchant/payment-channel';
+            
+    //         $response = Http::withHeaders([
+    //             'Authorization' => 'Bearer ' . $this->apiKey
+    //         ])->get($apiUrl . $endpoint);
+    
+    //         // Log full URL dan response
+    //         Log::info('Tripay Request URL: ' . $apiUrl . $endpoint);
+    //         Log::info('Tripay Response: ' . $response->body());
+            
+    //         if ($response->successful() && isset($response['success']) && $response['success']) {
+    //             return $response['data'];
+    //         }
+            
+    //         Log::error('Tripay payment channels error: ' . $response->body());
+    //         return [];
+    //     } catch (\Exception $e) {
+    //         Log::error('Error getting payment channels: ' . $e->getMessage());
+    //         return [];
+    //     }
+    // }
 
 
 
@@ -185,116 +360,165 @@ class DonationController extends Controller
             ];
         }
     }
-
     public function callback(Request $request)
     {
-        // // Ambil data callback dari Tripay
-        // $callbackSignature = $request->header('X-Callback-Signature');
-        // $json = $request->getContent();
+        // Log request untuk debugging
+        Log::info('Tripay Callback received: ' . $request->getContent());
         
-        // // Verifikasi signature
-        // $signature = hash_hmac('sha256', $json, $this->privateKey);
+        // Ambil data callback dari Tripay
+        $callbackSignature = $request->header('X-Callback-Signature');
+        $json = $request->getContent();
         
-        // if ($signature !== $callbackSignature) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Invalid signature'
-        //     ], 400);
-        // }
+        // Verifikasi signature untuk keamanan
+        $signature = hash_hmac('sha256', $json, $this->privateKey);
         
-        // $data = json_decode($json, true);
+        if ($signature !== $callbackSignature) {
+            Log::warning('Invalid Tripay callback signature');
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid signature'
+            ], 400);
+        }
         
-        // // Validasi data
-        // if (!isset($data['reference'])) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'No reference found'
-        //     ], 400);
-        // }
+        $data = json_decode($json, true);
         
-        // // Cari donasi berdasarkan reference
-        // $donation = Donation::where('snap_token', $data['reference'])->first();
+        // Validasi data
+        if (!isset($data['reference'])) {
+            Log::warning('No reference found in Tripay callback');
+            return response()->json([
+                'success' => false,
+                'message' => 'No reference found'
+            ], 400);
+        }
         
-        // if (!$donation) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Donation not found'
-        //     ], 404);
-        // }
+        // Cari donasi berdasarkan reference
+        $donation = Donation::where('snap_token', $data['reference'])->first();
         
-        // // Update status donasi
-        // if ($data['status'] == 'PAID') {
-        //     $donation->status = 'sukses';
-            
-        //     // Update data campaign
-        //     $campaign = $donation->campaign;
-        //     $campaign->jumlah_donasi += $donation->amount;
-        //     $campaign->total_donatur += 1;
-        //     $campaign->save();
-            
-        //     // Jika ada fundraising, update data fundraising
-        //     if ($donation->fundraising_id) {
-        //         $fundraising = Fundraising::find($donation->fundraising_id);
+        if (!$donation) {
+            Log::warning('Donation not found for reference: ' . $data['reference']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Donation not found'
+            ], 404);
+        }
+        
+        Log::info('Processing Tripay callback for donation ID: ' . $donation->id . ', status: ' . $data['status']);
+        
+        // Begin transaction
+        DB::beginTransaction();
+        
+        try {
+            // Update status berdasarkan callback
+            if ($data['status'] == 'PAID' && $donation->status !== 'sukses') {
+                // Update donation status
+                $donation->status = 'sukses';
+                $donation->updated_at = now();
+                $donation->save();
                 
-        //         if ($fundraising) {
-        //             // Hitung komisi 10%
-        //             $commission = $donation->amount * 0.1;
+                // Update campaign statistics
+                $campaign = $donation->campaign;
+                $campaign->jumlah_donasi += $donation->amount;
+                $campaign->current_donation += $donation->amount;
+                $campaign->total_donatur += 1;
+                $campaign->save();
+                
+                // Check if there's referral code in session
+                $referralCode = session('referral_code');
+                
+                if ($referralCode) {
+                    $fundraising = Fundraising::where('code_link', $referralCode)->first();
                     
-        //             // Update data fundraising
-        //             $fundraising->total_donatur += 1;
-        //             $fundraising->jumlah_donasi += $donation->amount;
-        //             $fundraising->commission += $commission;
-                    
-        //             // Update array donations
-        //             $donations = json_decode($fundraising->donations, true) ?: [];
-        //             $donations[] = [
-        //                 'donation_id' => $donation->id,
-        //                 'amount' => $donation->amount,
-        //                 'commission' => $commission,
-        //                 'created_at' => now()->format('Y-m-d H:i:s')
-        //             ];
-        //             $fundraising->donations = json_encode($donations);
-                    
-        //             $fundraising->save();
-        //         }
-        //     }
-        // } else if ($data['status'] == 'EXPIRED' || $data['status'] == 'FAILED') {
-        //     $donation->status = 'gagal';
-        // }
+                    if ($fundraising) {
+                        $commissionSetting = Commission::first();
+                        $commissionPercent = $commissionSetting->amount ?? 0;
+                        
+                        // Calculate commission based on percentage from database
+                        $commission = ($donation->amount * $commissionPercent) / 100;
+                        
+                        // Update fundraising data
+                        $fundraising->total_donatur += 1;
+                        $fundraising->jumlah_donasi += $donation->amount;
+                        $fundraising->commission += $commission;
+                        
+                        // Update donations array
+                        $donations = json_decode($fundraising->donations, true) ?: [];
+                        $donations[] = [
+                            'donation_id' => $donation->id,
+                            'amount' => $donation->amount,
+                            'commission' => $commission,
+                            'user_name' => $donation->user ? $donation->user->name : null,
+                            'user_email' => $donation->user ? $donation->user->email : null,
+                            'created_at' => now()->format('Y-m-d H:i:s')
+                        ];
+                        $fundraising->donations = json_encode($donations);
+                        
+                        $fundraising->save();
+                    }
+                }
+                
+                Log::info('Donation marked as success via callback: ' . $donation->id);
+            } else if (in_array($data['status'], ['EXPIRED', 'FAILED', 'REFUND']) && $donation->status !== 'gagal') {
+                // Jika gagal atau kadaluarsa
+                $donation->status = 'gagal';
+                $donation->save();
+                Log::info('Donation marked as failed via callback: ' . $donation->id);
+            }
+            
+            // Commit transaction
+            DB::commit();
+        } catch (\Exception $e) {
+            // Rollback in case of error
+            DB::rollBack();
+            Log::error('Error processing Tripay callback: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error processing callback: ' . $e->getMessage()
+            ], 500);
+        }
         
-        // $donation->save();
-        
-        // return response()->json(['success' => true]);
+        // Selalu kembalikan sukses untuk callback Tripay
+        return response()->json(['success' => true]);
     }
 
     public function status(Request $request, $id)
-    {
-        $reference = $request->tripay_reference;
-        $donation = Donation::with('campaign')->where('id',$id)->first();
-        $campaign = $donation->campaign;
-
+{
+    $donation = Donation::with(['campaign', 'manualPaymentMethod'])->where('id', $id)->firstOrFail();
+    $campaign = $donation->campaign;
+    $paymentDetail = null;
+    
+    // Jika pembayaran gateway dan memiliki snap_token, cek status di Tripay
+    if ($donation->payment_type == 'payment_gateway' && $donation->snap_token) {
         // Pastikan URL berakhir dengan slash
         $apiUrl = rtrim($this->apiUrl, '/') . '/';
         $endpoint = 'transaction/detail';
         
-        $payload = [
-            'reference' => $reference
-        ];
-        
+        $reference = $donation->snap_token; // Gunakan snap_token dari donasi
         $signature = hash_hmac('sha256', $this->merchantCode . $reference, $this->privateKey);
         
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->apiKey
-        ])->get($apiUrl . $endpoint, [
-            'reference' => $reference,
-            'signature' => $signature
-        ]);
-
-        $responseData = $response->json();
-
-        if (isset($responseData['success']) && $responseData['success'] === true) {
-
-                // Ambil data transaksi dari respons
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey
+            ])->get($apiUrl . $endpoint, [
+                'reference' => $reference,
+                'signature' => $signature
+            ]);
+            
+            $responseData = $response->json();
+            
+            if (isset($responseData['success']) && $responseData['success'] === true && isset($responseData['data'])) {
+                $transaction = $responseData['data'];
+                
+                // Simpan detail pembayaran untuk ditampilkan di view
+                $paymentDetail = [
+                    'merchant_ref' => $transaction['merchant_ref'] ?? '',
+                    'reference' => $transaction['reference'] ?? '',
+                    'payment_method' => $transaction['payment_name'] ?? $donation->payment_method,
+                    'payment_instructions' => $transaction['instructions'] ?? [],
+                    'checkout_url' => $transaction['checkout_url'] ?? null
+                ];
+                
+                // Update status donasi jika perlu
                 $transaction = $responseData['data'];
 
                 $status = 'PENDING';
@@ -361,13 +585,27 @@ class DonationController extends Controller
                         $donation->save();
                     }
                 }
+            } else if ($donation->payment_type == 'manual' && $donation->manual_payment_method_id) {
+                $manualMethod = $donation->manualPaymentMethod;
                 
-                return view('donatur.donasi.status', compact('donation', 'campaign'));
-          
+                if ($manualMethod) {
+                    $paymentDetail = [
+                        'payment_method' => 'Manual - ' . $manualMethod->name,
+                        'manual_account_name' => $manualMethod->account_name,
+                        'manual_account_number' => $manualMethod->account_number,
+                        'manual_instructions' => $manualMethod->instructions,
+                        'payment_proof' => $donation->payment_proof ? asset('storage/' . $donation->payment_proof) : null
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Error checking transaction status: ' . $e->getMessage());
         }
-
-        return view('donatur.donasi.status', compact('donation', 'campaign'));
     }
+    
+    return view('donatur.donasi.status', compact('donation', 'campaign', 'paymentDetail'));
+}
+
 
     public function checkStatus($reference)
 {

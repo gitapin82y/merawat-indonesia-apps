@@ -12,7 +12,7 @@ class Donation extends Model
     protected $fillable = [
         'campaign_id', 'user_id', 'name', 'doa', 'is_anonymous', 
         'phone', 'email', 'snap_token', 'amount', 'payment_type', 
-        'payment_method', 'status'
+        'payment_method', 'status', 'manual_payment_method_id', 'payment_proof'
     ];
 
     public function campaign()
@@ -28,6 +28,11 @@ class Donation extends Model
     public function donationLikes()
     {
         return $this->hasMany(DonationLike::class);
+    }
+
+    public function manualPaymentMethod()
+    {
+        return $this->belongsTo(ManualPaymentMethod::class);
     }
 
 }

@@ -85,11 +85,10 @@
             <div class="col-12 row mx-0">
                 <div class="progress my-1 px-0">
                     <div class="progress-bar progress-bar-striped bg-danger" role="progressbar"
-                        style="width: {{  min($campaign->progressPercentage, 100) }}%;" 
-                        aria-valuenow="{{  min($campaign->progressPercentage, 100) }}" 
-                        aria-valuemin="0" 
-                        aria-valuemax="100">
-                        {{ min($campaign->progressPercentage, 100)}}%
+                    style="width: {{ min($campaign->progressPercentage, 100) }}%;" 
+                    aria-valuenow="{{ min($campaign->progressPercentage, 100) }}" 
+                    aria-valuemin="0" aria-valuemax="100">
+                    {{ min($campaign->progressPercentage, 100) }}%
                     </div>
                 </div>
             </div>
