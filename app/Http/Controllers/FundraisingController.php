@@ -1,0 +1,204 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Fundraising;
+use App\Models\Campaign;
+use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+
+class FundraisingController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        Carbon::setLocale('id');
+        if ($request->ajax()) {
+            $query = Fundraising::with(['campaign','user'])->get();
+            
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('name', function ($row) {
+                    return $row->user->name;
+                })    
+                ->addColumn('email', function($row) {
+                    return $row->user->email;
+                })
+                ->addColumn('commission', function($row) {
+                    $jumlahKomisi = $row->jumlah_donasi * ($row->commission / 100); // Menghitung jumlah komisi
+                    return $row->commission . '% | Rp ' . number_format($jumlahKomisi, 0, ',', '.');
+                })                
+                ->addColumn('total_donatur', function($row) {
+                    return '<span class="badge bg-primary text-white">'.$row->total_donatur.'</span>';
+                })
+                ->addColumn('jumlah_donasi', function($row) {
+                    return 'Rp ' . number_format($row->jumlah_donasi, 0, ',', '.');
+                })                
+                ->addColumn('action', function($row) {
+                    $whatsappUrl = "https://wa.me/". $row->user->phone;
+                    
+                    $actionBtn = '<div class="btn-group" role="group">';
+                    $actionBtn .= '
+                        <a href="'.$whatsappUrl.'" target="_blank" class="btn btn-success btn-sm">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                          <a href="'.route('fundraising.edit', $row->id).'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
+                        <button onclick="deleteFundraising('.$row->id.')" class="btn btn-danger btn-sm">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>'; // Tutup div.btn-group
+                
+                    return $actionBtn;
+                })            
+                ->rawColumns(['name','email','commission','total_donatur','jumlah_donasi','action'])
+                 ->make(true);
+        }
+        
+        return view('super_admin.fundraising.index');
+    }
+
+    public function fundraising()
+    {
+        $user = Auth::user();
+        $fundraisings = Fundraising::where('user_id', $user->id)
+            ->with('campaign')
+            ->get();
+        
+        $totalCommission = $fundraisings->sum('commission');
+        
+        return view('donatur.fundraishing.index', compact('fundraisings', 'totalCommission'));
+    }
+
+    public function join($title)
+    {
+        $user = Auth::user();
+        $campaign = Campaign::where('title',$title)->first();
+        
+        // Cek apakah pengguna sudah terdaftar di kampanye ini
+        $existingFundraising = Fundraising::where('user_id', $user->id)
+            ->where('campaign_id', $campaign->id)
+            ->first();
+            
+        if ($existingFundraising) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Anda sudah terdaftar sebagai fundraiser untuk kampanye ini',
+                'redirect' => url('/profile/fundraising')
+            ]);
+        }
+        
+        // Buat kode unik untuk link referral
+        $codeLink = Str::random(10);
+        
+        // Buat record fundraising baru
+        $fundraising = Fundraising::create([
+            'campaign_id' => $campaign->id,
+            'user_id' => $user->id,
+            'code_link' => $codeLink,
+            'total_donatur' => 0,
+            'donations' => json_encode([]),
+            'jumlah_donasi' => 0,
+            'commission' => 0
+        ]);
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Berhasil bergabung sebagai fundraiser kampanye',
+            'redirect' => url('/profile/fundraising')
+        ]);
+    }
+
+    public function withdrawFunds(Request $request)
+    {
+        $user = Auth::user();
+        $fundraisings = Fundraising::where('user_id', $user->id)->get();
+        $totalCommission = $fundraisings->sum('commission');
+        
+        if ($totalCommission < 100000) {
+            return redirect()->back()->with('error', 'Minimal pencairan dana adalah Rp 100.000');
+        }
+        
+        // Logic untuk pencairan dana bisa ditambahkan di sini
+        // Misalnya: membuat record di tabel FundraisingWithdrawal
+        
+        return redirect()->back()->with('success', 'Permintaan pencairan dana berhasil diajukan');
+    }
+
+    public function showCampaignWithReferral(Campaign $kampanye,$title,$code)
+    {
+
+        $fundraising = Fundraising::where('code_link', $code)->firstOrFail();        
+        session(['referral_code' => $code]);
+
+        $campaign = Campaign::with([
+            'kabarTerbaru', 
+            'kabarPencairan' => function ($query) {
+                $query->where('status', 'disetujui');
+            },
+            'admin', 
+            'donations' => function ($query) {
+                $query->where('status', 'sukses');
+            }
+        ])->where('title',$title)->first();
+
+        
+        $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();
+    
+        $totalKampanye = $campaign->where('status', 'aktif')->count();
+
+        return view('donatur.detail-kampanye', [
+            'campaign' => $campaign,
+            'fundraising' => $fundraising,
+            'totalDonaturs' => $totalDonaturs,
+            'totalKampanye' => $totalKampanye,
+        ]);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Fundraising $fundraising)
+    {
+        //
+    }
+
+    public function edit(Fundraising $fundraising)
+    {
+        return view('super_admin.fundraising.detail', compact('fundraising'));
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Fundraising $fundraising)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Fundraising $fundraising)
+    {
+        DB::beginTransaction();
+        try {
+            // Menghapus data donasi
+            $fundraising->delete();
+    
+            DB::commit();
+            return response()->json(['status' => 'success', 'message' => 'Fundraising berhasil dihapus']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => 'Gagal menghapus fundraising: ' . $e->getMessage()], 500);
+        }
+    }
+}

@@ -1,0 +1,1045 @@
+:root {
+    /* Warna Utama dan Sekunder */
+    --main-color: #FE0101;
+    --second-color: #FF4747;
+  
+    /* Warna Teks */
+    --title-color: #202020;
+    --desc-color: #606060;
+  
+    /* Tipografi */
+    --font-family-title: 'Poppins', sans-serif;
+    --font-family-desc: 'Poppins', sans-serif;
+  
+    /* Ukuran Font */
+    --font-size-title: 16px;
+    --font-size-desc: 15px;
+  
+    /* Gaya Font */
+    --font-weight-bold: bold;
+    --font-weight-regular: normal;
+  
+    /* Button */
+    --border-radius: 6px;
+    --button-height: 50px;
+  
+    /* shadow */
+    --box-shadow-default: 0px 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Gaya untuk Judul (h1 hingga h6) */
+  h1,
+  h2 {
+    font-family: var(--font-family-title);
+    font-size: var(--font-size-title);
+    font-weight: var(--font-weight-bold);
+    color: var(--title-color);
+  }
+  
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-family-title);
+    font-size: 15px;
+    font-weight: var(--font-weight-bold);
+    color: var(--title-color);
+  }
+  
+  a {
+    font-weight: 500;
+    font-size: 15px;
+  }
+  
+  body {
+    padding: 0;
+    margin: 0;
+    overflow-x: hidden;
+    background-color: #FFF9F9 !important;
+  
+  }
+  
+  /* Gaya untuk Deskripsi (p, small, span, a) */
+  p,
+  span {
+    font-family: var(--font-family-desc);
+    font-size: var(--font-size-desc);
+    font-weight: var(--font-weight-regular);
+    color: var(--desc-color);
+  }
+  
+  label {
+    color: var(--desc-color);
+    margin-left: 10px;
+  }
+  
+  .form-control {
+    padding-left: 20px !important;
+  }
+  
+  .form-switch .form-check-input:checked {
+    background-color: var(--second-color);
+    border-color: var(--second-color);
+  }
+  
+  small {
+    display: block;
+    font-size: 11px;
+    color: var(--desc-color);
+  }
+  
+  .circle-dropdown {
+    color: white;
+    background-color: var(--second-color);
+    padding: 5px;
+    border-radius: 20px;
+  }
+  
+  .small {
+    font-size: 11px;
+  }
+  
+  .large {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .scroll-x {
+    justify-content: space-between;
+    overflow-x: auto !important;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .scroll-x::-webkit-scrollbar {
+    display: none;
+    /* Menyembunyikan scrollbar di browser berbasis WebKit */
+  }
+  
+  
+  a,
+  a:hover {
+    color: var(--second-color);
+    text-decoration: none;
+  }
+  
+  /* Gaya untuk Tombol */
+  a.button,button.button {
+    background-color: var(--second-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 10px 20px;
+    height: auto;
+    /* Sesuaikan tinggi dengan isi */
+    min-width: 80px;
+    /* Lebar minimum tombol */
+    flex: 1;
+    /* Biarkan tombol fleksibel */
+    text-align: center;
+    cursor: pointer;
+    align-self: center;
+    text-decoration: none;
+    white-space: nowrap;
+    /* Hindari teks pindah baris */
+  }
+  
+  a.button-outline,button.button-outline {
+    background-color: white;
+    color: var(--second-color);
+    border: 1px solid var(--second-color);
+    border-radius: var(--border-radius);
+    padding: 10px 30px;
+    height: auto;
+    /* Sesuaikan tinggi dengan isi */
+    min-width: 20px;
+    /* Lebar minimum tombol */
+    flex: 1;
+    align-self: center;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  
+  .line-spacing {
+    background-color: #FFF9F9;
+    width: 100%;
+    height: 20px;
+  }
+  
+  
+  .navbar {
+    background-color: #ffff;
+    color: #fff;
+    box-shadow: var(--box-shadow-default);
+    padding: 10px;
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 99;
+    width: 100%;
+    text-align: center;
+    border-radius: 0px 0px 10px 10px;
+  }
+  
+  .navbar-back {
+    background-color: var(--second-color);
+    color: #fff;
+    box-shadow: var(--box-shadow-default);
+    padding: 10px;
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 99;
+    width: 100%;
+    text-align: center;
+    border-radius: 0px 0px 10px 10px;
+  }
+  
+  .navbar-back a,
+  .circle-arrow {
+    display: flex;
+    justify-content: center;
+    /* Memusatkan konten secara horizontal */
+    align-items: center;
+    /* Memusatkan konten secara vertikal */
+    width: 40px;
+    height: 40px;
+    border-radius: 40px;
+    text-align: center;
+  }
+  
+  .swiper {
+    width: 100%;
+    padding: 0 15px;
+  }
+  
+  .swiper-button-next,
+  .swiper-button-prev {
+    color: var(--second-color);
+    /* Warna tombol navigasi */
+  }
+  
+  .swiper-pagination .swiper-pagination-bullet {
+    background: var(--second-color);
+  }
+  
+  .sliderBanner .swiper-pagination {
+    position: relative;
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  
+  .btn-rectangle {
+    background-color: var(--second-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .bg-main {
+    background-color: var(--main-color);
+    color: white;
+    border-radius: var(--border-radius);
+  }
+  
+  .bg-danger {
+    background-color: var(--second-color) !important;
+  }
+  
+  .bg-main-opacity {
+    background-color: rgba(255, 71, 71, 0.1);
+  }
+  
+  .bg-white {
+    background-color: #ffff;
+    color: var(--second-color);
+  }
+  
+  .bg-second {
+    background-color: var(--second-color);
+    color: white;
+    border-radius: var(--border-radius);
+  }
+  
+  .text-color {
+    color: var(--second-color);
+  }
+  
+  
+  
+  .search {
+    position: relative;
+    width: 100%;
+    align-self: center !important;
+    align-items: center !important;
+    display: flex;
+  }
+  
+  .search input {
+    padding-left: 35px !important;
+    width: 100%;
+    height: 40px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--second-color);
+  }
+  
+  .search img {
+    position: absolute;
+    margin-left: 10px;
+  }
+  
+  .invalid-file{
+    width: 100%;
+    font-size: .875em;
+    color: #dc3545;
+    margin-bottom: 1rem;
+    margin-top: -0.8rem
+    }
+  a.button:hover,
+  button:hover {
+    background-color: var(--second-color);
+  }
+  
+  .hero {
+    justify-content: center;
+  }
+  
+  
+  .hero .caption {
+    transform: translate(5%, -70px);
+    background-color: white;
+    width: 90%;
+    padding: 20px;
+    z-index: 20;
+    box-shadow: var(--box-shadow-default);
+    border-radius: var(--border-radius);
+  }
+  
+  .box-shadow {
+    box-shadow: var(--box-shadow-default);
+    border-radius: var(--border-radius);
+  }
+  
+  .category-menu {
+    margin-top: -30px;
+  }
+  
+  .grid-category {
+    margin-top: 20px;
+    display: grid;
+    text-align: center;
+    text-decoration: none;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .grid-category img {
+    width: 60px;
+  }
+  
+  .top-donatur .slide-avatar {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .top-donatur img {
+    width: 60px;
+  }
+  
+  .slide-avatar a {
+    text-align: center;
+    text-decoration: none;
+  }
+  
+  
+  .kampanye .thumbnail {
+    position: relative;
+  }
+  
+  .kampanye img {
+    border-radius: 5px;
+  }
+  
+  .kampanye .prioritas {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+  }
+  
+  .kampanye .card {
+    border: none;
+    width: 17rem;
+  }
+  
+  .footer {
+    width: 94%;
+    bottom: 10px;
+    left: 3%;
+    z-index: 99;
+    border-radius: 10px;
+    margin: 0 auto;
+    align-self: center;
+    align-items: center;
+    position: sticky;
+    background-color: white;
+    box-shadow: var(--box-shadow-default);
+  }
+  
+  .footer p {
+    margin: 0;
+  }
+  
+  .footer .main-menu {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    padding: 10px;
+    align-items: center;
+  }
+  
+  .footer .main-menu a {
+    text-align: center;
+  }
+  
+  .footer .main-menu .donasi-menu {
+    margin-top: -40px;
+  }
+  
+  
+  /* detail kampanye */
+  
+  .thumbnail-detail-kampanye {
+    position: relative;
+  }
+  
+  .thumbnail-detail-kampanye .nav-top {
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    position: absolute;
+  }
+  
+  .thumbnail-detail-kampanye .nav-top a {
+    display: flex;
+    justify-content: center;
+    /* Memusatkan konten secara horizontal */
+    align-items: center;
+    /* Memusatkan konten secara vertikal */
+    width: 40px;
+    height: 40px;
+    border-radius: 40px;
+    text-align: center;
+  }
+  
+  .count {
+    font-size: 20px;
+    font-weight: bold;
+    align-items: center;
+    align-self: center;
+    justify-content: center;
+  }
+  
+  
+  .doa-orang-baik .card {
+    border: none;
+    padding: 20px;
+    margin: 10px 0px;
+  }
+  
+  .card {
+    border: none;
+  }
+  
+  .btn-outline-danger:focus,
+  .btn-primary {
+    background-color: var(--second-color) !important;
+    color: white !important;
+  }
+  
+  .tab-content button {
+    background-color: #fff;
+  }
+  
+  .accordion-button {
+    border: none !important;
+    /* Hilangkan border pada tombol accordion */
+    box-shadow: none !important;
+    /* Hilangkan shadow bawaan */
+  }
+  
+  .accordion-item {
+    border: none !important;
+    /* Hilangkan border pada setiap item accordion */
+  }
+  
+  .accordion-button:not(.collapsed) {
+    background-color: transparent !important;
+    /* Hilangkan background saat accordion terbuka */
+    box-shadow: none !important;
+    /* Hilangkan shadow saat aktif */
+  }
+  
+  
+  @media (max-width: 480px) {
+  
+    .footer .main-menu img {
+      width: 18px;
+      /* Ikon diperkecil */
+      height: 18px;
+    }
+  
+    .footer .donasi-menu img {
+      width: 58px;
+      /* Ikon diperkecil */
+      height: 58px;
+      margin-top: 10px;
+    }
+  
+    .kampanye strong {
+      font-size: 12px;
+    }
+  
+    .grid-category img {
+      width: 40px;
+    }
+  
+    p,
+    span {
+      font-size: 12px;
+    }
+  
+    h1,
+    h2 {
+      font-size: 15px;
+    }
+  
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-size: 12px;
+    }
+  
+    a {
+      font-weight: 500;
+      font-size: 12px;
+    }
+  
+    .top-donatur img {
+      width: 40px;
+    }
+  
+  
+  }
+  
+  /* profil galang dana */
+  body {
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+  }
+  .profile-container {
+    max-width: 950px;
+    margin: 0 auto;
+    padding: 0;
+  }
+  .bg-dangerr {
+    background-color: #ff4747;
+  }
+  .form-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin: 20px 15px;
+  }
+  .form-group {
+    margin-bottom: 15px;
+  }
+  .file-input-group {
+    display: flex;
+    margin-bottom: 15px;
+  }
+  .file-label {
+    flex-grow: 1;
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 5px 0 0 5px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+  }
+  .upload-btn {
+    background-color: #f0f0f0;
+    border: 1px solid #ced4da;
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    padding: 8px 15px;
+    color: #333;
+  }
+  .form-control {
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+  }
+  textarea.form-control {
+    min-height: 100px;
+  }
+  .btn-submit {
+    background-color: #f05454;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .btn-submit:hover {
+    background-color: #e03e3e;
+  }
+  .footer-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin: 20px 15px;
+  }
+  
+  
+  
+  .list-group-item {
+    border: none !important;
+  }
+  
+  .list-group-item {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Jarak antara ikon dan teks */
+    padding: 10px 15px; /* Menyesuaikan padding agar rapi */
+  }
+  
+  .icon-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Ukuran tetap agar sejajar */
+    height: 40px;
+  }
+  
+  
+  /* Styles untuk notifikasi */
+  .notification-container {
+    background-color: #fff;
+    border-radius: 15px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin: 0 0 20px;
+    padding: 20px;
+  }
+  
+  .notification-item {
+    padding-bottom: 15px;
+  }
+  
+  .notification-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .notification-text {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  
+  .notification-date {
+    font-size: 14px;
+    color: #777;
+    margin-top: 15px;
+    margin-bottom: 10px;
+  }
+  
+  hr {
+    border: 0;
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 15px 0;
+  }
+  
+  /* Transaction proof styles */
+  .transaction-proof {
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 15px 0;
+  }
+  
+  .transaction-proof img {
+    width: 100%;
+    display: block;
+  }
+  
+  
+  /* Tambahkan bagian ini untuk mengatur gambar */
+  .transaction-proof img {
+    max-width: 60%;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .transfer-info {
+    padding: 0;
+  }
+  
+  .amount-row, .fee-row, .method-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .amount-row {
+    background-color: #f0f7ff;
+    padding: 8px;
+  }
+  
+  .label {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .amount, .method {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .detail-button {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0 5px 0;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  /* pencairan dana */
+  
+  .pencairan-dana-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  .pencairan-dana-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .pencairan-icon {
+    width: 80px;
+    margin-bottom: 15px;
+  }
+  
+  .pencairan-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .pencairan-description {
+    color: #6c757d;
+    font-size: 14px;
+  }
+  
+  .pencairan-form .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-control {
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 10px;
+  }
+  
+  .upload-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .upload-container .form-control {
+    flex-grow: 1;
+    margin-right: 10px;
+  }
+  
+  .btn-upload {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    color: #495057;
+  }
+  
+  .upload-info {
+    background-color: #fff3cd;
+    border-radius: 8px;
+    padding: 20px;
+    font-size: 12px;
+    color: #856404;
+  }
+  .upload-info p {
+    margin: 0px;
+  }
+  
+  .btn-pencairan {
+    width: 100%;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+  }
+  
+  .btn-pencairan:hover {
+    background-color: #c82333;
+  }
+  
+  .list-group-item {
+    border: none !important;
+  }
+  .custom-select-wrapper {
+    position: relative;
+    width: 100%;
+  }
+  .custom-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    background-color: white;
+    color: #495057;
+    font-size: 16px;
+  }
+  .custom-select-arrow {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #6c757d;
+  }
+  .footer-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin: 20px 15px;
+  }
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+  
+  .u-btn {
+    background-color: #f0f0f0;
+    border: 1px solid #ced4da;
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    padding: 8px 15px;
+    color: #333;
+  }
+  
+  /* CSS Buat Kabar Terbaru Page */
+  body {
+    background-color: #f4f4f4;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  .form-header {
+    margin-bottom: 20px;
+  }
+  
+  .form-header .icon-container img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+  }
+  
+  .form-header .form-title {
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
+  }
+  
+  .form-header .form-description {
+    color: #666;
+    font-size: 14px;
+    max-width: 320px;
+    margin: 10px auto;
+  }
+  
+  .form-control {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+  }
+  
+  .form-control:focus {
+    border-color: #FF6B6B;
+    box-shadow: 0 0 0 0.2rem rgba(255,107,107,0.25);
+  }
+  
+  /* Editor styling */
+  .editor-container {
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin-bottom: 15px;
+  }
+  
+  .editor-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+   
+  }
+  
+  .toolbar-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 1px solid #eaeaea;
+    border-radius: 4px;
+    color: #333;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+  }
+  
+  .toolbar-btn:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .upload-foto-btn {
+    padding: 8px 16px;
+    background-color: white;
+    border: 1px solid #eaeaea;
+    border-radius: 4px;
+    color: #333;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  
+  .editor-textarea {
+    width: 100%;
+    border: none;
+    padding: 15px;
+    resize: vertical;
+    outline: none;
+  }
+  .alert-warning {
+    background-color: #FFF3CD;
+    border-color: #FFE8A1;
+    color: #856404;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  
+  .footer-card {
+    background-color: white;
+    padding: 15px;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .footer-card .btn {
+    background-color: #FF6B6B;
+    border: none;
+    padding: 12px;
+    font-weight: bold;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .footer-card .btn:hover {
+    background-color: #FF5252;
+  }
+  
+  .footer-card .btn i {
+    margin-right: 10px;
+  }
+  
+  /* CLAUDE AI */
+  .card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .custom-file-input:focus + .custom-file-label {
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+  }
+  
+  @media (max-width:376px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+  
+    .btn-upload {
+      font-size: 12px;
+    }
+  }
+  
+  
+  .bg-second {
+    background-color: var(--second-color);
+  }
+  
+  .text-second {
+    color: var(--second-color);
+  }
+  
+  .bg-opacity {
+    background-color: rgba(255, 71, 71, 0.1);
+  }
+  
+  .btn-second {
+    background-color: var(--second-color);
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .btn-second:hover {
+    background-color: var(--bs-danger);
+    color: white;
+  }
