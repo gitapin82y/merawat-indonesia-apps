@@ -173,3 +173,45 @@ document.addEventListener('DOMContentLoaded', function() {
  </script>
 
 
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Parse URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+      
+      // Store UTM parameters in session
+      utmParams.forEach(param => {
+          if (urlParams.has(param)) {
+              // Store in localStorage for persistence
+              localStorage.setItem(param, urlParams.get(param));
+              
+              // Send to server to store in session
+              fetch('/store-utm-params', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                  },
+                  body: JSON.stringify({
+                      [param]: urlParams.get(param)
+                  })
+              });
+          }
+      });
+      
+      // Add UTM parameters to all donation links
+      document.querySelectorAll('a[href*="donasi"]').forEach(link => {
+          const url = new URL(link.href);
+          
+          utmParams.forEach(param => {
+              const value = localStorage.getItem(param);
+              if (value) {
+                  url.searchParams.set(param, value);
+              }
+          });
+          
+          link.href = url.toString();
+      });
+  });
+  </script>
+

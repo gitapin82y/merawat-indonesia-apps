@@ -162,7 +162,7 @@
 
                             <div class="footer mb-5 text-center">
                                 <div class="main-menu row col-12 mx-0 justify-content-between d-flex ">
-                                    <button type="submit" id="submitManualBtn" class="button bg-danger w-100 d-flex align-items-center justify-content-center text-white shadow-sm" disabled>
+                                    <button type="submit" id="submitManualBtn" class="button bg-danger w-100 d-flex align-items-center justify-content-center text-white shadow-sm">
                                         <img src="{{asset('assets/img/icon/edit-profile.svg')}}" alt="Kirim" style="width: 20px; height: 20px; margin-right: 8px;" />
                                         <span class="text-white">Kirim Bukti Pembayaran</span>
                                     </button>

@@ -24,7 +24,7 @@ class AdsenseController extends Controller
                 'google_ads_id' => 'nullable|string|max:255',
                 'google_ads_label' => 'nullable|string|max:255',
                 'tiktok_token' => 'nullable|string|max:255',
-                'tiktok_endpoint' => 'nullable|json',
+                'tiktok_endpoint' => 'nullable|string|max:255',
             ]);
 
             Adsense::create($validated);
@@ -49,17 +49,18 @@ class AdsenseController extends Controller
                 'google_ads_id' => 'nullable|string|max:255',
                 'google_ads_label' => 'nullable|string|max:255',
                 'tiktok_token' => 'nullable|string|max:255',
-                'tiktok_endpoint' => 'nullable|json',
+                'tiktok_endpoint' => 'nullable|string|max:255',
             ]);
 
             $adsense = Adsense::findOrFail($id);
             $adsense->update($validated);
+        
 
             return response()->json(['message' => 'Data berhasil diperbarui.'], 200);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Terjadi kesalahan, coba lagi.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan :'. $e], 500);
         }
     }
 }

@@ -89,7 +89,7 @@
                             <div class="row container m-0 pb-5">
                                 <h3>Isi Data Diri</h3>
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="full_name" name="name" placeholder="Nama Lengkap" required>
+                                    <input type="text" class="form-control" id="full_name" name="name" placeholder="Nama Lengkap" value="{{ auth()->check() ? auth()->user()->name : old('name') }}" required>
                                     <label for="full_name">Nama Lengkap</label>
                                 </div>
                                 <div class="d-flex mb-3">
@@ -100,11 +100,11 @@
                                 </div>
                                 
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="whatsapp" name="phone" placeholder="Nomor Whatsapp" id="phone" required>
+                                    <input type="text" class="form-control" id="whatsapp" name="phone" placeholder="Nomor Whatsapp" value="{{ auth()->check() && auth()->user()->phone ? auth()->user()->phone : old('phone') }}" required>
                                     <label for="whatsapp">Nomor Whatsapp</label>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                                    <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" value="{{ auth()->check() ? auth()->user()->email : old('email') }}" required>
                                     <label for="email">Email</label>
                                 </div>
                                 <div class="form-floating">
@@ -179,6 +179,30 @@
             }
             
             $('#donationForm').submit();
+        });
+    });
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+    const utmParams = ['utm_source', 'utm_medium', 'utm_campaign'];
+    
+    // Store UTM parameters in localStorage
+    utmParams.forEach(param => {
+        if (urlParams.has(param)) {
+            localStorage.setItem(param, urlParams.get(param));
+        }
+    });
+
+     // Add UTM parameters to donation forms
+     document.querySelectorAll('form[action*="donations"]').forEach(form => {
+        utmParams.forEach(param => {
+            const value = localStorage.getItem(param);
+            if (value && !form.querySelector(`[name="${param}"]`)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = param;
+                input.value = value;
+                form.appendChild(input);
+            }
         });
     });
 </script>

@@ -16,8 +16,4 @@ class Adsense extends Model
         'meta_token', 'meta_endpoint', 'google_ads_id', 
         'google_ads_label', 'tiktok_token', 'tiktok_endpoint'
     ];
-
-    protected $casts = [
-        'tiktok_endpoint' => 'array'
-    ];
 }

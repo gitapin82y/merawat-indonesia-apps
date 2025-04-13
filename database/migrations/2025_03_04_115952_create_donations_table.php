@@ -16,7 +16,11 @@ return new class extends Migration
             $table->foreignId('campaign_id')->constrained('campaigns')->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null'); //tidak wajib login auth untuk donasi
             $table->foreignId('manual_payment_method_id')->nullable()->constrained('manual_payment_methods')->onDelete('set null');
+            $table->foreignId('donation_source_id')->nullable()->constrained('donation_sources')->nullOnDelete();
             $table->string('payment_proof')->nullable()->after('status'); // Bukti pembayaran (untuk metode manual)
+            $table->string('utm_source')->nullable();
+            $table->string('utm_medium')->nullable();
+            $table->string('utm_campaign')->nullable();
             $table->string('name')->nullable();
             $table->string('doa')->nullable();
             $table->boolean('is_anonymous')->default(false); //jika orang baik di ceklis maka menjadi true dan nama donatur menjadi "orang baik"

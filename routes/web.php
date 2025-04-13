@@ -19,6 +19,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ManualPaymentMethodController;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CheckAuth;
 
@@ -36,6 +37,14 @@ Route::middleware(['checkAuth'])->group(function () {
 
 });
 
+Route::post('/store-utm-params', function (Request $request) {
+    foreach ($request->all() as $key => $value) {
+        if (strpos($key, 'utm_') === 0) {
+            session([$key => $value]);
+        }
+    }
+    return response()->json(['success' => true]);
+});
 
 Route::get('/galang-dana/buat-akun', function(){
     return view('donatur.galang-dana.buat-akun');

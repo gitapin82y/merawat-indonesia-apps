@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('google_ads_id')->nullable();
             $table->string('google_ads_label')->nullable();
             $table->string('tiktok_token')->nullable();
-            $table->json('tiktok_endpoint')->nullable();
+            $table->string('tiktok_endpoint')->nullable();
             $table->timestamps();
         });
     }

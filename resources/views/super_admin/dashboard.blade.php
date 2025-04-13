@@ -11,7 +11,7 @@
 <div class="card mb-4">
     <div class="card-body">
     <div class="row justify-content-center pb-4">
-        <div class="col-4 col-md-2 col-lg-4">
+        <div class="col-4 col-md-2 col-lg-3">
             <a class="w-100 btn btn-danger btn-adsense" data-toggle="modal" data-target="#adsenseModal"
             data-id="{{ optional($adsense)->id }}"
             data-tiktok_pixel="{{ optional($adsense)->tiktok_pixel }}"
@@ -27,19 +27,19 @@
                 Pengaturan Iklan
             </a>
         </div>
-        <div class="col-4 col-md-2 col-lg-4">
+        <div class="col-4 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger btn-kategori" data-toggle="modal" data-target="#manageKategoriModal">
                 Manage Kategori
             </a>
         </div>
-        <div class="col-4 col-md-2 col-lg-4">
+        <div class="col-4 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#manageBannerModal"">
                 Manage Slider
             </a>
         </div>
-        <div class="col-4 col-md-2 col-lg-4">
+        <div class="col-4 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#managePayment"">
-                Manage Methods Payment Manual
+                Pembayaran Manual
             </a>
         </div>
 
@@ -143,39 +143,18 @@
    <!-- Content Row -->
 <div class="row">
 
-    <!-- Card Template -->
-    <?php 
-        $cards = [
-            ["title" => "Jumlah Donasi", "value" => "900.000.000"],
-            ["title" => "Pencairan Donasi", "value" => "90.000.000"],
-            ["title" => "Sisa Donasi Saat Ini", "value" => "810.000.000"],
-            ["title" => "Pencairan Fundraising", "value" => "1.000.000"],
-            ["title" => "Total Kampanye", "value" => "2920"],
-            ["title" => "Donasi dari Google Ads", "value" => "30x"],
-            ["title" => "Donasi dari FB Ads", "value" => "50x"],
-            ["title" => "Donasi dari Tiktok Ads", "value" => "90x"],
-            ["title" => "Total Donasi dari Ads", "value" => "170x"],
-            ["title" => "Jumlah Donasi Dari Ads", "value" => "800.000.000"],
-            ["title" => "Donasi Hari Ini", "value" => "30x"],
-            ["title" => "Donasi Bulan Ini", "value" => "320x"],
-            ["title" => "Jumlah Donasi Hari Ini", "value" => "10.000.000"],
-            ["title" => "Jumlah Donasi Bulan Ini", "value" => "90.000.000"],
-            ["title" => "Total Akun Admin", "value" => "320"]
-        ];
-    ?>
-
-    <?php foreach ($cards as $card): ?>
-        <div class="col-xl-2 col-md-4 mb-3">
-            <div class="card-sm shadow border-0 h-100 p-3">
-                    <div class="text-danger mb-1" style="font-size: 12px;">
-                        <?= $card['title']; ?>
-                    </div>
-                    <div class="h6 font-weight-bold text-danger" style="font-size: 18px;">
-                        <?= $card['value']; ?>
-                </div>
+    @foreach ($cards as $card)
+    <div class="col-xl-2 col-md-4 mb-3">
+        <div class="card-sm shadow border-0 h-100 p-3">
+            <div class="text-danger mb-1" style="font-size: 12px;">
+                {{ $card['title'] }}
+            </div>
+            <div class="h6 font-weight-bold text-danger" style="font-size: 18px;">
+                {{ $card['value'] }}
             </div>
         </div>
-    <?php endforeach; ?>
+    </div>
+@endforeach
 
 </div>
 
@@ -804,7 +783,6 @@ $(document).ready(function() {
     });
     
 </script>
-<!-- Tambahkan kode ini di bagian @push('after-script') pada dashboard.blade.php -->
 <script>
     // Fungsi untuk memuat daftar metode pembayaran
     function loadPaymentMethods() {

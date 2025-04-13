@@ -7,6 +7,8 @@ use App\Models\Campaign;
 use App\Models\Fundraising;
 use App\Models\Commission;
 use App\Models\ManualPaymentMethod;
+use App\Models\DonationSource;
+use App\Models\Adsense;
 
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -99,10 +101,32 @@ class DonationController extends Controller
             'phone' => 'required|string',
             'email' => 'required',
             'is_anonymous' => 'nullable',
-            'doa' => 'nullable|string'
+            'doa' => 'nullable|string',
+            'utm_source' => 'nullable|string',
+        'utm_medium' => 'nullable|string',
+        'utm_campaign' => 'nullable|string',
         ]);
         
         $campaign = Campaign::findOrFail($request->campaign_id);
+
+            // Tangkap UTM parameters
+    $utmSource = $request->utm_source ?? session('utm_source');
+    $utmMedium = $request->utm_medium ?? session('utm_medium');
+    $utmCampaign = $request->utm_campaign ?? session('utm_campaign');
+    
+    // Tentukan sumber donasi
+    $sourceType = 'direct'; // Default
+    if ($utmSource) {
+        if (strpos($utmSource, 'google') !== false) $sourceType = 'google_ads';
+        elseif (strpos($utmSource, 'facebook') !== false || strpos($utmSource, 'fb') !== false || strpos($utmSource, 'meta') !== false) $sourceType = 'facebook';
+        elseif (strpos($utmSource, 'tiktok') !== false) $sourceType = 'tiktok';
+    }
+    
+    // Cari atau buat sumber donasi
+    $donationSource = DonationSource::firstOrCreate(
+        ['source_type' => $sourceType, 'utm_source' => $utmSource, 'utm_medium' => $utmMedium, 'utm_campaign' => $utmCampaign],
+        ['campaign_name' => $utmCampaign]
+    );
         
         // Cek apakah ada referral code di session
         $referralCode = session('referral_code');
@@ -129,7 +153,11 @@ class DonationController extends Controller
             'payment_type' => null, // Akan diupdate setelah memilih metode pembayaran
             'payment_method' => null, // Akan diupdate setelah memilih metode pembayaran
             'status' => 'pending',
-            'snap_token' => Str::random(32) // Placeholder untuk snap_token
+            'snap_token' => Str::random(32), // Placeholder untuk snap_token
+            'donation_source_id' => $donationSource->id,
+            'utm_source' => $utmSource,
+            'utm_medium' => $utmMedium,
+            'utm_campaign' => $utmCampaign,
         ]);
         
         return redirect()->route('donations.select-payment-method', $donation->id);
@@ -414,6 +442,8 @@ class DonationController extends Controller
                 $donation->status = 'sukses';
                 $donation->updated_at = now();
                 $donation->save();
+
+                $this->trackServerSideConversion($donation);
                 
                 // Update campaign statistics
                 $campaign = $donation->campaign;
@@ -421,6 +451,16 @@ class DonationController extends Controller
                 $campaign->current_donation += $donation->amount;
                 $campaign->total_donatur += 1;
                 $campaign->save();
+
+                 // Update donation source statistics
+        if ($donation->donation_source_id) {
+            $source = DonationSource::find($donation->donation_source_id);
+            if ($source) {
+                $source->total_donations += 1;
+                $source->total_amount += $donation->amount;
+                $source->save();
+            }
+        }
                 
                 // Check if there's referral code in session
                 $referralCode = session('referral_code');
@@ -533,6 +573,18 @@ class DonationController extends Controller
                     $campaign->total_donatur += 1;
                     $campaign->save();
 
+                    $this->trackServerSideConversion($donation);
+
+                     // Update donation source statistics
+                    if ($donation->donation_source_id) {
+                        $source = DonationSource::find($donation->donation_source_id);
+                        if ($source) {
+                            $source->total_donations += 1;
+                            $source->total_amount += $donation->amount;
+                            $source->save();
+                        }
+                    }
+
                         
                     // Cek apakah ada referral code di session
                     $referralCode = session('referral_code');
@@ -606,17 +658,39 @@ class DonationController extends Controller
     return view('donatur.donasi.status', compact('donation', 'campaign', 'paymentDetail'));
 }
 
-
-    public function checkStatus($reference)
+public function checkStatus($reference)
 {
     try {
+        // Cari donasi berdasarkan reference/snap_token
+        $donation = Donation::where('snap_token', $reference)->first();
+        
+        if (!$donation) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Donasi tidak ditemukan'
+            ], 404);
+        }
+        
+        // Jika pembayaran manual, cek status langsung dari database
+        if ($donation->payment_type == 'manual') {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'status' => $donation->status,
+                    'payment_method' => 'Manual - ' . 
+                        ($donation->manualPaymentMethod ? $donation->manualPaymentMethod->name : 'Transfer'),
+                    'amount' => $donation->amount,
+                    'payment_proof' => $donation->payment_proof ? 
+                        asset('storage/' . $donation->payment_proof) : null,
+                    'updated_at' => $donation->updated_at->format('Y-m-d H:i:s')
+                ]
+            ]);
+        }
+        
+        // Jika pembayaran gateway, cek status di Tripay
         // Pastikan URL berakhir dengan slash
         $apiUrl = rtrim($this->apiUrl, '/') . '/';
         $endpoint = 'transaction/detail';
-        
-        $payload = [
-            'reference' => $reference
-        ];
         
         $signature = hash_hmac('sha256', $this->merchantCode . $reference, $this->privateKey);
         
@@ -628,6 +702,7 @@ class DonationController extends Controller
         ]);
 
         $responseData = $response->json();
+
 
         if (isset($responseData['success']) && $responseData['success'] === true) {
 
@@ -641,6 +716,62 @@ class DonationController extends Controller
                 
                 if ($transaction['status'] === 'PAID') {
                     $status = 'PAID';
+
+                    $campaign = $donation->campaign;
+                    $campaign->jumlah_donasi += $donation->amount;
+                    $campaign->current_donation += $donation->amount;
+                    $campaign->total_donatur += 1;
+                    $campaign->save();
+
+                    $this->trackServerSideConversion($donation);
+
+                    // Cek apakah ada referral code di session
+                    $referralCode = session('referral_code');
+                    $fundraisingId = null;
+
+                     // Update donation source statistics
+        if ($donation->donation_source_id) {
+            $source = DonationSource::find($donation->donation_source_id);
+            if ($source) {
+                $source->total_donations += 1;
+                $source->total_amount += $donation->amount;
+                $source->save();
+            }
+        }
+
+                    
+                    if ($referralCode) {
+                        $fundraising = Fundraising::where('code_link', $referralCode)->first();
+                        
+                        if ($fundraising) {
+
+                            $commissionSetting = Commission::first(); // atau ->find($id) kalau kamu pakai banyak record
+                            $commissionPercent = $commissionSetting->amount ?? 0;
+
+                            // Hitung komisi sesuai persentase dari database
+                            $commission = ($donation->amount * $commissionPercent) / 100;
+                            
+                            
+                            // Update data fundraising
+                            $fundraising->total_donatur += 1;
+                            $fundraising->jumlah_donasi += $donation->amount;
+                            $fundraising->commission += $commission;
+                            
+                            // Update array donations
+                            $donations = json_decode($fundraising->donations, true) ?: [];
+                            $donations[] = [
+                                'donation_id' => $donation->id,
+                                'amount' => $donation->amount,
+                                'commission' => $commission,
+                                'user_name' => $user->name ?? null,
+                                'user_email' => $user->email ?? null,
+                                'created_at' => now()->format('Y-m-d H:i:s')
+                            ];
+                            $fundraising->donations = json_encode($donations);
+                            
+                            $fundraising->save();
+                        }
+                    }
                     
                     $donation = Donation::where('snap_token', $reference)->first();
                     if ($donation) {
@@ -648,6 +779,7 @@ class DonationController extends Controller
                         $donation->updated_at = now();
                         $donation->save();
                     }
+
                 } else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND'])) {
                     $status = 'EXPIRED';
                     
@@ -681,20 +813,86 @@ class DonationController extends Controller
         // Jika API mengembalikan error
         return response()->json([
             'success' => false,
-            'message' => 'Gagal mendapatkan status pembayaran: ' . $response->status(),
-            'details' => $response->json()
+            'message' => 'Gagal mendapatkan status pembayaran: ' . ($responseData['message'] ?? 'Transaksi tidak ditemukan')
         ]);
     } catch (\Exception $e) {
         Log::error('Error checking transaction status: ' . $e->getMessage());
         
         return response()->json([
             'success' => false,
-            'message' => 'Terjadi kesalahan sistem'
+            'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
         ]);
     }
 }
 
-
+private function trackServerSideConversion($donation)
+{
+    try {
+        $adsense = Adsense::first();
+        if (!$adsense) return;
+        
+        // Facebook Conversion API
+        if ($adsense->meta_token && $adsense->meta_endpoint) {
+            $userData = [
+                'em' => hash('sha256', strtolower($donation->email)),
+                'ph' => hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone)),
+            ];
+            
+            $data = [
+                'data' => [
+                    [
+                        'event_name' => 'Purchase',
+                        'event_time' => time(),
+                        'user_data' => $userData,
+                        'custom_data' => [
+                            'currency' => 'IDR',
+                            'value' => $donation->amount,
+                            'content_name' => $donation->campaign->title,
+                            'content_type' => 'donation',
+                            'content_ids' => [$donation->id],
+                            'campaign_id' => $donation->campaign_id,
+                        ],
+                        'event_source_url' => url('/donations/' . $donation->id . '/status'),
+                        'action_source' => 'website'
+                    ]
+                ],
+                'access_token' => $adsense->meta_token
+            ];
+            
+            Http::post($adsense->meta_endpoint, $data);
+        }
+        
+        // TikTok Events API
+        if ($adsense->tiktok_token && $adsense->tiktok_endpoint && $adsense->tiktok_pixel) {
+            $data = [
+                'pixel_code' => $adsense->tiktok_pixel,
+                'event' => 'CompletePayment',
+                'timestamp' => time(),
+                'properties' => [
+                    'currency' => 'IDR',
+                    'value' => $donation->amount,
+                    'content_id' => $donation->id,
+                    'content_type' => 'donation'
+                ],
+                'context' => [
+                    'user' => [
+                        'email' => hash('sha256', strtolower($donation->email)),
+                        'phone' => hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone))
+                    ],
+                    'page' => [
+                        'url' => url('/donations/' . $donation->id . '/status')
+                    ]
+                ]
+            ];
+            
+            Http::withHeaders([
+                'Access-Token' => $adsense->tiktok_token
+            ])->post($adsense->tiktok_endpoint, $data);
+        }
+    } catch (\Exception $e) {
+        Log::error('Error tracking conversion: ' . $e->getMessage());
+    }
+}
 
     public function index(Request $request)
     {
