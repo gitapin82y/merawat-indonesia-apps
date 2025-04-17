@@ -15,10 +15,21 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CampaignStatusMail;
+use App\Services\NotificationService;
 
 
 class CampaignController extends Controller
 {
+    // Tambahkan property di class
+protected $notificationService;
+
+// Tambahkan di constructor
+public function __construct(NotificationService $notificationService)
+{
+    $this->notificationService = $notificationService;
+}
     public function index(Request $request)
     {
         Carbon::setLocale('id');
@@ -80,6 +91,7 @@ class CampaignController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'photo' => 'required|image|max:2048',
+            'status' => 'nullable|string|max:2048',
             'deadline' => 'nullable|date',
             'jumlah_target_donasi' => 'nullable|numeric',
             'document_rab' => 'required|mimes:pdf,doc,docx,xls,xlsx|max:5120',
@@ -106,12 +118,17 @@ class CampaignController extends Controller
     
             $campaign = Campaign::create($campaignData);
             DB::commit();
-            return redirect()->back()
+            if(Auth::user()->role == 'super_admin'){
+                return redirect()->back()
                 ->with('success', 'Kampanye berhasil ditambahkan');
+            }else{
+                return redirect()->back()
+                ->with('success', 'Kampanye berhasil diajukan');
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
-                ->with('error', 'Gagal menambahkan kampanye: ' . $e->getMessage());
+                ->with('error', 'Gagal mengajukan kampanye: ' . $e->getMessage());
         }
     }
 
@@ -171,14 +188,15 @@ class CampaignController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'photo' => 'nullable|image|max:2048',
+            'status' => 'nullable|string|max:2048',
             'deadline' => 'nullable|date',
             'jumlah_target_donasi' => 'nullable|numeric',
             'document_rab' => 'nullable|mimes:pdf,doc,docx,xls,xlsx|max:5120',
         ];
 
         if ($role === 'super_admin') {
-            $rules['document_rab'] = 'required|mimes:pdf,doc,docx,xls,xlsx|max:5120';
-            $rules['category_id'] = 'required|exists:categories,id';
+            $rules['document_rab'] = 'nullable|mimes:pdf,doc,docx,xls,xlsx|max:5120';
+            $rules['category_id'] = 'nullable|exists:categories,id';
         } else {
             $rules['document_rab'] = 'nullable|mimes:pdf,doc,docx,xls,xlsx|max:5120';
             $rules['category_id'] = 'nullable|exists:categories,id';
@@ -263,6 +281,7 @@ class CampaignController extends Controller
         return view('donatur.detail-kampanye', [
             'campaign' => $campaign,
             'comments' => $comments,
+            'request' => request(), 
             'totalDonaturs' => $totalDonaturs,
             'totalKampanye' => $totalKampanye,
         ]);
@@ -324,23 +343,60 @@ class CampaignController extends Controller
         }
     }
 
-    public function changeStatus(Campaign $campaign, Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|in:menunggu,disetujui,ditolak'
-        ]);
+    // Update metode changeStatus
+public function changeStatus(Campaign $campaign, Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'status' => 'required|in:menunggu,disetujui,ditolak'
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
-        }
-
-        $campaign->update(['status' => $request->status]);
-
-        return response()->json([
-            'message' => 'Status admin berhasil diubah',
-            'new_status' => $campaign->status
-        ]);
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()], 400);
     }
+
+    // Simpan status lama untuk pengecekan
+    $oldStatus = $campaign->status;
+    
+    // Update status kampanye
+    $campaign->update(['status' => $request->status]);
+    
+    // Load relasi admin jika belum dimuat
+    if (!$campaign->relationLoaded('admin')) {
+        $campaign->load('admin');
+    }
+    
+    // Kirim email notifikasi jika status berubah ke disetujui atau ditolak dan admin ada
+    if (($request->status === 'disetujui' || $request->status === 'ditolak') && 
+        $oldStatus !== $request->status && 
+        $campaign->admin) {
+        
+        try {
+            // Kirim email ke admin kampanye
+            Mail::to($campaign->admin->email)->send(new CampaignStatusMail($campaign, $request->status));
+            
+            // Buat notifikasi sistem untuk admin
+            $status = $request->status === 'disetujui' ? 'disetujui' : 'ditolak';
+            $this->notificationService->createNotification(
+                $campaign->admin,
+                'Kampanye ' . ucfirst($status),
+                'Kampanye "' . $campaign->title . '" telah ' . $status . '.',
+                'campaign_status_update',
+                ['campaign_id' => $campaign->id, 'status' => $request->status]
+            );
+            
+            // Log untuk debugging
+            Log::info('Email notifikasi status kampanye berhasil dikirim ke ' . $campaign->admin->email);
+        } catch (\Exception $e) {
+            // Log error
+            Log::error('Gagal mengirim email notifikasi status kampanye: ' . $e->getMessage());
+        }
+    }
+
+    return response()->json([
+        'message' => 'Status kampanye berhasil diubah',
+        'new_status' => $campaign->status
+    ]);
+}
 
     public function toggleSave(Request $request)
     {

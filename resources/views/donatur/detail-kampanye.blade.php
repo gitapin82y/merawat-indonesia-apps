@@ -333,7 +333,7 @@
     <div class="row col-12 m-0 px-3 doa-orang-baik mt-3 pb-5">
         <h2 class="mx-0 px-0">Doa Orang Baik</h2>
         <div id="comments-container">
-        @forelse($comments as $comment)
+        @forelse($comments ?? [] as $comment)
         <div class="card box-shadow mb-2">
             <div class="d-flex justify-content-between">
                 <h3>{{ $comment->is_anonymous ? 'Orang Baik' : $comment->name }}</h3>
@@ -341,10 +341,13 @@
             </div>
             <p>{{ $comment->doa }}</p>
             <div class="justify-content-between d-flex">
-                <a href="javascript:void(0);" class="badge pt-1 px-3 rounded-pill bg-main-opacity text-color fw-normal like-button
-                     {{ $comment->donationLikes()->where('user_id', auth()->id())->exists() ? 'liked' : '' }}" data-donation-id="{{ $comment->id }}">
-                     <i class="fa-solid fa-hands-praying"></i> &nbsp; 
-                     <span class="like-count">{{ $comment->donationLikes->count() }}</span> Aaminn
+                <a href="javascript:void(0);" class="badge pt-1 px-3 rounded-pill bg-main-opacity text-color fw-normal like-button 
+                    {{ auth()->check() ? 
+                        (auth()->user()->id && $comment->donationLikes()->where('user_id', auth()->id())->exists() ? 'liked' : '') : 
+                        ($request->cookie('guest_identifier') && $comment->donationLikes()->where('guest_identifier', $request->cookie('guest_identifier'))->exists() ? 'liked' : '') }}" 
+                    data-donation-id="{{ $comment->id }}">
+                    <i class="fa-solid fa-hands-praying"></i> &nbsp; 
+                    <span class="like-count">{{ $comment->donationLikes->count() }}</span> Aaminn
                 </a>
                 <h2 class="d-flex mb-0 align-self-center">
                     Rp {{ number_format($comment->amount, 0, ',', '.') }} 
@@ -361,7 +364,7 @@
     </div>
 
 
-    @if ($comments->hasMorePages())
+    @if (isset($comments) && $comments->hasMorePages())
         <button id="load-more" data-next-page="{{ $comments->nextPageUrl() }}" class="btn btn-primary mt-3 mb-5 w-100">
             Lihat Lebih Banyak
         </button>
@@ -415,8 +418,7 @@
 @push('after-script')
 <script>
     $(document).ready(function() {
-    // Menangani klik tombol like/unlike
-    $('.like-button').on('click', function(e) {
+        $('.like-button').on('click', function(e) {
         e.preventDefault();
 
         var donationId = $(this).data('donation-id');
@@ -428,15 +430,18 @@
             data: {
                 _token: '{{ csrf_token() }}',
             },
+            xhrFields: {
+                withCredentials: true // Important for cookies
+            },
             success: function(response) {
                 if (response.status === 'liked') {
                     console.log(response.count);
-                    // Update tombol menjadi un-like dan tambah like count
+                    // Update button to un-like and increase like count
                     button.find('.like-count').text(response.count);
                     button.addClass('liked');
                 } else {
                     console.log(response.count);
-                    // Update tombol menjadi like dan kurangi like count
+                    // Update button to like and decrease like count
                     button.find('.like-count').text(response.count);
                     button.removeClass('liked');
                 }

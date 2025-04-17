@@ -151,7 +151,7 @@
                     <i class="bi bi-apple me-2"></i> Masuk Dengan Apple
                 </button>
 
-                <p class="mt-3 ">Belum punya akun? <a href="register.html"
+                <p class="mt-3 ">Belum punya akun? <a href="{{url('/register')}}"
                         class="text-second text-decoration-none"><b>Daftar Sekarang</b></a></p>
             </div>
         </div>

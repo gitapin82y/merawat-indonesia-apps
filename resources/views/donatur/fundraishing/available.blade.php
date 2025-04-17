@@ -200,10 +200,10 @@
                       <h3 class="mb-2 donasi-header">
                           {{ $fundraising->campaign->title }}
                       </h3>
-                      <p class="mb-0 donasi-info">Berhasil mengajak {{ $fundraising->total_donatur }} donatur</p>
-                      <p class="mb-0 donasi-info">Total donasi {{ number_format($fundraising->jumlah_donasi) }}</p>
+                      <p class="mb-0 donasi-info">Berhasil mengajak <b>{{ $fundraising->total_donatur }}</b> donatur</p>
+                      <p class="mb-0 donasi-info">Total donasi <b>{{ number_format($fundraising->jumlah_donasi) }}</b></p>
                       <p class="mb-2 donasi-info">
-                          Pendapatan (10% dari total donasi) {{ number_format($fundraising->commission) }}
+                          Pendapatan dari total donasi <b>{{ number_format($fundraising->commission) }}</b>
                       </p>
                     <button type="button" class="btn btn-salin btn-action d-inline" data-link="{{ route('campaign.referral', ['title' => $fundraising->campaign->title, 'code' => $fundraising->code_link]) }}">Salin Link</button>
                   </div>
@@ -292,7 +292,7 @@
             <div id="popupCairkanDana" class="popup">
               <div class="popup-content">
                 <h3>Pencairan Dana Fundraising</h3>
-                <p class="saldo">Rp 200.000</p>
+                <p class="saldo">Rp {{ number_format($totalCommission) }}</p>
                 <form action="{{ route('fundraising.withdraw') }}" method="POST">
                   @csrf
 

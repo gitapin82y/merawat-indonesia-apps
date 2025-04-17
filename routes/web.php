@@ -81,7 +81,7 @@ Route::get('kampanye/{title}', [CampaignController::class, 'donaturKampanye'])->
 Route::get('/kampanye/{title}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
 
 // end donatur
-Route::middleware(['checkRole:admin'])->prefix('admin')->group(function () {
+Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
 
     Route::get('/edit-profile', function(){
         return view('admin.edit-profile');
@@ -139,6 +139,9 @@ Route::prefix('super-admin')->group(function () {
     Route::resource('adsense', AdsenseController::class);
     Route::resource('categories', CategoryController::class);
     Route::resource('banner', BannerController::class);
+
+    Route::get('/pencairan-fundraising/{id}/approve', [FundraisingWithdrawalController::class, 'approve'])->name('pencairan-fundraising.approve');
+    Route::get('/pencairan-fundraising/{id}/reject', [FundraisingWithdrawalController::class, 'reject'])->name('pencairan-fundraising.reject');
 
     Route::post('/upload-image', [CampaignController::class, 'upload'])->name('image.upload');
 

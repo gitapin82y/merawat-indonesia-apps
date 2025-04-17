@@ -10,7 +10,7 @@
 <div class="card mb-4">
     <div class="card-header bg-danger py-3 align-items-center justify-content-between row m-0">
         <div class="col-12 col-sm-6 p-0">
-            <h4 class="m-0 font-weight-bold float-left text-white">Tambah User Baru</h4>
+            <h4 class="m-0 font-weight-bold float-left text-white">{{ isset($user->id) ? 'Edit User' : 'Tambah User Baru' }}</h4>
         </div>
     </div>
         <div class="card-body">
@@ -133,6 +133,23 @@
 
 @push('after-script')
 <script>
+       @if(session('success'))
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: "{{ session('success') }}",
+      timer: 3000
+    });
+    @endif
+
+    @if(session('error'))
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: "{{ session('error') }}",
+      timer: 3000
+    });
+    @endif
     $(document).ready(function() {
         // Tambah Media Sosial Dinamis
         $('#add-social-media').click(function() {
@@ -163,11 +180,11 @@
             e.preventDefault();
     
             Swal.fire({
-                title: 'Konfirmasi Tambah User',
-                text: 'Apakah Anda yakin ingin menambahkan user baru?',
+                title: 'Konfirmasi User',
+                text: 'Apakah Anda yakin ingin simpan user?',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Ya, Tambahkan',
+                confirmButtonText: 'Ya, Simpan',
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {

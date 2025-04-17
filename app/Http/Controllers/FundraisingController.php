@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Fundraising;
 use App\Models\Campaign;
+use App\Models\Donation;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
@@ -125,6 +126,8 @@ class FundraisingController extends Controller
         if ($totalCommission < 100000) {
             return redirect()->back()->with('error', 'Minimal pencairan dana adalah Rp 100.000');
         }
+
+        // FundraisingWithdrawal::create($request->);
         
         // Logic untuk pencairan dana bisa ditambahkan di sini
         // Misalnya: membuat record di tabel FundraisingWithdrawal
@@ -132,11 +135,12 @@ class FundraisingController extends Controller
         return redirect()->back()->with('success', 'Permintaan pencairan dana berhasil diajukan');
     }
 
-    public function showCampaignWithReferral(Campaign $kampanye,$title,$code)
+    public function showCampaignWithReferral(Request $request,Campaign $kampanye,$title,$code)
     {
 
         $fundraising = Fundraising::where('code_link', $code)->firstOrFail();        
         session(['referral_code' => $code]);
+        
 
         $campaign = Campaign::with([
             'kabarTerbaru', 
@@ -145,20 +149,37 @@ class FundraisingController extends Controller
             },
             'admin', 
             'donations' => function ($query) {
-                $query->where('status', 'sukses');
+                $query->where('status', 'sukses')
+                      ->orderBy('created_at', 'desc');  // Menambahkan pengurutan berdasarkan waktu terbaru
             }
-        ])->where('title',$title)->first();
+        ])->where('title', $title)->first();
 
         
         $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();
     
         $totalKampanye = $campaign->where('status', 'aktif')->count();
 
+        $comments = Donation::where('campaign_id', $campaign->id)
+        ->where('status', 'sukses')
+        ->whereNotNull('doa')
+        ->orderBy('created_at', 'desc')  // Menambahkan pengurutan berdasarkan waktu terbaru
+        ->paginate(6);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'comments' => view('partials.comments', compact('comments'))->render(),
+                'hasMorePages' => $comments->hasMorePages(),
+                'nextPageUrl' => $comments->nextPageUrl(),
+            ]);
+        }    
+
         return view('donatur.detail-kampanye', [
             'campaign' => $campaign,
-            'fundraising' => $fundraising,
+            'comments' => $comments,
             'totalDonaturs' => $totalDonaturs,
             'totalKampanye' => $totalKampanye,
+            'request' => request(), 
+            'fundraising' => $fundraising,
         ]);
     }
 

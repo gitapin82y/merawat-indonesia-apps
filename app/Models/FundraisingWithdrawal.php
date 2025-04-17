@@ -11,7 +11,7 @@ class FundraisingWithdrawal extends Model
 
     protected $fillable = [
         'fundraising_id', 'user_id', 'amount', 'status', 
-        'bukti_pencairan', 'account_number','account_name', 'payment_method'
+        'bukti_pencairan', 'account_number','account_name', 'payment_method', 'rejection_reason'
     ];
 
     public function fundraising()

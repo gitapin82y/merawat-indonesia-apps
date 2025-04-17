@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('account_name');
             $table->string('account_number');
             $table->string('payment_method');
+            $table->text('rejection_reason')->nullable();
             $table->timestamps();
         });
     }

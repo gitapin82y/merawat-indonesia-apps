@@ -185,15 +185,22 @@
 
               <!-- Riwayat Donasi (Awalnya Tersembunyi) -->
               <div id="donationHistory" class="donation-history mt-3 d-none">
+                @if($user->donations->isEmpty())
+                <div class="text-center">
+                    <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
+                    <p>Belum Memiliki Riwayat Donasi di Kampanye</p>
+                </div>
+            @else
                 @foreach($user->donations as $donation)
-                  <div class="donation-card p-3 border rounded shadow-sm">
-                      <div class="d-flex justify-content-between">
-                          <span class="fw-bold">{{$donation->name}}</span>
-                          <span class="fw-bold text-end">Rp {{ number_format($donation->amount, 0, ',', '.') }} </span>
-                      </div>
-                      <small class="text-muted d-block">{{ $donation->created_at->diffForHumans() }}</small>
-                  </div>
-                  @endforeach
+                <div class="donation-card p-3 border rounded shadow-sm">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold">{{$donation->name}}</span>
+                        <span class="fw-bold text-end">Rp {{ number_format($donation->amount, 0, ',', '.') }} </span>
+                    </div>
+                    <small class="text-muted d-block">{{ $donation->created_at->diffForHumans() }}</small>
+                </div>
+                @endforeach
+            @endif
               </div>
 
               <!-- Dukungan (Awalnya Tersembunyi) -->
@@ -202,7 +209,7 @@
     @if($user->donations->isEmpty() || $user->donations->every(fn($donation) => !$donation->campaign))
     <div class="text-center">
         <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-        <p>Anda Belum Memiliki Riwayat Donasi di Kampanye</p>
+        <p>Belum Memiliki Riwayat Donasi di Kampanye</p>
     </div>
 @else
     @foreach($user->donations as $donation)

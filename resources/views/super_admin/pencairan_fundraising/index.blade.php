@@ -3,7 +3,23 @@
 @section('title', 'Request Pencairan Dana Fundraising')
 
 @push('after-style')
-
+<style>
+    .badge {
+        font-size: 85%;
+    }
+    .action-btn {
+        margin: 0 2px;
+    }
+    .bank-badge {
+        text-transform: uppercase;
+        padding: 3px 8px;
+        background-color: #f1f8ff;
+        color: #0366d6;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -49,7 +65,13 @@ $(function () {
         columns: [
             {data: 'DT_RowIndex', name: 'DT_RowIndex'},
             {data: 'name', name: 'name'},
-            {data: 'payment_method', name: 'email'},
+            {
+                data: 'payment_method', 
+                name: 'payment_method',
+                render: function(data) {
+                    return '<span class="bank-badge">' + data.toUpperCase() + '</span>';
+                }
+            },
             {data: 'account_number', name: 'account_number'},
             {data: 'amount', name: 'amount'},
             {data: 'created_at', name: 'created_at'},
@@ -58,9 +80,11 @@ $(function () {
                 data: 'action', 
                 name: 'action', 
                 orderable: false, 
-                searchable: false
+                searchable: false,
+                width: '15%'
             },
-        ]
+        ],
+        order: [[5, 'desc']]
     });
 }); 
 
@@ -77,43 +101,49 @@ function updateStatus(id, status) {
         cancelButtonText: 'Batal'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Kirim AJAX jika konfirmasi diterima
-            $.ajax({
-                url: "{{ route('pencairan-fundraising.updateStatus') }}",  // Pastikan route sudah benar
-                type: "POST",
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    id: id,
-                    status: status
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Tampilkan pesan sukses menggunakan SweetAlert
+            if (status === 'disetujui') {
+                window.location.href = '{{ url("super-admin/pencairan-fundraising") }}/' + id + '/approve';
+            } else if (status === 'ditolak') {
+                window.location.href = '{{ url("super-admin/pencairan-fundraising") }}/' + id + '/reject';
+            } else {
+                // Kirim AJAX jika konfirmasi diterima
+                $.ajax({
+                    url: "{{ route('pencairan-fundraising.updateStatus') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        id: id,
+                        status: status
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Tampilkan pesan sukses menggunakan SweetAlert
+                            Swal.fire(
+                                'Status Diubah!',
+                                response.message,
+                                'success'
+                            );
+                            // Reload data tabel
+                            $('.yajra-datatable').DataTable().ajax.reload();
+                        } else {
+                            // Tampilkan pesan error jika gagal
+                            Swal.fire(
+                                'Gagal!',
+                                "Gagal mengupdate status.",
+                                'error'
+                            );
+                        }
+                    },
+                    error: function() {
+                        // Tampilkan pesan error jika terjadi kesalahan
                         Swal.fire(
-                            'Status Diubah!',
-                            response.message,
-                            'success'
-                        );
-                        // Reload data tabel
-                        $('.yajra-datatable').DataTable().ajax.reload();
-                    } else {
-                        // Tampilkan pesan error jika gagal
-                        Swal.fire(
-                            'Gagal!',
-                            "Gagal mengupdate status.",
+                            'Terjadi Kesalahan!',
+                            'Tidak dapat mengupdate status.',
                             'error'
                         );
                     }
-                },
-                error: function() {
-                    // Tampilkan pesan error jika terjadi kesalahan
-                    Swal.fire(
-                        'Terjadi Kesalahan!',
-                        'Tidak dapat mengupdate status.',
-                        'error'
-                    );
-                }
-            });
+                });
+            }
         }
     });
 }

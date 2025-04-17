@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('role', ['admin', 'yayasan', 'donatur'])->default('donatur');
+            $table->enum('role', ['super_admin', 'yayasan', 'donatur'])->default('donatur');
             $table->string('thumbnail')->nullable();
             $table->string('avatar')->nullable();
             $table->string('bio')->nullable();

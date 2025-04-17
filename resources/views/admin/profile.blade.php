@@ -282,7 +282,7 @@
 
         <!-- Tombol Buat Kampanye -->
         <div class="text-center mt-3">
-            <button class="btn btn-danger w-100 py-2 fw-bold" onclick="window.location.href='{{asset('admin/buat-kampanye')}}'">
+            <button class="btn btn-danger w-100 py-2 fw-bold" onclick="window.location.href='{{url('admin/buat-kampanye')}}'">
                 <img src="{{asset('assets/img/icon/buat-kampanye.svg')}}" alt="buat-kampanye" style="margin-right: 2px;">
                 Buat Kampanye
             </button>

@@ -12,9 +12,23 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\AdminApplicationMail;
+
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AdminStatusMail;
+use App\Services\NotificationService;
 
 class AdminController extends Controller
 {
+    // Tambahkan property di class
+protected $notificationService;
+
+// Tambahkan di constructor
+public function __construct(NotificationService $notificationService)
+{
+    $this->notificationService = $notificationService;
+}
+
     public function index(Request $request)
     {
         Carbon::setLocale('id');
@@ -90,7 +104,6 @@ class AdminController extends Controller
             'leader_name' => 'required|string|max:255',
             'address' => 'required|string',
             'social' => 'nullable|array',
-            'status' => 'required|in:menunggu,disetujui,ditolak'
         ];
     
         if ($role === 'super_admin') {
@@ -117,7 +130,7 @@ class AdminController extends Controller
             
             // Handle social media as JSON
             $adminData['social'] = json_encode($request->input('social', []));
-            
+
             // Handle file uploads
             if ($request->hasFile('avatar')) {
                 $adminData['avatar'] = $request->file('avatar')->store('admin_avatar', 'public');
@@ -130,17 +143,17 @@ class AdminController extends Controller
             if ($request->hasFile('legality')) {
                 $adminData['legality'] = $request->file('legality')->store('admin_legality', 'public');
             }
-
+            $adminData['user_id'] = $user->id;
             $admin = Admin::create($adminData);
 
             DB::commit();
-
-
 
             if ($role === 'super_admin') {    
                 return redirect()->back()
                 ->with('success', 'Admin berhasil ditambahkan');
             } else {          
+                // Kirim email ke alamat email tetap
+                Mail::to('apin82y@gmail.com')->send(new AdminApplicationMail($admin, $user));
                     return redirect()->back()
                     ->with('success', 'Berhasil Mendaftar, Data sedang divalidasi');
             }
@@ -155,7 +168,7 @@ class AdminController extends Controller
     public function galangDana()
     {
         $user = Auth::user();
-        if(Auth::check() && $user->role == "admin"){
+        if(Auth::check() && $user->role == "yayasan"){
             $admin = $user->admin;
             $campaign = Campaign::with([
                 'donations', 
@@ -365,6 +378,18 @@ class AdminController extends Controller
                 $adminData['legality'] = $request->file('legality')->store('admin_legality', 'public');
             }
 
+            if($adminData['status'] && $adminData['status'] == 'disetujui'){
+                $user = User::findOrFail($user->id);
+                $user->role = 'yayasan';
+                $user->save();
+            }
+            
+            if($adminData['status'] && $adminData['status'] == 'ditolak'){
+                $user = User::findOrFail($user->id);
+                $user->role = 'donatur';
+                $user->save();
+            }
+
             $admin->update($adminData);
 
             DB::commit();
@@ -408,20 +433,53 @@ class AdminController extends Controller
     }
 
     public function changeStatus(Admin $admin, Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|in:menunggu,disetujui,ditolak'
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'status' => 'required|in:menunggu,disetujui,ditolak'
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
-        }
-
-        $admin->update(['status' => $request->status]);
-
-        return response()->json([
-            'message' => 'Status admin berhasil diubah',
-            'new_status' => $admin->status
-        ]);
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()], 400);
     }
+
+    // Simpan status lama untuk pengecekan
+    $oldStatus = $admin->status;
+    
+    // Update status admin
+    $admin->update(['status' => $request->status]);
+    
+    // Kirim email notifikasi jika status berubah ke disetujui atau ditolak
+    if (($request->status === 'disetujui' || $request->status === 'ditolak') && $oldStatus !== $request->status) {
+        try {
+            // Kirim email
+            Mail::to($admin->email)->send(new AdminStatusMail($admin, $request->status));
+            
+            // Buat notifikasi sistem jika admin memiliki user_id (opsional)
+            if ($admin->user_id) {
+                $user = User::find($admin->user_id);
+                if ($user) {
+                    $status = $request->status === 'disetujui' ? 'disetujui' : 'ditolak';
+                    $this->notificationService->createNotification(
+                        $user,
+                        'Status Admin ' . ucfirst($status),
+                        'Pendaftaran admin Anda telah ' . $status . '.',
+                        'admin_status_update',
+                        ['admin_id' => $admin->id, 'status' => $request->status]
+                    );
+                }
+            }
+            
+            // Log untuk debugging
+            Log::info('Email notifikasi status admin berhasil dikirim ke ' . $admin->email);
+        } catch (\Exception $e) {
+            // Log error
+            Log::error('Gagal mengirim email notifikasi status admin: ' . $e->getMessage());
+        }
+    }
+
+    return response()->json([
+        'message' => 'Status admin berhasil diubah',
+        'new_status' => $admin->status
+    ]);
+}
 }

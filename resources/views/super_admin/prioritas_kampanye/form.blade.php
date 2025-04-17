@@ -10,7 +10,7 @@
 <div class="card mb-4">
     <div class="card-header bg-danger py-3 align-items-center justify-content-between row m-0">
         <div class="col-12 col-sm-6 p-0">
-            <h4 class="m-0 font-weight-bold float-left text-white">{{ isset($prioritasKampanye->id) ? 'Edit Kampanye' : 'Tambah Kampanye Baru' }}</h4>
+            <h4 class="m-0 font-weight-bold float-left text-white">{{ isset($prioritasKampanye->id) ? 'Edit Prioritas Kampanye' : 'Tambah Prioritas Kampanye' }}</h4>
         </div>
     </div>
         <div class="card-body">
@@ -66,6 +66,23 @@
 
 @push('after-script')
 <script>
+       @if(session('success'))
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: "{{ session('success') }}",
+      timer: 3000
+    });
+    @endif
+
+    @if(session('error'))
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: "{{ session('error') }}",
+      timer: 3000
+    });
+    @endif
     $(document).ready(function() {
         $('#kampanyeForm').on('submit', function(e) {
             var form = this;

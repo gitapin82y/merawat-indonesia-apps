@@ -3,7 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\FundraisingWithdrawal;
+use App\Models\Fundraising;
+use App\Models\User;
+use App\Mail\FundraisingWithdrawalMail;
+use App\Mail\FundraisingStatusMail; // Renamed to avoid conflict
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +19,12 @@ use Carbon\Carbon;
 
 class FundraisingWithdrawalController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -44,12 +57,12 @@ class FundraisingWithdrawalController extends Controller
                     
                     if ($row->status == 'menunggu') {
                         $actionBtn .= '
-                            <button onclick="updateStatus('.$row->id.', \'disetujui\')" class="btn btn-success btn-sm">
+                            <a href="'.route('pencairan-fundraising.approve', $row->id).'" class="btn btn-success btn-sm action-btn" title="Setujui">
                                 <i class="fas fa-check"></i>
-                            </button>
-                            <button onclick="updateStatus('.$row->id.', \'ditolak\')" class="btn btn-warning text-white btn-sm">
+                            </a>
+                            <a href="'.route('pencairan-fundraising.reject', $row->id).'" class="btn btn-warning text-white btn-sm action-btn" title="Tolak">
                                 <i class="fas fa-times"></i>
-                            </button>';
+                            </a>';
                     }
 
                     $actionBtn .= '
@@ -59,8 +72,16 @@ class FundraisingWithdrawalController extends Controller
                           <a href="'.route('pencairan-fundraising.edit', $row->id).'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
                         <button onclick="deletePencairanFundraising('.$row->id.')" class="btn btn-danger btn-sm">
                             <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>'; // Tutup div.btn-group
+                        </button>'; // Tutup div.btn-group
+
+                    if ($row->bukti_pencairan) {
+                        $actionBtn .= '
+                            <a href="'.asset('storage/'.$row->bukti_pencairan).'" target="_blank" class="btn btn-info btn-sm">
+                                <i class="fas fa-file"></i>
+                            </a>';
+                    }
+
+                    $actionBtn .= '</div>';
                 
                     return $actionBtn;
                 })        
@@ -84,11 +105,97 @@ class FundraisingWithdrawalController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Show approve form
      */
+    public function approve($id)
+    {
+        $withdrawal = FundraisingWithdrawal::findOrFail($id);
+        
+        // Check if status is already set
+        if ($withdrawal->status != 'menunggu') {
+            return redirect()->route('pencairan-fundraising.index')
+                ->with('error', 'Status pencairan dana sudah diubah sebelumnya.');
+        }
+        
+        return view('super_admin.pencairan_fundraising.approve', compact('withdrawal'));
+    }
+    
+    /**
+     * Show reject form
+     */
+    public function reject($id)
+    {
+        $withdrawal = FundraisingWithdrawal::findOrFail($id);
+        
+        // Check if status is already set
+        if ($withdrawal->status != 'menunggu') {
+            return redirect()->route('pencairan-fundraising.index')
+                ->with('error', 'Status pencairan dana sudah diubah sebelumnya.');
+        }
+        
+        return view('super_admin.pencairan_fundraising.reject', compact('withdrawal'));
+    }
+
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required|numeric|min:100000',
+            'payment_method' => 'required|string',
+            'account_name' => 'required|string|max:255',
+            'account_number' => 'required|string|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->with('error', 'Validation error: ' . $validator->errors()->first())
+                ->withInput();
+        }
+
+        $user = Auth::user();
+        
+        // Verifikasi jumlah komisi yang tersedia
+        $fundraisings = Fundraising::where('user_id', $user->id)->get();
+        $totalCommission = $fundraisings->sum('commission');
+        
+        if ($totalCommission < $request->amount) {
+            return redirect()->back()->with('error', 'Jumlah yang diminta melebihi jumlah komisi yang tersedia.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Buat entri pencairan dana
+            $withdrawal = FundraisingWithdrawal::create([
+                'fundraising_id' => $fundraisings->first()->id, // Ambil fundraising pertama atau bisa di-update sesuai kebutuhan
+                'user_id' => $user->id,
+                'amount' => $request->amount,
+                'payment_method' => $request->payment_method,
+                'account_name' => $request->account_name,
+                'account_number' => $request->account_number,
+                'status' => 'menunggu',
+            ]);
+            
+            // Kirim email notifikasi ke admin
+            $admin = User::where('role', 'super_admin')->first();
+            
+            // Jika spesifik ke satu email
+            Mail::to('apin82y@gmail.com')->send(new FundraisingWithdrawalMail($withdrawal));
+            
+            // Create system notification for admin
+            $this->notificationService->createNotification(
+                $admin,
+                'Permintaan Pencairan Fundraising Baru',
+                'Permintaan pencairan dana fundraising baru dari ' . $user->name . ' sebesar Rp ' . number_format($request->amount, 0, ',', '.'),
+                'fundraising_withdraw',
+                ['withdrawal_id' => $withdrawal->id]
+            );
+
+            DB::commit();
+            
+            return redirect()->back()->with('success', 'Permintaan pencairan dana berhasil diajukan! Kami akan memproses dalam 1x24 jam.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+        }
     }
 
     /**
@@ -115,22 +222,111 @@ class FundraisingWithdrawalController extends Controller
         //
     }
 
-
+    /**
+     * Update status of withdrawal request and send notifications
+     */
     public function updateStatus(Request $request)
     {
         $fundraisingWithdrawal = FundraisingWithdrawal::find($request->id);
         
         if (!$fundraisingWithdrawal) {
-            return response()->json(['success' => false, 'message' => 'Pencairan Fundraising tidak ditemukan']);
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Pencairan Fundraising tidak ditemukan']);
+            }
+            return redirect()->route('pencairan-fundraising.index')
+                ->with('error', 'Pencairan Fundraising tidak ditemukan');
         }
 
+        $oldStatus = $fundraisingWithdrawal->status;
         $fundraisingWithdrawal->status = $request->status;
+
+        // If approved and uploading bukti pencairan
+        if ($request->hasFile('bukti_pencairan') && $request->status == 'disetujui') {
+            $file = $request->file('bukti_pencairan');
+            $path = $file->store('bukti_pencairan', 'public');
+            $fundraisingWithdrawal->bukti_pencairan = $path;
+        } else if ($request->status == 'disetujui' && !$fundraisingWithdrawal->bukti_pencairan && !$request->wantsJson()) {
+            return redirect()->back()
+                ->with('error', 'Bukti pencairan dana diperlukan untuk menyetujui pencairan dana.')
+                ->withInput();
+        }
+        
+        // If rejected, save the reason
+        if ($request->status == 'ditolak' && $request->has('rejection_reason')) {
+            $fundraisingWithdrawal->rejection_reason = $request->rejection_reason;
+        } else if ($request->status == 'ditolak' && !$request->has('rejection_reason') && !$request->wantsJson()) {
+            return redirect()->back()
+                ->with('error', 'Alasan penolakan diperlukan.')
+                ->withInput();
+        }
+
+        // If approved, update fundraising commission and record approval details
+        if ($request->status == 'disetujui') {
+            $fundraisingWithdrawal->approved_at = now();
+            $fundraisingWithdrawal->approved_by = Auth::id();
+            
+            // Update fundraising commission
+            $fundraising = $fundraisingWithdrawal->fundraising;
+            $fundraising->commission -= $fundraisingWithdrawal->amount;
+            $fundraising->save();
+        }
+
         $fundraisingWithdrawal->save();
+        
+        // Send notifications to user based on status
+        if ($oldStatus != $request->status && $request->status != 'menunggu') {
+            $user = $fundraisingWithdrawal->user;
+            $amount = number_format($fundraisingWithdrawal->amount, 0, ',', '.');
+            
+            // Create notification title and message based on status
+            $title = '';
+            $message = '';
+            $additionalData = [
+                'withdrawal_id' => $fundraisingWithdrawal->id, 
+                'status' => $request->status
+            ];
+            
+            if ($request->status == 'disetujui') {
+                $title = 'Permintaan Pencairan Dana Disetujui';
+                $message = "Permintaan pencairan dana sebesar Rp {$amount} telah disetujui. Dana akan ditransfer ke rekening Anda dalam waktu 1x24 jam.";
+                
+                if ($fundraisingWithdrawal->bukti_pencairan) {
+                    $additionalData['bukti_pencairan'] = $fundraisingWithdrawal->bukti_pencairan;
+                }
+            } elseif ($request->status == 'ditolak') {
+                $title = 'Permintaan Pencairan Dana Ditolak';
+                $message = "Permintaan pencairan dana sebesar Rp {$amount} ditolak.";
+                
+                if ($fundraisingWithdrawal->rejection_reason) {
+                    $message .= " Alasan: " . $fundraisingWithdrawal->rejection_reason;
+                    $additionalData['rejection_reason'] = $fundraisingWithdrawal->rejection_reason;
+                } else {
+                    $message .= " Silakan hubungi admin untuk informasi lebih lanjut.";
+                }
+            }
+            
+            // Send email notification to user
+            Mail::to($user->email)->send(new FundraisingStatusMail($fundraisingWithdrawal));
+            
+            // Create system notification for user
+            $this->notificationService->createNotification(
+                $user,
+                $title,
+                $message,
+                'fundraising_withdraw_update',
+                $additionalData
+            );
+        }
 
-        return response()->json(['success' => true, 'message' => 'Status Pencairan Fundraising berhasil diperbarui']);
+        // Handle different response types based on request
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Status Pencairan Fundraising berhasil diperbarui']);
+        }
+        
+        // Redirect with success message if not an AJAX request
+        return redirect()->route('pencairan-fundraising.index')
+            ->with('success', 'Status Pencairan Fundraising berhasil diperbarui');
     }
-
-
 
     /**
      * Remove the specified resource from storage.

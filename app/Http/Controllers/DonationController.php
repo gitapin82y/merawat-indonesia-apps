@@ -9,6 +9,12 @@ use App\Models\Commission;
 use App\Models\ManualPaymentMethod;
 use App\Models\DonationSource;
 use App\Models\Adsense;
+use App\Models\User;
+use App\Models\Admin;
+use App\Services\NotificationService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DonationSuccessMail;
+use App\Mail\CampaignDonationMail;
 
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -27,14 +33,134 @@ class DonationController extends Controller
     protected $privateKey;
     protected $merchantCode;
     protected $apiUrl;
+    protected $notificationService;
 
-    public function __construct()
+    public function __construct(NotificationService $notificationService)
     {
         // Konfigurasi Tripay
         $this->apiKey = env('TRIPAY_API_KEY');
         $this->privateKey = env('TRIPAY_PRIVATE_KEY');
         $this->merchantCode = env('TRIPAY_MERCHANT_CODE');
         $this->apiUrl = env('TRIPAY_API_URL', 'https://tripay.co.id/api-sandbox/');
+        $this->notificationService = $notificationService;
+    }
+
+    private function updateDonationToSuccess($donation)
+    {
+        // Begin transaction
+        DB::beginTransaction();
+        
+        try {
+            // Update donation status
+            $donation->status = 'sukses';
+            $donation->updated_at = now();
+            $donation->save();
+            
+            // Update campaign statistics
+            $campaign = $donation->campaign;
+            $campaign->jumlah_donasi += $donation->amount;
+            $campaign->current_donation += $donation->amount;
+            $campaign->total_donatur += 1;
+            $campaign->save();
+            
+            // Track server-side conversion
+            $this->trackServerSideConversion($donation);
+            
+            // Update donation source statistics
+            if ($donation->donation_source_id) {
+                $source = DonationSource::find($donation->donation_source_id);
+                if ($source) {
+                    $source->total_donations += 1;
+                    $source->total_amount += $donation->amount;
+                    $source->save();
+                }
+            }
+            
+            // Proses fundraising jika ada
+            // ...kode fundraising yang sudah ada...
+            
+            // Kirim notifikasi email
+            $this->sendDonationNotifications($donation);
+            
+            // Commit transaction
+            DB::commit();
+            
+            return true;
+        } catch (\Exception $e) {
+            // Rollback in case of error
+            DB::rollBack();
+            Log::error('Error updating donation to success: ' . $e->getMessage());
+            
+            return false;
+        }
+    }
+    
+    /**
+     * Kirim notifikasi email ke donatur dan pemilik kampanye
+     */
+    private function sendDonationNotifications($donation)
+    {
+        try {
+            // Load relations yang dibutuhkan
+            $donation->load(['campaign', 'campaign.admin']);
+            
+            // 1. Notifikasi untuk donatur
+            if ($donation->email) {
+                // Buat notifikasi di sistem
+                if ($donation->user_id) {
+                    $user = User::find($donation->user_id);
+                    if ($user) {
+                        $notificationData = [
+                            'donation_id' => $donation->id,
+                            'amount' => $donation->amount,
+                            'campaign_title' => $donation->campaign->title
+                        ];
+                        
+                        $notif = $this->notificationService->createNotification(
+                            $user,
+                            'Donasi Berhasil', 
+                            'Terima kasih, donasi Anda sebesar Rp ' . number_format($donation->amount) . ' untuk "' . $donation->campaign->title . '" telah berhasil.',
+                            'donation_success',
+                            $notificationData
+                        );
+                        
+                        // Kirim email
+                        $this->notificationService->sendEmail($notif);
+                    }
+                } else {
+                    // Jika tidak login, kirim email langsung
+                    Mail::to($donation->email)->send(new DonationSuccessMail($donation));
+                }
+            }
+            
+            // 2. Notifikasi untuk pemilik kampanye
+            if ($donation->campaign->admin && $donation->campaign->admin->email) {
+                $admin = $donation->campaign->admin;
+                
+                $notificationData = [
+                    'donation_id' => $donation->id,
+                    'donor_name' => $donation->is_anonymous ? 'Orang Baik' : $donation->name,
+                    'amount' => $donation->amount,
+                    'campaign_title' => $donation->campaign->title
+                ];
+                
+                $notif = $this->notificationService->createNotification(
+                    $admin,
+                    'Donasi Baru Diterima',
+                    'Kampanye Anda "' . $donation->campaign->title . '" telah menerima donasi sebesar Rp ' . number_format($donation->amount) . ' dari ' . ($donation->is_anonymous ? 'Orang Baik' : $donation->name) . '.',
+                    'new_donation',
+                    $notificationData
+                );
+                
+                // Kirim email
+                $this->notificationService->sendEmail($notif);
+            }
+            
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Error sending donation notifications: ' . $e->getMessage());
+            return false;
+        }
     }
 
 
@@ -127,19 +253,7 @@ class DonationController extends Controller
         ['source_type' => $sourceType, 'utm_source' => $utmSource, 'utm_medium' => $utmMedium, 'utm_campaign' => $utmCampaign],
         ['campaign_name' => $utmCampaign]
     );
-        
-        // Cek apakah ada referral code di session
-        $referralCode = session('referral_code');
-        $fundraisingId = null;
-        
-        // Jika ada referral code, dapatkan fundraisingId
-        if ($referralCode) {
-            $fundraising = Fundraising::where('code_link', $referralCode)->first();
-            if ($fundraising) {
-                $fundraisingId = $fundraising->id;
-            }
-        }
-        
+      
         // Buat donasi baru dengan status pending
         $donation = Donation::create([
             'campaign_id' => $request->campaign_id,
@@ -725,9 +839,6 @@ public function checkStatus($reference)
 
                     $this->trackServerSideConversion($donation);
 
-                    // Cek apakah ada referral code di session
-                    $referralCode = session('referral_code');
-                    $fundraisingId = null;
 
                      // Update donation source statistics
         if ($donation->donation_source_id) {
@@ -738,40 +849,6 @@ public function checkStatus($reference)
                 $source->save();
             }
         }
-
-                    
-                    if ($referralCode) {
-                        $fundraising = Fundraising::where('code_link', $referralCode)->first();
-                        
-                        if ($fundraising) {
-
-                            $commissionSetting = Commission::first(); // atau ->find($id) kalau kamu pakai banyak record
-                            $commissionPercent = $commissionSetting->amount ?? 0;
-
-                            // Hitung komisi sesuai persentase dari database
-                            $commission = ($donation->amount * $commissionPercent) / 100;
-                            
-                            
-                            // Update data fundraising
-                            $fundraising->total_donatur += 1;
-                            $fundraising->jumlah_donasi += $donation->amount;
-                            $fundraising->commission += $commission;
-                            
-                            // Update array donations
-                            $donations = json_decode($fundraising->donations, true) ?: [];
-                            $donations[] = [
-                                'donation_id' => $donation->id,
-                                'amount' => $donation->amount,
-                                'commission' => $commission,
-                                'user_name' => $user->name ?? null,
-                                'user_email' => $user->email ?? null,
-                                'created_at' => now()->format('Y-m-d H:i:s')
-                            ];
-                            $fundraising->donations = json_encode($donations);
-                            
-                            $fundraising->save();
-                        }
-                    }
                     
                     $donation = Donation::where('snap_token', $reference)->first();
                     if ($donation) {

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Cookie;
+use App\Models\DonationLike;
 
 
 class AuthController extends Controller
@@ -25,8 +27,23 @@ class AuthController extends Controller
          ]);
  
          if (Auth::attempt($request->only('email', 'password'))) {
-             return redirect('/')->with('success', 'Login berhasil!');
-         }
+            // Get the authenticated user
+            $user = Auth::user();
+            
+            // Get guest identifier from cookie
+            $guestIdentifier = $request->cookie('guest_identifier');
+    
+            if ($guestIdentifier) {
+                // Migrate guest likes to the user
+                DonationLike::where('guest_identifier', $guestIdentifier)
+                    ->whereNull('user_id')
+                    ->update(['user_id' => $user->id, 'guest_identifier' => null]);
+                    
+                // Clear the cookie as it's no longer needed
+                return redirect('/')->with('success', 'Login berhasil!')
+                                    ->withCookie(Cookie::forget('guest_identifier'));
+            }
+        }
  
          return back()->with('error', 'Email atau password salah.');
      }

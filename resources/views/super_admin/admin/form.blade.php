@@ -10,7 +10,7 @@
 <div class="card mb-4">
     <div class="card-header bg-danger py-3 align-items-center justify-content-between row m-0">
         <div class="col-12 col-sm-6 p-0">
-            <h4 class="m-0 font-weight-bold float-left text-white">Tambah Admin Baru</h4>
+            <h4 class="m-0 font-weight-bold float-left text-white">{{ isset($admin->id) ? 'Edit Admin' : 'Tambah Admin Baru' }}</h4>
         </div>
     </div>
         <div class="card-body">
@@ -62,7 +62,7 @@
                         <div class="form-group mb-3">
                             <label>Nama Pimpinan</label>
                             <input type="text" name="leader_name" class="form-control @error('leader_name') is-invalid @enderror" 
-                                   value="{{ old('leader_name') }}" required>
+                            value="{{ old('leader_name', $admin->leader_name ?? '') }}" required>
                             @error('leader_name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -74,7 +74,7 @@
                         <div class="form-group mb-3">
                             <label>Legalitas</label>
                             <input type="file" name="legality" class="form-control @error('legality') is-invalid @enderror" 
-                                   value="{{ old('legality') }}" required>
+                                   value="{{ old('legality') }}">
                             @error('legality')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -100,7 +100,7 @@
 
                         <div class="form-group mb-3">
                             <label>Alamat</label>
-                            <textarea name="address" class="form-control @error('address') is-invalid @enderror" required>{{ old('address') }}</textarea>
+                            <textarea name="address" class="form-control @error('address') is-invalid @enderror" required>{{ old('address', $admin->address ?? '') }} </textarea>
                             @error('address')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -122,9 +122,9 @@
                         <div class="form-group mb-3">
                             <label>Status</label>
                             <select name="status" class="form-control @error('status') is-invalid @enderror" required>
-                                <option value="menunggu" {{ old('status') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                <option value="disetujui" {{ old('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
-                                <option value="ditolak" {{ old('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                                <option value="menunggu" {{ old('status', $admin->status ?? '') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                <option value="disetujui" {{ old('status', $admin->status ?? '') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
+                                <option value="ditolak" {{ old('status', $admin->status ?? '') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                             </select>
                             @error('status')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -164,6 +164,23 @@
 
 @push('after-script')
 <script>
+       @if(session('success'))
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: "{{ session('success') }}",
+      timer: 3000
+    });
+    @endif
+
+    @if(session('error'))
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: "{{ session('error') }}",
+      timer: 3000
+    });
+    @endif
     $(document).ready(function() {
         // Tambah Media Sosial Dinamis
         $('#add-social-media').click(function() {
@@ -195,10 +212,10 @@
     
             Swal.fire({
                 title: 'Konfirmasi Tambah Admin',
-                text: 'Apakah Anda yakin ingin menambahkan admin baru?',
+                text: 'Apakah anda yakin ingin menyimpan data?',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Ya, Tambahkan',
+                confirmButtonText: 'Ya, Simpan',
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {

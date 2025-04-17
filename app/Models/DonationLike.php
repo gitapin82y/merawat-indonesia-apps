@@ -12,7 +12,7 @@ class DonationLike extends Model
     protected $table = 'donation_likes';
 
     protected $fillable = [
-        'donation_id', 'user_id'
+        'donation_id', 'user_id','guest_identifier'
     ];
 
     public function donation()

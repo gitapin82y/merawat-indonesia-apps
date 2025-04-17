@@ -51,7 +51,8 @@
                           <label for="category_id">Kategori</label>
                           @error('category_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                       </div>
-          
+
+                     
                       <div class="form-floating mb-3">
                           <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" id="title"
                               value="{{ old('title', $kampanye->title ?? '') }}" placeholder="Judul">
@@ -73,6 +74,21 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+
+                    <div class="form-group mb-3">
+                        <label>Status</label>
+                        <select name="status" class="form-control @error('status') is-invalid @enderror" required>
+                            <option value="aktif" {{ old('status', $kampanye->status ?? '') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                            <option value="selesai" {{ old('status', $kampanye->status ?? '') == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                            <option value="ditolak" {{ old('status', $kampanye->status ?? '') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                            <option value="validasi" {{ old('status', $kampanye->status ?? '') == 'validasi' ? 'selected' : '' }}>Validasi</option>
+                            <option value="berakhir" {{ old('status', $kampanye->status ?? '') == 'berakhir' ? 'selected' : '' }}>Berakhir</option>
+                        </select>
+                        @error('status')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+          
                   </div>
           
                   <div class="col-md-6">
@@ -124,6 +140,23 @@
 @push('after-script')
 
 <script>
+       @if(session('success'))
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: "{{ session('success') }}",
+      timer: 3000
+    });
+    @endif
+
+    @if(session('error'))
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: "{{ session('error') }}",
+      timer: 3000
+    });
+    @endif
     $(document).ready(function() {
         $('#kampanyeForm').on('submit', function(e) {
             var form = this;
