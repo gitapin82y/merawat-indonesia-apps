@@ -96,21 +96,21 @@ class KabarTerbaruController extends Controller
         }
     }
 
-    public function buatKabarTerbaru($title)
+    public function buatKabarTerbaru($slug)
     {
-        $campaign = Campaign::where('title',$title)->first();
+        $campaign = Campaign::where('slug',$slug)->first();
         return view('admin.kampanye.buat-kabar', [
             'idKampanye' => $campaign->id,
         ]);
     }
 
-    public function kabarTerbaru($title)
+    public function kabarTerbaru($slug)
     {
-        $campaign = Campaign::where('title',$title)->first();
+        $campaign = Campaign::where('slug',$slug)->first();
         $kabarTerbaru = KabarTerbaru::where('campaign_id',$campaign->id)->get();
         return view('admin.kampanye.kabar-terbaru', [
             'kabarTerbaru' => $kabarTerbaru,
-            'title' => $title,
+            'slug' => $slug,
         ]);
     }
 

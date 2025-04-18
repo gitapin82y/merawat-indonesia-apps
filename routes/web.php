@@ -22,6 +22,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ManualPaymentMethodController;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CheckAuth;
+use App\Http\Controllers\SocialiteController;
 
 Route::middleware(['checkAuth'])->group(function () {
     Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
@@ -31,7 +32,7 @@ Route::middleware(['checkAuth'])->group(function () {
     Route::delete('/notifikasi/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
     Route::get('/profile/fundraising', [FundraisingController::class, 'fundraising'])->name('profile.fundraising.index');
-    Route::post('/kampanye/{title}/join-fundraising', [FundraisingController::class, 'join'])->name('fundraising.join');
+    Route::post('/kampanye/{slug}/join-fundraising', [FundraisingController::class, 'join'])->name('fundraising.join');
     Route::post('/profile/fundraising/withdraw', [FundraisingController::class, 'withdrawFunds'])->name('fundraising.withdraw');
     Route::get('/profile', [UserController::class, 'profileDonatur']);
 
@@ -75,10 +76,10 @@ Route::get('/kalkulator-zakat', function(){
     return view('donatur.kalkulator-zakat');
 });
 
-Route::get('admin/kampanye/{title}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
-Route::get('kampanye/{title}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
+Route::get('admin/kampanye/{slug}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
+Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
 
-Route::get('/kampanye/{title}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
+Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
 
 // end donatur
 Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
@@ -89,12 +90,12 @@ Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
     Route::get('/buat-kampanye', function(){
         return view('admin.kampanye.buat-kampanye');
     });
-    Route::get('/kampanye/{title}/edit-kampanye', [CampaignController::class, 'editKampanye']);
+    Route::get('/kampanye/{slug}/edit-kampanye', [CampaignController::class, 'editKampanye']);
 
-    Route::get('/kampanye/{title}/kabar-terbaru', [KabarTerbaruController::class, 'kabarTerbaru']);
-    Route::get('/kampanye/{title}/kabar-pencairan', [KabarPencairanController::class, 'kabarPencairan']);
-    Route::get('/kampanye/{title}/buat-kabar', [KabarTerbaruController::class, 'buatKabarTerbaru']);
-    Route::get('/kampanye/{title}/pencairan-dana', [KabarPencairanController::class, 'buatKabarPencairan']);
+    Route::get('/kampanye/{slug}/kabar-terbaru', [KabarTerbaruController::class, 'kabarTerbaru']);
+    Route::get('/kampanye/{slug}/kabar-pencairan', [KabarPencairanController::class, 'kabarPencairan']);
+    Route::get('/kampanye/{slug}/buat-kabar', [KabarTerbaruController::class, 'buatKabarTerbaru']);
+    Route::get('/kampanye/{slug}/pencairan-dana', [KabarPencairanController::class, 'buatKabarPencairan']);
 });
 
 Route::post('/donation/{donationId}/like', [DonationLikeController::class, 'store'])->name('donation.like');
@@ -102,7 +103,7 @@ Route::post('/donation/{donationId}/like', [DonationLikeController::class, 'stor
 Route::resource('commissions', CommissionController::class);
 Route::resource('donation-likes', DonationLikeController::class);
 Route::resource('donations', DonationController::class);
-Route::get('/kampanye/{title}/donasi', [DonationController::class, 'showDonationForm']);
+Route::get('/kampanye/{slug}/donasi', [DonationController::class, 'showDonationForm']);
 
 
 Route::post('/donations/process', [DonationController::class, 'processDonation'])->name('donations.process');
@@ -127,6 +128,7 @@ Route::resource('campaign-withdrawals', CampaignWithdrawalController::class);
 Route::post('kampanye/toggle-save', [CampaignController::class, 'toggleSave'])->name('campaign.toggle-save');
 Route::prefix('super-admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
+    
     Route::resource('admin', AdminController::class);
     Route::resource('user', UserController::class);
     Route::resource('donasi-kampanye', DonationController::class);
@@ -140,6 +142,9 @@ Route::prefix('super-admin')->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('banner', BannerController::class);
 
+    // Add to your routes/web.php
+    Route::post('admin/{admin}/change-status', [AdminController::class, 'changeStatus'])->name('admin.change-status');
+
     Route::get('/pencairan-fundraising/{id}/approve', [FundraisingWithdrawalController::class, 'approve'])->name('pencairan-fundraising.approve');
     Route::get('/pencairan-fundraising/{id}/reject', [FundraisingWithdrawalController::class, 'reject'])->name('pencairan-fundraising.reject');
 
@@ -151,6 +156,8 @@ Route::prefix('super-admin')->group(function () {
     Route::post('kabar-terbaru/{id}', [KabarTerbaruController::class, 'destroy'])->name('kabar-terbaru.destroy');
     Route::post('/pencairan-fundraising/update-status', [FundraisingWithdrawalController::class, 'updateStatus'])->name('pencairan-fundraising.updateStatus');
     Route::post('/pencairan-kampanye/update-status', [CampaignWithdrawalController::class, 'updateStatus'])->name('pencairan-kampanye.updateStatus');
+    Route::get('/pencairan-kampanye/{id}/approve', [CampaignWithdrawalController::class, 'approve'])->name('pencairan-kampanye.approve');
+    Route::get('/pencairan-kampanye/{id}/reject', [CampaignWithdrawalController::class, 'reject'])->name('pencairan-kampanye.reject');
 
     Route::get('ceklis-donasi', [DonationController::class, 'ceklis'])->name('ceklis-donasi.index');
     Route::post('ceklis-donasi/{id}', [DonationController::class, 'destroy'])->name('ceklis-donasi.destroy');
@@ -174,3 +181,13 @@ Route::post('/login', [AuthController::class, 'loginProcess'])->name('login');
 Route::get('/register', [AuthController::class, 'register']);
 Route::post('/register', [AuthController::class, 'registerProcess'])->name('register');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+// Password Reset Routes
+Route::get('/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [AuthController::class, 'resetPassword'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'updatePassword'])->name('password.update');
+
+
+// Social Login Routes
+Route::get('/auth/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('social.login');
+Route::get('/auth/{provider}/callback', [SocialiteController::class, 'handleProviderCallback'])->name('social.callback');

@@ -113,7 +113,7 @@
             <input type="file" id="fileRAB" name="document_rab" class="d-none @error('document_rab') is-invalid @enderror" onchange="updateInput('laporanRAB', this)">
             <button type="button"  class="btn btn-upload position-absolute"
                 style="right: 3px; top: 50%; transform: translateY(-50%); border-radius: 5px;"
-                onclick="document.getElementById('fileRAB').click();">Unggah File</button>
+                onclick="event.preventDefault();document.getElementById('fileRAB').click();">Unggah File</button>
         </div>
             @error('document_rab')
             <div class="invalid-file">{{ $message }}</div>
@@ -152,7 +152,7 @@
           
           Swal.fire({
               title: 'Konfirmasi Pengiriman Data',
-              text: 'Apakah Anda yakin ingin mengganti profile admin galang dana?',
+              text: 'Apakah Anda yakin ingin mengirim request',
               icon: 'question',
               showCancelButton: true,
               confirmButtonText: 'Ya, Kirim',

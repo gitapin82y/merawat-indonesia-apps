@@ -106,6 +106,18 @@ public function __construct(NotificationService $notificationService)
         DB::beginTransaction();
         try {
             $campaignData = $request->except(['photo', 'document_rab']);
+
+
+            $slug = Str::slug($request->title);
+            $originalSlug = $slug;
+            $count = 1;
+
+            while (Campaign::where('slug', $slug)->exists()) {
+                $slug = $originalSlug . '-' . $count++;
+            }
+
+            $campaignData['slug'] = $slug;
+
             
             // Handle file uploads
             if ($request->hasFile('photo')) {
@@ -213,6 +225,20 @@ public function __construct(NotificationService $notificationService)
         DB::beginTransaction();
         try {
             $kampanyeData = $request->except(['photo', 'document_rab']);
+
+            if ($request->title !== $kampanye->title) {
+                $slug = Str::slug($request->title);
+                $originalSlug = $slug;
+                $count = 1;
+                
+                // Pastikan slug unik
+                while (Campaign::where('slug', $slug)->where('id', '!=', $kampanye->id)->exists()) {
+                    $slug = $originalSlug . '-' . $count++;
+                }
+                
+                $kampanyeData['slug'] = $slug;
+            }
+
             
             if ($request->hasFile('photo')) {
                 if ($kampanye->photo) {
@@ -234,7 +260,7 @@ public function __construct(NotificationService $notificationService)
                 return redirect()->back()
                 ->with('success', 'Kampanye berhasil diperbarui');
             } else {
-                return redirect('/admin/kampanye/'. $kampanye->title)->with('success', 'Kampanye berhasil diperbarui');
+                return redirect('/admin/kampanye/'. $kampanye->slug)->with('success', 'Kampanye berhasil diperbarui');
             }
         } catch (\Exception $e) {
 
@@ -307,10 +333,10 @@ public function __construct(NotificationService $notificationService)
     }
 
     // form edit admin
-    public function editKampanye($title)
+    public function editKampanye($slug)
     {
 
-        $kampanye = Campaign::where('title',$title)->first();
+        $kampanye = Campaign::where('slug',$slug)->first();
 
         return view('admin.kampanye.edit-kampanye', [
             'kampanye' => $kampanye,

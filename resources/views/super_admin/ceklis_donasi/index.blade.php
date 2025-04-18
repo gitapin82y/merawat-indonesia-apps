@@ -3,7 +3,16 @@
 @section('title', 'Semua Data Ceklis Donasi')
 
 @push('after-style')
-
+<style>
+    .modal-header {
+        background-color: #e74a3b;
+        color: white;
+    }
+    .btn-apply-filter {
+        background-color: #e74a3b;
+        border-color: #e74a3b;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -15,10 +24,17 @@
                 <h4 class="m-0 font-weight-bold float-left text-danger">Semua Data Ceklis Donasi</h4>
             </div>
             <div class="col-12 col-sm-6">
-                <a href="" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">Filter Metode</a>
+                <button type="button" data-toggle="modal" data-target="#methodFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">
+                    <i class="fas fa-filter fa-sm mr-1"></i> Filter Metode
+                </button>
             </div>
         </div>
         <div class="card-body">
+            <!-- Current Filters Display -->
+            <div id="active-filters" class="mb-3">
+                <!-- Active filters will be displayed here -->
+            </div>
+            
             <div class="table-responsive">
                 <table class="table table-bordered yajra-datatable" width="100%" cellspacing="0">
                     <thead>
@@ -39,6 +55,36 @@
         </div>
     </div>
 
+    <!-- Payment Method Filter Modal -->
+    <div class="modal fade" id="methodFilterModal" tabindex="-1" role="dialog" aria-labelledby="methodFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="methodFilterModalLabel">Filter Berdasarkan Metode Pembayaran</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="methodFilterForm">
+                        <div class="form-group">
+                            <label for="payment_type">Pilih Metode Pembayaran</label>
+                            <select class="form-control" id="payment_type" name="payment_type">
+                                <option value="">Semua Metode</option>
+                                <option value="payment_gateway">Payment Gateway</option>
+                                <option value="manual">Transfer Manual</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-danger btn-apply-filter" id="applyMethodFilter">Terapkan Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('after-script')
@@ -47,9 +93,14 @@ $(function () {
     var table = $('.yajra-datatable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: "{{ route('ceklis-donasi.index') }}",
+        ajax: {
+            url: "{{ route('ceklis-donasi.index') }}",
+            data: function(d) {
+                d.payment_type = $('#payment_type').val();
+            }
+        },
         columns: [
-            {data: 'DT_RowIndex', name: 'DT_RowIndex'},
+            {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
             {data: 'name', name: 'name'},
             {data: 'amount', name: 'amount'},
             {data: 'method', name: 'method'},
@@ -61,7 +112,70 @@ $(function () {
                 orderable: false, 
                 searchable: false
             },
-        ]
+        ],
+        order: [[4, 'desc']],
+        language: {
+            processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>',
+            emptyTable: "Tidak ada data yang tersedia",
+            info: "Menampilkan _START_ hingga _END_ dari _TOTAL_ entri",
+            infoEmpty: "Menampilkan 0 hingga 0 dari 0 entri",
+            infoFiltered: "(disaring dari _MAX_ entri keseluruhan)",
+            lengthMenu: "Tampilkan _MENU_ entri",
+            loadingRecords: "Sedang memuat...",
+            search: "Cari:",
+            zeroRecords: "Tidak ditemukan data yang sesuai"
+        }
+    });
+
+    // Apply payment method filter
+    $('#applyMethodFilter').click(function() {
+        const paymentType = $('#payment_type').val();
+        const paymentLabel = $('#payment_type option:selected').text();
+        
+        // Update active filters display
+        updateActiveFilters();
+        
+        // Reload the table with filter
+        table.ajax.reload();
+        
+        // Close the modal
+        $('#methodFilterModal').modal('hide');
+    });
+
+    // Function to update active filters display
+    function updateActiveFilters() {
+        const paymentType = $('#payment_type').val();
+        const paymentLabel = $('#payment_type option:selected').text();
+        
+        let filtersHtml = '';
+        
+        if (paymentType) {
+            filtersHtml += `<span class="badge badge-danger mr-2 p-2">Metode: ${paymentLabel} <i class="fas fa-times ml-1 clear-filter" data-filter="payment"></i></span>`;
+        }
+        
+        if (filtersHtml) {
+            filtersHtml = `<div class="mb-2">Filter Aktif:</div>` + filtersHtml + `<button id="clearAllFilters" class="btn btn-sm btn-outline-danger ml-2">Hapus Filter</button>`;
+        }
+        
+        $('#active-filters').html(filtersHtml);
+    }
+
+    // Handle clearing filters
+    $(document).on('click', '.clear-filter', function() {
+        $('#payment_type').val('');
+        
+        // Update display and reload table
+        updateActiveFilters();
+        table.ajax.reload();
+    });
+
+    // Handle clearing all filters
+    $(document).on('click', '#clearAllFilters', function() {
+        $('#payment_type').val('');
+        
+        // Update display and reload table
+        $('#active-filters').html('');
+        table.ajax.reload();
     });
 });
 
@@ -170,7 +284,5 @@ function deleteDonasi(id) {
         }
     });
 }
-
-
 </script>
 @endpush

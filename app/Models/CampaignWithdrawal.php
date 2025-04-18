@@ -11,7 +11,7 @@ class CampaignWithdrawal extends Model
 
     protected $fillable = [
         'campaign_id', 'admin_id', 'amount', 'status', 
-        'document_rab', 'bukti_pencairan', 'account_number','account_name', 'payment_method'
+        'document_rab', 'bukti_pencairan', 'account_number','account_name', 'payment_method','rejection_reason'
     ];
 
     public function campaign()

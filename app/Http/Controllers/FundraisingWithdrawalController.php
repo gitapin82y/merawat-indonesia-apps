@@ -70,16 +70,19 @@ class FundraisingWithdrawalController extends Controller
                             <i class="fab fa-whatsapp"></i>
                         </a>
                           <a href="'.route('pencairan-fundraising.edit', $row->id).'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
-                        <button onclick="deletePencairanFundraising('.$row->id.')" class="btn btn-danger btn-sm">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>'; // Tutup div.btn-group
+                        '; // Tutup div.btn-group
 
                     if ($row->bukti_pencairan) {
                         $actionBtn .= '
-                            <a href="'.asset('storage/'.$row->bukti_pencairan).'" target="_blank" class="btn btn-info btn-sm">
+                            <a href="'.asset('storage/'.$row->bukti_pencairan).'" target="_blank" class="btn btn-primary text-white btn-sm">
                                 <i class="fas fa-file"></i>
                             </a>';
                     }
+
+                    $actionBtn .= '
+                   <button onclick="deletePencairanFundraising('.$row->id.')" class="btn btn-danger btn-sm">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>';
 
                     $actionBtn .= '</div>';
                 
@@ -260,16 +263,25 @@ class FundraisingWithdrawalController extends Controller
                 ->withInput();
         }
 
-        // If approved, update fundraising commission and record approval details
-        if ($request->status == 'disetujui') {
-            $fundraisingWithdrawal->approved_at = now();
-            $fundraisingWithdrawal->approved_by = Auth::id();
-            
-            // Update fundraising commission
-            $fundraising = $fundraisingWithdrawal->fundraising;
-            $fundraising->commission -= $fundraisingWithdrawal->amount;
-            $fundraising->save();
-        }
+            if ($request->status == 'disetujui') {
+                // Update fundraising commission
+                $fundraising = $fundraisingWithdrawal->fundraising;
+                
+                // Pastikan commission tidak menjadi negatif
+                if ($fundraising->commission < $fundraisingWithdrawal->amount) {
+                    // Jika amount lebih besar dari commission yang tersedia
+                    if ($request->wantsJson()) {
+                        return response()->json(['success' => false, 'message' => 'Jumlah penarikan melebihi komisi yang tersedia']);
+                    }
+                    
+                    return redirect()->back()
+                        ->with('error', 'Jumlah penarikan (Rp ' . number_format($fundraisingWithdrawal->amount, 0, ',', '.') . ') melebihi komisi yang tersedia (Rp ' . number_format($fundraising->commission, 0, ',', '.') . ').')
+                        ->withInput();
+                }
+                
+                $fundraising->commission -= $fundraisingWithdrawal->amount;
+                $fundraising->save();
+            }
 
         $fundraisingWithdrawal->save();
         
@@ -335,7 +347,7 @@ class FundraisingWithdrawalController extends Controller
     {
         DB::beginTransaction();
         try {
-            // Menghapus data donasi
+
             $pencairanFundraising->delete();
     
             DB::commit();

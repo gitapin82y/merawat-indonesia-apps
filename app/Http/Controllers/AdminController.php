@@ -40,18 +40,25 @@ public function __construct(NotificationService $notificationService)
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('action', function($row) {
+                    $actionBtn = '<div class="btn-group" role="group">';
+                    if($row->status == 'menunggu') {
+                        $actionBtn .= '
+                            <button onclick="changeStatus('.$row->id.', \'disetujui\')" class="btn btn-success btn-sm action-btn" title="Approve"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="changeStatus('.$row->id.', \'ditolak\')" class="btn btn-warning text-white btn-sm action-btn" title="Reject"><i class="fa-solid fa-times"></i></button>';
+                    }
                     $whatsappUrl = "https://wa.me/". $row->phone;
-                    $actionBtn = '
-                        <div class="btn-group" role="group">
-                        <a href="'.$whatsappUrl.'" target="_blank" class="btn btn-success btn-sm">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                        <a href="/galang-dana/'.$row->name.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
-                            <a href="'.route('admin.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
-                            <button onclick="deleteAdmin('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    ';
-                    return $actionBtn;
+    $actionBtn .= '
+            <a href="'.$whatsappUrl.'" target="_blank" class="btn btn-success btn-sm">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+            <a href="/galang-dana/'.$row->name.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
+            <a href="'.route('admin.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
+            <button onclick="deleteAdmin('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>';
+    
+  
+    
+    $actionBtn .= '</div>';
+    return $actionBtn;
                 })
                 ->addColumn('name', function($row) {
                     $statusColor = [
@@ -296,7 +303,6 @@ public function __construct(NotificationService $notificationService)
     public function edit(Admin $admin)
     {
         $users = User::whereDoesntHave('admin')->orWhere('id', $admin->user_id)->get();
-        $admin->social = is_string($admin->social) ? json_decode($admin->social, true) : [];
         return view('super_admin.admin.form', compact('admin', 'users'));
     }
 
@@ -378,17 +384,18 @@ public function __construct(NotificationService $notificationService)
                 $adminData['legality'] = $request->file('legality')->store('admin_legality', 'public');
             }
 
-            if($adminData['status'] && $adminData['status'] == 'disetujui'){
+            if (isset($adminData['status']) && $adminData['status'] === 'disetujui') {
                 $user = User::findOrFail($user->id);
                 $user->role = 'yayasan';
                 $user->save();
             }
             
-            if($adminData['status'] && $adminData['status'] == 'ditolak'){
+            if (isset($adminData['status']) && $adminData['status'] === 'ditolak') {
                 $user = User::findOrFail($user->id);
                 $user->role = 'donatur';
                 $user->save();
             }
+            
 
             $admin->update($adminData);
 
@@ -445,41 +452,70 @@ public function __construct(NotificationService $notificationService)
     // Simpan status lama untuk pengecekan
     $oldStatus = $admin->status;
     
-    // Update status admin
-    $admin->update(['status' => $request->status]);
-    
-    // Kirim email notifikasi jika status berubah ke disetujui atau ditolak
-    if (($request->status === 'disetujui' || $request->status === 'ditolak') && $oldStatus !== $request->status) {
-        try {
-            // Kirim email
-            Mail::to($admin->email)->send(new AdminStatusMail($admin, $request->status));
-            
-            // Buat notifikasi sistem jika admin memiliki user_id (opsional)
-            if ($admin->user_id) {
-                $user = User::find($admin->user_id);
-                if ($user) {
-                    $status = $request->status === 'disetujui' ? 'disetujui' : 'ditolak';
-                    $this->notificationService->createNotification(
-                        $user,
-                        'Status Admin ' . ucfirst($status),
-                        'Pendaftaran admin Anda telah ' . $status . '.',
-                        'admin_status_update',
-                        ['admin_id' => $admin->id, 'status' => $request->status]
-                    );
+    DB::beginTransaction();
+    try {
+        // Update status admin dan log_activity
+        $admin->update([
+            'status' => $request->status,
+            'log_activity' => now() // Update log_activity dengan waktu saat ini
+        ]);
+        
+        // Update role user jika status berubah
+        if ($admin->user_id) {
+            $user = User::find($admin->user_id);
+            if ($user) {
+                if ($request->status === 'disetujui') {
+                    $user->role = 'yayasan';
+                    $user->save();
+                } elseif ($request->status === 'ditolak') {
+                    $user->role = 'donatur';
+                    $user->save();
                 }
             }
-            
-            // Log untuk debugging
-            Log::info('Email notifikasi status admin berhasil dikirim ke ' . $admin->email);
-        } catch (\Exception $e) {
-            // Log error
-            Log::error('Gagal mengirim email notifikasi status admin: ' . $e->getMessage());
         }
+        
+        // Kirim email notifikasi jika status berubah ke disetujui atau ditolak
+        if (($request->status === 'disetujui' || $request->status === 'ditolak') && $oldStatus !== $request->status) {
+            try {
+                // Kirim email
+                Mail::to($admin->email)->send(new AdminStatusMail($admin, $request->status));
+                
+                // Buat notifikasi sistem jika admin memiliki user_id
+                if ($admin->user_id) {
+                    $user = User::find($admin->user_id);
+                    if ($user) {
+                        $status = $request->status === 'disetujui' ? 'disetujui' : 'ditolak';
+                        $message = 'Pendaftaran admin "' . $admin->name . '" telah ' . $status . '.';
+                        
+                        $this->notificationService->createNotification(
+                            $user,
+                            'Status Admin ' . ucfirst($status),
+                            $message,
+                            'admin_status_update',
+                            ['admin_id' => $admin->id, 'status' => $request->status]
+                        );
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Gagal mengirim notifikasi status admin: ' . $e->getMessage());
+                // Continue even if notification fails
+            }
+        }
+        
+        DB::commit();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Status admin berhasil diubah menjadi ' . $request->status,
+            'new_status' => $request->status
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengubah status: ' . $e->getMessage()
+        ], 500);
     }
-
-    return response()->json([
-        'message' => 'Status admin berhasil diubah',
-        'new_status' => $admin->status
-    ]);
 }
+
 }

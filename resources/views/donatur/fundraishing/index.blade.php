@@ -95,5 +95,6 @@
             @endif
         });
     </script>
+
 @endpush
 

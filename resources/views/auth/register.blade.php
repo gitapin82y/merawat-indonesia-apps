@@ -86,7 +86,9 @@
                 <div class="d-flex flex-column align-items-center" style="height: 100%;">
                     <div class="d-flex align-items-center">
                         <div class="d-flex flex-column align-items-center me-3">
+                            <a href="{{url('/')}}">
                             <img src="assets/img/merawat-indonesia.png" alt="Logo" width="75" class="mb-2">
+                            </a>
                         </div>
                         <div class="d-flex flex-column text-start">
                             <h5 class="mb-2">Gabung Bersama<br><strong>Merawat Indonesia</strong></h5>

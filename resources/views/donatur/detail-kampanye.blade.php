@@ -320,7 +320,7 @@
         <h2>Jadilah Fundraising Kampanye Ini</h2>
         <p class="pb-2">Sebarkan kebaikan melalui kampanye ini dan dapatkan komisi sebesar 10% per-transaksi donatur yang anda ajak.</p>
         @auth
-            <button id="joinFundraising" data-campaign="{{ $campaign->title }}" class="button">Gabung Sekarang</button>
+            <button id="joinFundraising" data-slug="{{ $campaign->slug }}" class="button">Gabung Sekarang</button>
         @else
             <a href="{{ route('login') }}" class="button">Login untuk Gabung</a>
         @endauth
@@ -377,7 +377,7 @@
             <a href="#" class="button-outline col-3 me-2" data-bs-toggle="modal" data-bs-target="#bagikanModal">
                 <i class="fa-solid fa-share"></i> Bagikan
             </a>
-                <a href="{{url('kampanye/'.$campaign->title.'/donasi')}}" class="button col-7"><i class="fa-solid fa-hand-holding-heart"></i> Donasi</a>
+                <a href="{{url('kampanye/'.$campaign->slug.'/donasi')}}" class="button col-7"><i class="fa-solid fa-hand-holding-heart"></i> Donasi</a>
         </div>
     </div>
 
@@ -547,10 +547,10 @@
 
 $(document).ready(function() {
         $('#joinFundraising').click(function() {
-            const title = $(this).data('campaign');
+            const slug = $(this).data('slug');
             
             $.ajax({
-                url: `/kampanye/${title}/join-fundraising`,
+                url: `/kampanye/${slug}/join-fundraising`,
                 type: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}'

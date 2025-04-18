@@ -15,7 +15,6 @@
                 <h4 class="m-0 font-weight-bold float-left text-danger">Semua Data Fundraising</h4>
             </div>
             <div class="col-12 col-sm-6">
-                <a href="" class="btn btn-danger float-left mt-sm-0 float-sm-right shadow-sm">Lihat Pencairan Dana</a>
                 <a href="" class="btn btn-danger float-left me-2 mt-sm-0 float-sm-right shadow-sm">Ubah Persentase Komisi</a>
             </div>
         </div>

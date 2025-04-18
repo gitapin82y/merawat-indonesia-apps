@@ -293,29 +293,54 @@
               <div class="popup-content">
                 <h3>Pencairan Dana Fundraising</h3>
                 <p class="saldo">Rp {{ number_format($totalCommission) }}</p>
+                   <!-- Menampilkan pesan error/success -->
+    @if(session('error'))
+    <div class="alert alert-danger mb-3">
+      {{ session('error') }}
+    </div>
+    @endif
+    
+    @if(session('success'))
+    <div class="alert alert-success mb-3">
+      {{ session('success') }}
+    </div>
+    @endif
                 <form action="{{ route('fundraising.withdraw') }}" method="POST">
                   @csrf
 
                   <input type="hidden" name="amount" value="{{$totalCommission}}">
-                <select class="input-field" name="payment_method" id="bank-select">
-                  <option value="">Pilih Bank</option>
-                  <option value="bca">Bank BCA</option>
-                  <option value="bri">Bank BRI</option>
-                  <option value="mandiri">Bank Mandiri</option>
-                </select>
+
+                  <select class="input-field @error('payment_method') is-invalid @enderror" name="payment_method" id="bank-select">
+                    <option value="">Pilih Bank</option>
+                    <option value="bca" {{ old('payment_method') == 'bca' ? 'selected' : '' }}>Bank BCA</option>
+                    <option value="bri" {{ old('payment_method') == 'bri' ? 'selected' : '' }}>Bank BRI</option>
+                    <option value="mandiri" {{ old('payment_method') == 'mandiri' ? 'selected' : '' }}>Bank Mandiri</option>
+                  </select>
+                  @error('payment_method')
+                    <small class="text-danger">{{ $message }}</small>
+                  @enderror
   
-                <input
+                  <input
                   type="text" name="account_name"
-                  class="input-field"
+                  class="input-field @error('account_name') is-invalid @enderror"
                   placeholder="Nama Rekening"
                   id="nama-rekening"
+                  value="{{ old('account_name') }}"
                 />
+                @error('account_name')
+                  <small class="text-danger">{{ $message }}</small>
+                @enderror
+
                 <input name="account_number"
-                  type="text"
-                  class="input-field"
-                  placeholder="Nomor Rekening"
-                  id="nomor-rekening"
-                />
+                type="text"
+                class="input-field @error('account_number') is-invalid @enderror"
+                placeholder="Nomor Rekening"
+                id="nomor-rekening"
+                value="{{ old('account_number') }}"
+              />
+              @error('account_number')
+                <small class="text-danger">{{ $message }}</small>
+              @enderror
   
                 <p class="info">
                   Terimakasih telah berpartisipasi dalam program fundraising,
@@ -328,3 +353,4 @@
               </div>
             </div>
           </div>
+

@@ -19,11 +19,12 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name', 'phone', 'email', 'password', 'role', 
-        'thumbnail', 'avatar', 'bio', 'social'
+        'thumbnail', 'avatar', 'bio', 'social', 'provider', 'provider_id'
     ];
 
     protected $casts = [
         'social' => 'array',
+        'password' => 'hashed',
     ];
 
     /**
@@ -61,6 +62,16 @@ class User extends Authenticatable
 
     // Simpan hasil akhirnya
     $this->attributes['phone'] = $phone;
+}
+
+public function isSocialAccount()
+{
+    return !empty($this->provider) && !empty($this->provider_id);
+}
+
+public function hasPassword()
+{
+    return !empty($this->password);
 }
 
     

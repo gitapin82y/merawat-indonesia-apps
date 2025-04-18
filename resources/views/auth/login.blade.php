@@ -96,7 +96,9 @@
                 <div class="d-flex flex-column align-items-center justify-content-center" style="height: 100%;">
                     <div class="d-flex align-items-center">
                         <div class="d-flex flex-column align-items-center justify-content-center me-3">
-                            <img src="{{asset('assets/img/merawat-indonesia.png')}}" alt="Logo" width="75" class="mb-2">
+                            <a href="{{url('/')}}">
+                                <img src="{{asset('assets/img/merawat-indonesia.png')}}" alt="Logo" width="75" class="mb-2">
+                            </a>
                         </div>
                         <div class="d-flex flex-column text-start">
                             <h5 class="mb-2t">Gabung Bersama<br><strong>Merawat Indonesia</strong></h5>
@@ -108,10 +110,25 @@
                     </div>
                 </div>
 
-
-
                 <form action="{{ route('login') }}" method="POST">
                     @csrf
+
+                    @if(session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
+
+@if($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
                     <div class="form-floating mb-3 mt-4">
                         <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" id="email" value="{{ old('email') }}" placeholder="Email">
                         <label for="email">Email</label>
@@ -128,7 +145,7 @@
                     </div>
                     <div class="text-start mb-3">
                         <a>Lupa Password?</a>
-                        <a href="#" class="text-second text-decoration-none"><b>Ganti Sekarang</b></a>
+                        <a href="{{ route('password.request') }}" class="text-second text-decoration-none"><b>Ganti Sekarang</b></a>
                     </div>
                     <button type="submit" class="btn btn-second text-white w-100">Masuk Sekarang</button>
                 </form>
@@ -139,16 +156,22 @@
                 </div>
 
                 <button class="btn btn-primary btn-social py-3">
-                    <img src="{{asset('assets/img/icon/login-facebook.svg')}}" alt="fb" width="20">
-                    <i class="bi bi-facebook me-2"></i> Masuk Dengan Facebook
+                    <a href="{{ route('social.login', ['provider' => 'facebook']) }}" class="text-white text-decoration-none d-flex align-items-center justify-content-center w-100">
+                        <img src="{{asset('assets/img/icon/login-facebook.svg')}}" alt="fb" width="20" class="me-2">
+                        Masuk Dengan Facebook
+                    </a>
                 </button>
                 <button class="btn btn-light btn-social py-3 shadow">
-                    <img src="{{asset('assets/img/icon/login-google.svg')}}" alt="google" width="20">
-                    <i class="bi bi-google me-2"></i> Masuk Dengan Google
+                    <a href="{{ route('social.login', ['provider' => 'google']) }}" class="text-dark text-decoration-none d-flex align-items-center justify-content-center w-100">
+                        <img src="{{asset('assets/img/icon/login-google.svg')}}" alt="google" width="20" class="me-2">
+                        Masuk Dengan Google
+                    </a>
                 </button>
                 <button class="btn btn-dark btn-social py-3">
-                    <img src="{{asset('assets/img/icon/apple.svg')}}" alt="apple" width="18">
-                    <i class="bi bi-apple me-2"></i> Masuk Dengan Apple
+                    <a href="{{ route('social.login', ['provider' => 'apple']) }}" class="text-white text-decoration-none d-flex align-items-center justify-content-center w-100">
+                        <img src="{{asset('assets/img/icon/apple.svg')}}" alt="apple" width="18" class="me-2">
+                        Masuk Dengan Apple
+                    </a>
                 </button>
 
                 <p class="mt-3 ">Belum punya akun? <a href="{{url('/register')}}"

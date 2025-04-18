@@ -73,7 +73,7 @@
         </div>
       </div>
 
-    @include('includes.public.footer-button', ['buttonTitle' => 'Ajukan Pencairan Dana', 'buttonLink' =>url('admin/kampanye/' . $title .'/pencairan-dana')])
+    @include('includes.public.footer-button', ['buttonTitle' => 'Ajukan Pencairan Dana', 'buttonLink' =>url('admin/kampanye/' . $slug .'/pencairan-dana')])
 
 
 @endsection

@@ -20,7 +20,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered yajra-datatable" width="100%" cellspacing="0">
+                <table class="table table-bordered yajra-datatable" width="100%" cellspacing="0" id="admin-table">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -41,6 +41,65 @@
 @endsection
 
 @push('after-script')
+<script>
+  function changeStatus(adminId, status) {
+    let statusText = status === 'disetujui' ? 'menyetujui' : 'menolak';
+    
+    Swal.fire({
+        title: 'Konfirmasi Perubahan Status',
+        text: `Apakah Anda yakin ingin ${statusText} pengajuan admin ini?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, ' + statusText,
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading spinner
+            Swal.fire({
+                title: 'Memproses...',
+                html: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Send AJAX request
+            $.ajax({
+                url: `/super-admin/admin/${adminId}/change-status`,
+                type: 'POST',
+                data: {
+                    status: status,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                            $('#admin-table').DataTable().ajax.reload(null, false);
+                    });
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: errorMessage
+                    });
+                }
+            });
+        }
+    });
+}
+</script>
 <script>
 $(function () {
     var table = $('.yajra-datatable').DataTable({

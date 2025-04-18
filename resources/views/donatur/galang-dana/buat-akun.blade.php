@@ -96,7 +96,7 @@
             <input type="file" required id="fileLegalitas" name="legality" class="d-none @error('legality') is-invalid @enderror" onchange="updateInput('legalitasOrganisasi', this)">
             <button type="button" class="btn btn-upload position-absolute"
               style="right: 3px; top: 50%; transform: translateY(-50%); border-radius: 5px;"
-              onclick="document.getElementById('fileLegalitas').click();">Unggah File</button>
+              onclick="event.preventDefault();document.getElementById('fileLegalitas').click();">Unggah File</button>
           </div>
           @error('legality')
           <div class="invalid-file">{{ $message }}</div>
@@ -112,7 +112,7 @@
             
             <button type="button" class="btn btn-upload position-absolute"
               style="right: 3px; top: 50%; transform: translateY(-50%); border-radius: 5px;"
-              onclick="document.getElementById('fileThumbnail').click();">Unggah File</button>
+              onclick="event.preventDefault();document.getElementById('fileThumbnail').click();">Unggah File</button>
           </div>
           @error('thumbnail')
           <div class="invalid-file">{{ $message }}</div>
@@ -128,7 +128,7 @@
             <input type="file" required id="fileFoto" name="avatar" class="d-none @error('avatar') is-invalid @enderror" onchange="updateInput('fotoProfil', this)">
             <button type="button" class="btn btn-upload position-absolute"
               style="right: 3px; top: 50%; transform: translateY(-50%); border-radius: 5px;"
-              onclick="document.getElementById('fileFoto').click();">Unggah File</button>
+              onclick="event.preventDefault();document.getElementById('fileFoto').click();">Unggah File</button>
           </div>
           @error('avatar')
           <div class="invalid-file">{{ $message }}</div>

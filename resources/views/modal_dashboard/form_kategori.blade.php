@@ -39,3 +39,26 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Crop Kategori -->
+<div class="modal fade" id="cropKategoriModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Crop Icon Kategori</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div style="max-width: 300px; height: 300px; margin: 0 auto;">
+          <img id="cropKategoriImage" src="" style="max-width: 100%; display: block;" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+        <button type="button" id="cropKategoriButton" class="btn btn-danger">Crop & Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>

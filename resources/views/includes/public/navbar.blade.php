@@ -44,7 +44,9 @@
 
 <div class="navbar col-12 justify-content-between">
     <div class="col-1 px-0">
-        <img src="{{asset('assets/img/merawat-indonesia.png')}}" alt="logo merawat indonesia" width="100%" height="auto">
+        <a href="{{url('/')}}">
+            <img src="{{asset('assets/img/merawat-indonesia.png')}}" alt="logo merawat indonesia" width="100%" height="auto">
+        </a>
     </div>
     <div class="col-7 col-md-8 px-0">
         <div class="search">

@@ -119,7 +119,10 @@ class UserController extends Controller
             ]);
         }
 
-        return view('donatur.eksplore-kampanye', compact('donaturLeaderboard', 'campaigns', 'weekendCampaigns','prioritasCampaigns'));
+        $categories = Category::all();
+        $categoriesCount = $categories->count();
+
+        return view('donatur.eksplore-kampanye', compact('donaturLeaderboard', 'campaigns', 'weekendCampaigns','prioritasCampaigns','categories','categoriesCount'));
     }
 
     public function result(Request $request)
@@ -226,14 +229,14 @@ class UserController extends Controller
     {
         Carbon::setLocale('id');
         if ($request->ajax()) {
-            $query = User::get();
+            $query = User::where('role','!=','super_admin')->get();
             
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('action', function($row) {
                     $actionBtn = '
                         <div class="btn-group" role="group">
-                        <a href="/user/'.$row->name.'"  class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
+                        <a href="'.url('profile-donatur/'.$row->name).'"  class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
                             <a href="'.route('user.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
                             <button onclick="deleteUser('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
                         </div>
@@ -319,7 +322,7 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'phone' => 'required|regex:/^08[1-9][0-9]{7,10}$/|min:10|max:13',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:6',
             'email' => 'required|email|unique:users',
             'avatar' => 'nullable|image|max:2048',
             'bio' => 'required|string',
@@ -337,10 +340,16 @@ class UserController extends Controller
         DB::beginTransaction();
         try {
             $userData = $request->except(['avatar', 'thumbnail', 'social']);
-            
-            // Handle social media as JSON
-            $userData['social'] = json_encode($request->input('social', []));
-            
+                // Proses social media: pastikan jika tidak diisi, set menjadi null
+        $socialData = $request->input('social', []);
+        
+        $socialData = array_filter($socialData, function ($item) {
+            return !empty($item); // Hanya sisakan yang tidak kosong
+        });
+
+        // Simpan social media dalam bentuk array (bukan JSON-encoded string)
+        $userData['social'] = $socialData;  // Tidak perlu json_encode lagi
+
             // Handle file uploads
             if ($request->hasFile('avatar')) {
                 $userData['avatar'] = $request->file('avatar')->store('admin_avatar', 'public');
@@ -365,7 +374,6 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $user->social = is_string($user->social) ? json_decode($user->social, true) : [];
         return view('super_admin.user.form', compact('user'));
     }
 
@@ -376,7 +384,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|regex:/^08[1-9][0-9]{7,10}$/|min:10|max:13',
             'avatar' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
-            'password' => 'nullable|string|min:8',
+            'password' => 'nullable|string|min:6',
             'thumbnail' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'social' => 'nullable|array',
             'bio' => 'nullable|max:255',
@@ -384,10 +392,10 @@ class UserController extends Controller
     
         if ($user->role === 'super_admin') {
             $rules['address'] = 'required|string';
-            $rules['email'] = 'required|email|unique:email';
+            $rules['email'] = 'required|email';
         } else {
             $rules['address'] = 'nullable';
-            $rules['email'] = 'nullable|email|unique:email';
+            $rules['email'] = 'nullable|email';
         }
 
         $validator = Validator::make($request->all(), $rules);

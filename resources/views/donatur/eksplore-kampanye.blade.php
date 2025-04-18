@@ -38,18 +38,22 @@
   <div class="mt-4">
       <h2>Sudahkan Anda Berbuat Baik?</h2>
       <div class="grid-category">
-          <a href="{{url('eksplore-kampanye')}}"><img src="{{asset('assets/img/kategori/donasi.svg')}}" alt="Donasi"><p>Donasi</p></a>
-          <a href="{{url('galang-dana')}}"><img src="{{asset('assets/img/kategori/galang dana.svg')}}" alt="Galang Dana"><p>Galang Dana</p></a>
-          <a href="{{url('kalkulator-zakat')}}"><img src="{{asset('assets/img/kategori/kalkulator zakat.svg')}}" alt="Kalkulator Zakat"><p>Kalkulator Zakat</p></a>
-          <a href="kampanye.html?detail=zakat"><img src="{{asset('assets/img/kategori/zakat.svg')}}" alt="Zakat"><p>Zakat</p></a>
-          <a href="kampanye.html?detail=bencana"><img src="{{asset('assets/img/kategori/bencana.svg')}}" alt="Zakat"><p>Bencana</p></a>
-          <a href="kampanye.html?detail=kesehatan"><img src="{{asset('assets/img/kategori/kesehatan.svg')}}" alt="Kesehatan"><p>Kesehatan</p></a>
-          <a href="kampanye.html?detail=pendidikan"><img src="{{asset('assets/img/kategori/pendidikan.svg')}}" alt="Pendidikan"><p>Pendidikan</p></a>
-          <a href="kampanye.html?detail=keagamaan"><img src="{{asset('assets/img/kategori/keagamaan.svg')}}" alt="Keagamaan"><p>Keagamaan</p></a>
-          <a href="kampanye.html?detail=sosial"><img src="{{asset('assets/img/kategori/sosial.svg')}}" alt="Sosial"><p>Sosial</p></a>
-          <a href="#"><img src="{{asset('assets/img/kategori/lainnya.svg')}}" alt="Lainnya"><p>Lainnya</p></a>
-      </div>
-  </div>
+        {{-- menu yang hanya menampilkan 9 menu termasuk category --}}
+        <a href="{{url('eksplore-kampanye')}}"><img src="{{asset('assets/img/kategori/donasi.svg')}}" alt="Donasi"><p>Donasi</p></a>
+        <a href="{{url('galang-dana')}}"><img src="{{asset('assets/img/kategori/galang dana.svg')}}" alt="Galang Dana"><p>Galang Dana</p></a>
+        <a href="{{url('kalkulator-zakat')}}"><img src="{{asset('assets/img/kategori/kalkulator zakat.svg')}}" alt="Kalkulator Zakat"><p>Kalkulator Zakat</p></a>
+         {{-- Loop through the categories --}}
+        @foreach($categories as $category)
+            <a href="kampanye.html?detail={{ $category->name }}">
+                <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
+                <p>{{ $category->name }}</p>
+            </a>
+        @endforeach
+        @if($categoriesCount >= 9)
+            <a href="{{ url('menu-lainnya') }}"><img src="{{ asset('assets/img/kategori/lainnya.svg') }}" alt="Lainnya"><p>Lainnya</p></a>
+        @endif
+    </div>
+</div>
 
   <!-- Leaderboard -->
   <div class="top-donatur mt-4">
@@ -60,7 +64,7 @@
       <div class="swiper donaturSwiper mt-2">
           <div class="swiper-wrapper">
             @foreach($donaturLeaderboard as $donatur)
-            <a href="#" class="text-center avatar swiper-slide"><img src="{{ asset('storage/' . $donatur['avatar']) }}" alt="Donasi"><p>{{ $donatur['name'] }}</p></a>
+            <a href="{{route('profileDonatur',$donatur['name'] )}}"  class="text-center avatar swiper-slide"><img src="{{ asset('storage/' . $donatur['avatar']) }}" alt="Donasi"><p>{{ $donatur['name'] }}</p></a>
         @endforeach
       </div>
       </div>
@@ -71,7 +75,7 @@
   <div class="row kampanye mt-4">
       <div class="justify-content-between d-flex">
           <h2>Pilihan Kampanye</h2>
-          <a href="kampanye.html?detail=Pilihan%20Kampanye%20Bantu%20Bersama">Lihat Semua</a>
+          {{-- <a href="kampanye.html?detail=Pilihan%20Kampanye%20Bantu%20Bersama">Lihat Semua</a> --}}
        </div>
 
        <div class="swiper mySwiper mt-2">
@@ -99,13 +103,13 @@
   <div class="row kampanye mt-4">
       <div class="justify-content-between d-flex">
           <h2>Galang Dana Akhir Pekan</h2>
-          <a href="kampanye.html?detail=Akhir%20Pekan">Lihat Semua</a>
+          {{-- <a href="kampanye.html?detail=Akhir%20Pekan">Lihat Semua</a> --}}
        </div>
 
        <div class="swiper mySwiper mt-2">
           <div class="swiper-wrapper">
             @if($weekendCampaigns->isEmpty())
-                <div class="text-center">
+                <div class="text-center w-100">
                     <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
                     <p>Belum Ada Galang Dana Akhir Pekan</p>
                 </div>
@@ -125,7 +129,7 @@
   <div class="row kampanye mt-5">
       <div class="justify-content-between d-flex">
           <h2>Galang Dana Lainnya</h2>
-          <a href="/kampanye/bantu">Lihat Semua</a>
+          {{-- <a href="/kampanye/bantu">Lihat Semua</a> --}}
        </div>
        @if($campaigns->isEmpty())
        <div class="text-center">

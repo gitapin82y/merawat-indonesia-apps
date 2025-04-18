@@ -164,9 +164,9 @@ class DonationController extends Controller
     }
 
 
-    public function showDonationForm($title)
+    public function showDonationForm($slug)
     {
-        $campaign = Campaign::where('title',$title)->first();
+        $campaign = Campaign::where('slug',$slug)->first();
         
         return view('donatur.donasi.index', compact('campaign'));
     }
@@ -971,97 +971,106 @@ private function trackServerSideConversion($donation)
     }
 }
 
-    public function index(Request $request)
-    {
-        Carbon::setLocale('id');
-        if ($request->ajax()) {
-            $query = Donation::with('campaign')->get();
-            
-            return DataTables::of($query)
-                ->addIndexColumn()
-                ->addColumn('campaign_title', function ($row) {
-                    return $row->campaign ? $row->campaign->title : '-';
-                })    
-                ->addColumn('created_at', function($row) {
-                    return $row->created_at 
-                    ? Carbon::parse($row->created_at)->timezone('Asia/Jakarta')->format('d M Y')
-                    : '-';
-                })
-                ->addColumn('action', function($row) {
-                    $actionBtn = '
-                        <div class="btn-group" role="group">
-                        <a href="/galang-dana/'.$row->name.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
-                            <a href="'.route('admin.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
-                            <button onclick="deleteAdmin('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    ';
-                    return $actionBtn;
-                })
-                ->rawColumns(['campaign_title','created_at','action'])
-                 ->make(true);
+public function index(Request $request)
+{
+    Carbon::setLocale('id');
+    
+    // Get all campaigns for dropdown filter
+    $campaigns = Campaign::select('id', 'title')->get();
+    
+    if ($request->ajax()) {
+        // Start with base query
+        $query = Donation::with('campaign');
+        
+        // Apply campaign filter if provided
+        if ($request->has('campaign_id') && $request->campaign_id) {
+            $query->where('campaign_id', $request->campaign_id);
         }
         
-        return view('super_admin.donasi_kampanye.index');
+        // Apply date range filter if provided
+        if ($request->has('start_date') && $request->has('end_date') && $request->start_date && $request->end_date) {
+            $startDate = Carbon::parse($request->start_date)->startOfDay();
+            $endDate = Carbon::parse($request->end_date)->endOfDay();
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->addColumn('campaign_title', function ($row) {
+                return $row->campaign ? $row->campaign->title : '-';
+            })    
+            ->addColumn('created_at', function($row) {
+                return $row->created_at 
+                ? Carbon::parse($row->created_at)->timezone('Asia/Jakarta')->format('d M Y')
+                : '-';
+            })
+            ->addColumn('action', function($row) {
+                $actionBtn = '
+                    <div class="btn-group" role="group">
+                    <a href="/galang-dana/'.$row->name.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
+                        <a href="'.route('admin.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
+                        <button onclick="deleteAdmin('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                ';
+                return $actionBtn;
+            })
+            ->rawColumns(['campaign_title','created_at','action'])
+            ->make(true);
     }
+    
+    return view('super_admin.donasi_kampanye.index', compact('campaigns'));
+}
 
-    public function ceklis(Request $request)
-    {
-        Carbon::setLocale('id');
-        if ($request->ajax()) {
-            $query = Donation::get();
-            
-            return DataTables::of($query)
-                ->addIndexColumn()
-                ->addColumn('method', function ($row) {
-                    return $row->payment_type . '('. $row->payment_method . ')';
-                })    
-                ->addColumn('created_at', function($row) {
-                    return $row->created_at 
-                    ? Carbon::parse($row->created_at)->timezone('Asia/Jakarta')->format('d M Y')
-                    : '-';
-                })
-                ->addColumn('status', function($row) {
-                    $statusColor = [
-                        'pending' => 'warning',
-                        'sukses' => 'success', 
-                        'gagal' => 'danger'
-                    ];
-                    return '<span class="badge bg-'.$statusColor[$row->status].' text-white">'.$row->status.'</span>';
-                })
-                ->addColumn('action', function($row) {
-                    $whatsappUrl = "https://wa.me/". $row->phone;
-                    
-                    $actionBtn = '<div class="btn-group" role="group">';
-                
-                    // Jika status masih pending, tampilkan tombol ceklis & silang lebih dulu
-                    if ($row->status == 'pending') {
-                        $actionBtn .= '
-                            <button onclick="updateStatus('.$row->id.', \'sukses\')" class="btn btn-primary btn-sm">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button onclick="updateStatus('.$row->id.', \'gagal\')" class="btn btn-danger btn-sm">
-                                <i class="fas fa-times"></i>
-                            </button>';
-                    }
-                
-                    // Tambahkan tombol WhatsApp & Hapus setelahnya
-                    $actionBtn .= '
-                        <a href="'.$whatsappUrl.'" target="_blank" class="btn btn-success btn-sm">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                        <button onclick="deleteDonasi('.$row->id.')" class="btn btn-danger btn-sm">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>'; // Tutup div.btn-group
-                
-                    return $actionBtn;
-                })            
-                ->rawColumns(['status','method','created_at','action'])
-                 ->make(true);
+public function ceklis(Request $request)
+{
+    Carbon::setLocale('id');
+    if ($request->ajax()) {
+        // Start with base query
+        $query = Donation::query();
+        
+        // Apply payment method filter if provided
+        if ($request->has('payment_type') && $request->payment_type) {
+            $query->where('payment_type', $request->payment_type);
         }
         
-        return view('super_admin.ceklis_donasi.index');
+        // IMPORTANT: Use the query builder version of DataTables, not the collection version
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->addColumn('method', function ($row) {
+                if($row->payment_type == "manual"){
+                    $payment = "Manual";
+                }else{
+                    $payment = "Payment Gateway";
+                }
+                return $payment . ' ('. $row->payment_method . ')';
+            })    
+            ->addColumn('created_at', function($row) {
+                return $row->created_at 
+                ? Carbon::parse($row->created_at)->timezone('Asia/Jakarta')->format('d M Y')
+                : '-';
+            })
+            ->addColumn('amount', function($row) {
+                return 'Rp ' . number_format($row->amount, 0, ',', '.');
+            })  
+            ->addColumn('status', function($row) {
+                $statusColor = [
+                    'pending' => 'warning',
+                    'sukses' => 'success', 
+                    'gagal' => 'danger'
+                ];
+                return '<span class="badge bg-'.$statusColor[$row->status].' text-white">'.ucfirst($row->status).'</span>';
+            })
+            ->addColumn('action', function($row) {
+                // Your action column code...
+            })            
+            ->rawColumns(['amount','status','method','created_at','action'])
+            // Remove this line that's causing the error:
+            // ->orderColumn('DT_RowIndex', false)
+            ->make(true);
     }
+    
+    return view('super_admin.ceklis_donasi.index');
+}
 
     public function updateStatus(Request $request)
     {
@@ -1091,33 +1100,33 @@ private function trackServerSideConversion($donation)
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, $title)
-    {
-        Carbon::setLocale('id');
+    // public function show(Request $request, $slug)
+    // {
+    //     Carbon::setLocale('id');
     
-        if ($request->ajax()) {
-            $query = Donation::with('campaign')
-                ->whereHas('campaign', function ($q) use ($title) {
-                    $q->where('title', $title);
-                })
-                ->get();
+    //     if ($request->ajax()) {
+    //         $query = Donation::with('campaign')
+    //             ->whereHas('campaign', function ($q) use ($slug) {
+    //                 $q->where('slug', $slug);
+    //             })
+    //             ->get();
     
-            return DataTables::of($query)
-                ->addIndexColumn()
-                ->addColumn('campaign_title', function ($row) {
-                    return $row->campaign ? $row->campaign->title : '-';
-                })    
-                ->addColumn('created_at', function ($row) {
-                    return $row->created_at 
-                        ? Carbon::parse($row->created_at)->timezone('Asia/Jakarta')->format('d M Y')
-                        : '-';
-                })
-                ->rawColumns(['campaign_title', 'created_at'])
-                ->make(true);
-        }
+    //         return DataTables::of($query)
+    //             ->addIndexColumn()
+    //             ->addColumn('campaign_title', function ($row) {
+    //                 return $row->campaign ? $row->campaign->title : '-';
+    //             })    
+    //             ->addColumn('created_at', function ($row) {
+    //                 return $row->created_at 
+    //                     ? Carbon::parse($row->created_at)->timezone('Asia/Jakarta')->format('d M Y')
+    //                     : '-';
+    //             })
+    //             ->rawColumns(['campaign_title', 'created_at'])
+    //             ->make(true);
+    //     }
     
-        return view('super_admin.donasi_kampanye.show', compact('title'));
-    }    
+    //     return view('super_admin.donasi_kampanye.show', compact('title'));
+    // }    
 
 
     /**

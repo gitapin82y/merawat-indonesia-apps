@@ -87,7 +87,8 @@ class DashboardController extends Controller
     
     // Pengaturan iklan
     $adsense = Adsense::first();
-    
+
+      
     // Menyiapkan array untuk card dashboard
     $cards = [
         ["title" => "Jumlah Donasi", "value" => "Rp " . number_format($totalDonasi)],
@@ -106,7 +107,40 @@ class DashboardController extends Controller
         ["title" => "Jumlah Donasi Bulan Ini", "value" => "Rp " . number_format($donasiAmountMonth)],
         ["title" => "Total Akun Admin", "value" => number_format($totalAdmin)]
     ];
+
+        // Data untuk grafik bulanan total donasi
+        $monthlyDonations = Donation::where('status', 'sukses')
+        ->selectRaw('MONTH(created_at) as month, SUM(amount) as total')
+        ->whereYear('created_at', date('Y')) // Tahun saat ini (2025)
+        ->groupBy('month')
+        ->orderBy('month')
+        ->get();
+
+
+    // Menyiapkan array data donasi bulanan untuk chart
+    $monthlyData = [];
+    for ($i = 1; $i <= 12; $i++) {
+        $monthData = $monthlyDonations->where('month', $i)->first();
+        $monthlyData[$i] = $monthData ? $monthData->total : 0;
+    }
     
-    return view('super_admin.dashboard', compact('cards', 'adsense'));
+    // Data untuk pie chart kategori
+    $categoryDonations = Donation::join('campaigns', 'donations.campaign_id', '=', 'campaigns.id')
+        ->join('categories', 'campaigns.category_id', '=', 'categories.id')
+        ->where('donations.status', 'sukses')
+        ->selectRaw('categories.name, SUM(donations.amount) as total')
+        ->groupBy('categories.id', 'categories.name')
+        ->get();
+        
+    // Menyiapkan data kategori untuk pie chart
+    $categoryData = [];
+    foreach ($categoryDonations as $donation) {
+        $categoryData[$donation->name] = $donation->total;
+    }
+    
+  
+    
+    return view('super_admin.dashboard', compact('cards', 'adsense', 'monthlyData', 'categoryData'));
 }
+
 }

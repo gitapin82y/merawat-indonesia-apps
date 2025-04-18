@@ -161,7 +161,7 @@ function deletePencairanFundraising(id) {
         if (result.isConfirmed) {
             $.ajax({
                 url: 'pencairan-fundraising/' + id,  // Pastikan URL sesuai dengan route POST
-                type: 'POST',
+                type: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}',  // Pastikan token CSRF disertakan
                 },

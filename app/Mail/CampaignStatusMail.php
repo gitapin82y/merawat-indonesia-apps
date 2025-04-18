@@ -2,7 +2,7 @@
 // app/Mail/CampaignStatusMail.php
 namespace App\Mail;
 
-use App\Models\Campaign;
+use App\Models\CampaignWithdrawal;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -11,21 +11,19 @@ class CampaignStatusMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $campaign;
-    public $statusText;
-    public $isApproved;
+    public $withdrawal;
+    public $emailData;
 
     /**
      * Create a new message instance.
      *
-     * @param Campaign $campaign
-     * @param string $status
+     * @param CampaignWithdrawal $withdrawal
+     * @param array $emailData Optional additional data for email
      */
-    public function __construct(Campaign $campaign, string $status)
+    public function __construct(CampaignWithdrawal $withdrawal, array $emailData = [])
     {
-        $this->campaign = $campaign;
-        $this->isApproved = $status === 'disetujui';
-        $this->statusText = $this->isApproved ? 'disetujui' : 'ditolak';
+        $this->withdrawal = $withdrawal;
+        $this->emailData = $emailData;
     }
 
     /**
@@ -35,16 +33,29 @@ class CampaignStatusMail extends Mailable
      */
     public function build()
     {
-        $subject = $this->isApproved ? 
-            'Kampanye Anda Telah Disetujui' : 
-            'Kampanye Anda Tidak Disetujui';
-            
-        return $this->subject($subject)
-                    ->view('emails.campaign-status')
-                    ->with([
-                        'campaign' => $this->campaign,
-                        'isApproved' => $this->isApproved,
-                        'statusText' => $this->statusText
-                    ]);
+        $subject = 'Update Status Pencairan Dana Kampanye';
+        
+        if ($this->withdrawal->status == 'disetujui') {
+            $subject = 'Pencairan Dana Kampanye Disetujui';
+            $view = 'emails.campaign-withdrawal-approved';
+        } else if ($this->withdrawal->status == 'ditolak') {
+            $subject = 'Pencairan Dana Kampanye Ditolak';
+            $view = 'emails.campaign-withdrawal-rejected';
+        } else {
+            $view = 'emails.campaign-withdrawal-status';
+        }
+        
+        $mail = $this->subject($subject)
+                     ->view($view)
+                     ->with([
+                         'withdrawal' => $this->withdrawal,
+                     ]);
+
+        // Add any additional data to the email
+        if (!empty($this->emailData)) {
+            $mail->with($this->emailData);
+        }
+                
+        return $mail;
     }
 }

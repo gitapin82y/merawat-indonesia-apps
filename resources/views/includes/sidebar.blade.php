@@ -8,8 +8,8 @@
     <hr class="sidebar-divider my-0">
 
     <!-- Dashboard -->
-    <li class="nav-item {{ Request::is('dashboard') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ url('dashboard') }}">
+    <li class="nav-item {{ Request::is('super-admin') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('dashboard.index') }}">
             <i class="fas fa-tachometer-alt"></i>
             <span class="text-white">Dashboard</span>
         </a>
@@ -18,43 +18,53 @@
     <hr class="sidebar-divider my-0">
 
     <!-- Donasi (Dropdown) -->
-    <li class="nav-item {{ Request::is('donasi*') ? 'active' : '' }}">
+    <li class="nav-item {{ Request::is('super-admin/donasi-kampanye') || Request::is('super-admin/ceklis-donasi') ? 'active' : '' }}">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#donasiMenu"
-            aria-expanded="false" aria-controls="donasiMenu">
+            aria-expanded="{{ Request::is('super-admin/donasi-kampanye') || Request::is('super-admin/ceklis-donasi') ? 'true' : 'false' }}" 
+            aria-controls="donasiMenu">
             <i class="fas fa-hand-holding-heart"></i>
             <span class="text-white">Donasi</span>
         </a>
-        <div id="donasiMenu" class="collapse {{ Request::is('donasi*') ? 'show' : '' }}" data-parent="#accordionSidebar">
+        <div id="donasiMenu" class="collapse {{ Request::is('super-admin/donasi-kampanye') || Request::is('super-admin/ceklis-donasi') ? 'show' : '' }}" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="{{ url('donasi/semua-donasi') }}">Semua Donasi</a>
-                <a class="collapse-item" href="{{ url('donasi/ceklis-donasi') }}">Ceklis Donasi</a>
+                <a class="collapse-item {{ Request::is('super-admin/donasi-kampanye') ? 'active' : '' }}" href="{{ route('donasi-kampanye.index') }}">Semua Donasi</a>
+                <a class="collapse-item {{ Request::is('super-admin/ceklis-donasi') ? 'active' : '' }}" href="{{ route('ceklis-donasi.index') }}">Ceklis Donasi</a>
             </div>
         </div>
     </li>
 
     <hr class="sidebar-divider my-0">
 
-    <!-- Admin Yayasan -->
-    <li class="nav-item {{ Request::is('pengguna') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ url('pengguna') }}">
+    <!-- Pengguna (Dropdown) -->
+    <li class="nav-item {{ Request::is('super-admin/admin') || Request::is('super-admin/user') ? 'active' : '' }}">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#penggunaMenu"
+            aria-expanded="{{ Request::is('super-admin/admin') || Request::is('super-admin/user') ? 'true' : 'false' }}" 
+            aria-controls="penggunaMenu">
             <i class="fas fa-users-cog"></i>
-            <span class="text-white">Admin Yayasan</span>
+            <span class="text-white">Pengguna</span>
         </a>
+        <div id="penggunaMenu" class="collapse {{ Request::is('super-admin/admin') || Request::is('super-admin/user') ? 'show' : '' }}" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item {{ Request::is('super-admin/user') ? 'active' : '' }}" href="{{ route('user.index') }}">User Donatur</a>
+                <a class="collapse-item {{ Request::is('super-admin/admin') ? 'active' : '' }}" href="{{ route('admin.index') }}">Admin Yayasan</a>
+            </div>
+        </div>
     </li>
 
     <hr class="sidebar-divider my-0">
 
     <!-- Kampanye (Dropdown) -->
-    <li class="nav-item {{ Request::is('kampanye*') ? 'active' : '' }}">
+    <li class="nav-item {{ Request::is('super-admin/kampanye') || Request::is('super-admin/prioritas-kampanye') ? 'active' : '' }}">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#kampanyeMenu"
-            aria-expanded="false" aria-controls="kampanyeMenu">
+            aria-expanded="{{ Request::is('super-admin/kampanye') || Request::is('super-admin/prioritas-kampanye') ? 'true' : 'false' }}" 
+            aria-controls="kampanyeMenu">
             <i class="fas fa-bullhorn"></i>
             <span class="text-white">Kampanye</span>
         </a>
-        <div id="kampanyeMenu" class="collapse {{ Request::is('kampanye*') ? 'show' : '' }}" data-parent="#accordionSidebar">
+        <div id="kampanyeMenu" class="collapse {{ Request::is('super-admin/kampanye') || Request::is('super-admin/prioritas-kampanye') ? 'show' : '' }}" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="{{ url('kampanye/lihat-kampanye') }}">Lihat Kampanye</a>
-                <a class="collapse-item" href="{{ url('kampanye/promosi-kampanye') }}">Promosi Kampanye</a>
+                <a class="collapse-item {{ Request::is('super-admin/kampanye') ? 'active' : '' }}" href="{{ route('kampanye.index') }}">Lihat Kampanye</a>
+                <a class="collapse-item {{ Request::is('super-admin/prioritas-kampanye') ? 'active' : '' }}" href="{{ route('prioritas-kampanye.index') }}">Promosi Kampanye</a>
             </div>
         </div>
     </li>
@@ -62,8 +72,8 @@
     <hr class="sidebar-divider my-0">
 
     <!-- Kabar Terbaru -->
-    <li class="nav-item {{ Request::is('setsoal') || Request::is('soal/*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ url('setsoal') }}">
+    <li class="nav-item {{ Request::is('super-admin/kabar-terbaru') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('kabar-terbaru.index') }}">
             <i class="fas fa-newspaper"></i>
             <span class="text-white">Kabar Terbaru</span>
         </a>
@@ -71,17 +81,28 @@
 
     <hr class="sidebar-divider my-0">
 
+    <!-- Fundraising -->
+    <li class="nav-item {{ Request::is('super-admin/fundraising') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('fundraising.index') }}">
+            <i class="fas fa-hand-holding-usd"></i>
+            <span class="text-white">Fundraising</span>
+        </a>
+    </li>
+
+    <hr class="sidebar-divider my-0">
+
     <!-- Pencairan Dana (Dropdown) -->
-    <li class="nav-item {{ Request::is('pencairan*') ? 'active' : '' }}">
+    <li class="nav-item {{ Request::is('super-admin/pencairan-kampanye') || Request::is('super-admin/pencairan-fundraising') ? 'active' : '' }}">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pencairanMenu"
-            aria-expanded="false" aria-controls="pencairanMenu">
+            aria-expanded="{{ Request::is('super-admin/pencairan-kampanye') || Request::is('super-admin/pencairan-fundraising') ? 'true' : 'false' }}" 
+            aria-controls="pencairanMenu">
             <i class="fas fa-wallet"></i>
             <span class="text-white">Pencairan Dana</span>
         </a>
-        <div id="pencairanMenu" class="collapse {{ Request::is('pencairan*') ? 'show' : '' }}" data-parent="#accordionSidebar">
+        <div id="pencairanMenu" class="collapse {{ Request::is('super-admin/pencairan-kampanye') || Request::is('super-admin/pencairan-fundraising') ? 'show' : '' }}" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="{{ url('pencairan/kampanye') }}">Kampanye</a>
-                <a class="collapse-item" href="{{ url('pencairan/fundraising') }}">Fundraising</a>
+                <a class="collapse-item {{ Request::is('super-admin/pencairan-kampanye') ? 'active' : '' }}" href="{{ route('pencairan-kampanye.index') }}">Kampanye</a>
+                <a class="collapse-item {{ Request::is('super-admin/pencairan-fundraising') ? 'active' : '' }}" href="{{ route('pencairan-fundraising.index') }}">Fundraising</a>
             </div>
         </div>
     </li>

@@ -105,7 +105,7 @@
                     onchange="updateInput('photo', this)">
                 <button type="button"  class="btn btn-upload position-absolute"
                     style="right: 3px; top: 50%; transform: translateY(-50%); border-radius: 5px;"
-                    onclick="document.getElementById('filePhoto').click();">Unggah File</button>
+                    onclick="event.preventDefault();document.getElementById('filePhoto').click();">Unggah File</button>
             </div>
             <div id="previewContainer" class="mb-3" style="display: none;">
                 <label class="form-label">Preview Thumbnail:</label>
@@ -171,7 +171,9 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <img id="previewImage" style="width: 100%;" />
+            <div style="width: 300px; height: 300px; margin: 0 auto;">
+                <img id="previewImage" style="max-width: 100%; display: block;" />
+              </div>
         </div>
         <div class="modal-footer">
           <button type="button" id="cropButton" class="btn btn-primary">Simpan</button>
@@ -201,9 +203,15 @@
     
             document.getElementById('cropModal').addEventListener('shown.bs.modal', function () {
                 cropper = new Cropper(img, {
-                    aspectRatio: 2 / 1, // ubah sesuai kebutuhan
-                    viewMode: 1,
-                    autoCropArea: 1,
+                    aspectRatio: 2 / 1,
+                viewMode: 1,
+                autoCropArea: 0.8,
+                width: 300,
+                height: 150, // Aspect ratio 2:1
+                minContainerWidth: 300,
+                minContainerHeight: 300,
+                minCropBoxWidth: 100,
+                minCropBoxHeight: 50
                 });
             }, { once: true });
         };

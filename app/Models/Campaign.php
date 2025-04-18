@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class Campaign extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'admin_id', 'category_id', 'photo', 'title', 'description', 
+        'admin_id', 'category_id', 'photo', 'title','slug', 'description', 
         'status', 'deadline', 'total_donatur', 'total_kabar_terbaru', 
         'total_pencairan_dana', 'jumlah_pencarian', 'current_donation', 
         'jumlah_donasi', 'jumlah_target_donasi', 'document_rab', 
@@ -20,6 +21,25 @@ class Campaign extends Model
     protected $casts = [
         'deadline' => 'date'
     ];
+
+    public function generateUniqueSlug($title)
+    {
+        $slug = Str::slug($title);
+        $originalSlug = $slug;
+        $count = 1;
+        
+        // Pastikan slug unik
+        while (static::where('slug', $slug)->where('id', '!=', $this->id)->exists()) {
+            $slug = $originalSlug . '-' . $count++;
+        }
+        
+        return $slug;
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
 
     public function admin()
     {

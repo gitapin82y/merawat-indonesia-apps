@@ -152,7 +152,7 @@
         <h3>Pencarian Tidak Ditemukan</h3>
         <p>Maaf, kami tidak menemukan campaign yang sesuai dengan kriteria pencarian Anda.</p>
         <p>Silahkan coba dengan kata kunci atau filter yang berbeda.</p>
-        <a href="{{ url('/eksplore-kampanye') }}" class="btn btn-primary mt-3">Lihat Semua Campaign</a>
+        <a href="{{ url('/eksplore-kampanye') }}" class="btn btn-primary mt-3">Lihat Semua Kampanye</a>
     </div>
 </div>
 
@@ -172,7 +172,7 @@
         <h3>Pencarian Tidak Ditemukan</h3>
         <p>Maaf, kami tidak menemukan campaign yang sesuai dengan kriteria pencarian Anda.</p>
         <p>Silahkan coba dengan kata kunci atau filter yang berbeda.</p>
-        <a href="{{ url('/eksplore-kampanye') }}" class="btn btn-primary mt-3">Lihat Semua Campaign</a>
+        <a href="{{ url('/eksplore-kampanye') }}" class="btn btn-primary mt-3">Lihat Semua Kampanye</a>
     </div>
 </div>
 @endif

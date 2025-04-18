@@ -4,16 +4,16 @@
 
 @push('after-style')
  <style>
+     .profile-avatar .avatar-container img {
+        width: 150px;
+        height: 150px;
+        bottom: -45px;
+        border: 6px solid white;
+      }
         .btn-danger {
             background-color: #FF4747;
         }
 
-        .profile-img {
-            width: 150px;
-            height: 150px;
-            border: 7px solid white;
-            margin-top: -75px;
-        }
 
         .content-box {
             background: white;
@@ -104,11 +104,25 @@
 @section('content')
 
             <!-- Profile & Banner Section -->
+     <!-- Profile & Banner Section -->
+     <div class="profile-header position-relative mt-4 px-4">
+        <img
+         src="{{ $user->thumbnail ? asset('storage/' . $user->thumbnail) : asset('assets/img/banner/banner-slider.png') }}"
+          alt="Banner"
+          class="w-100" style="border-radius: 10px;max-height:400px;"
+        />
+        <div class="profile-avatar text-center">
+          <div class="avatar-container position-relative d-inline-block">
+            <img
+              src="{{ $user->avatar ? asset('storage/' . $user->avatar) : asset('assets/img/avatar/main-avatar.png') }}"
+              alt="William Saliba"
+              class="rounded-circle position-absolute start-50 translate-middle-x"
+            />
+          </div>
+        </div>
+      </div>
+
             <div class="content-box text-center">
-              <div class="position-relative">
-                      <img src="{{ $user->thumbnail ? asset('storage/' . $user->thumbnail) : asset('assets/img/avatar/banner-avatar.png') }}" class="rounded-circle profile-img shadow img-fluid" alt="Banner Thumbnail">
-                      <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : asset('assets/img/avatar/main-avatar.png') }}" class="rounded-circle profile-img shadow img-fluid" alt="Profile">
-              </div>
               <p class="mb-2 text-center mt-4 fs-5 fw-bold text-second">{{$user->name}}</p>
               {{-- <div class="d-flex mb-3 justify-content-center">
                   <label class="form-check-label ms-0 text-second mt-2" for="flexSwitchCheckChecked">Tampilkan Sebagai
@@ -117,13 +131,13 @@
                       <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
                   </div>
               </div> --}}
-              <p class="text-muted mx-3 mt-1">
+              <p class="text-muted mx-3 mt-2">
                 {{$user->bio ?? 'Bio belum tersedia'}}
               </p>
               <div class="d-flex justify-content-center gap-3 mt-3">
                 @if(isset($user->social['instagram']))
                 <div class="social-icon d-flex align-items-center justify-content-center">
-                    <a href="{{ $user->social['instagram'] }}" target="_blank">
+                    <a href="{{ url($user->social['instagram']) }}" target="_blank">
                         <img src="{{asset('assets/img/icon/instagram.svg')}}" alt="Instagram" class="img-fluid">
                     </a>
                 </div>
@@ -131,7 +145,7 @@
         
                 @if(isset($user->social['youtube']))
                 <div class="social-icon d-flex align-items-center justify-content-center">
-                    <a href="{{ $user->social['youtube'] }}" target="_blank">
+                    <a href="{{ url($user->social['youtube']) }}" target="_blank">
                         <img src="{{asset('assets/img/icon/youtube.svg')}}" alt="YouTube" class="img-fluid">
                     </a>
                 </div>
@@ -139,7 +153,7 @@
         
                 @if(isset($user->social['facebook']))
                 <div class="social-icon d-flex align-items-center justify-content-center">
-                    <a href="{{ $user->social['facebook'] }}" target="_blank">
+                    <a href="{{ url($user->social['facebook']) }}" target="_blank">
                         <img src="{{asset('assets/img/icon/facebook.svg')}}" alt="Facebook" class="img-fluid">
                     </a>
                 </div>
@@ -147,7 +161,7 @@
         
                 @if(isset($user->social['tiktok']))
                 <div class="social-icon d-flex align-items-center justify-content-center">
-                    <a href="{{ $user->social['tiktok'] }}" target="_blank">
+                    <a href="{{ url($user->social['tiktok']) }}" target="_blank">
                         <img src="{{asset('assets/img/icon/tiktok.svg')}}" alt="TikTok" class="img-fluid">
                     </a>
                 </div>

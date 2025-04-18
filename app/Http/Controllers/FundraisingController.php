@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Fundraising;
 use App\Models\Campaign;
 use App\Models\Donation;
+use App\Models\FundraisingWithdrawal;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
@@ -13,9 +15,18 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Services\NotificationService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\FundraisingWithdrawalMail;
 
 class FundraisingController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -78,10 +89,10 @@ class FundraisingController extends Controller
         return view('donatur.fundraishing.index', compact('fundraisings', 'totalCommission'));
     }
 
-    public function join($title)
+    public function join($slug)
     {
         $user = Auth::user();
-        $campaign = Campaign::where('title',$title)->first();
+        $campaign = Campaign::where('slug',$slug)->first();
         
         // Cek apakah pengguna sudah terdaftar di kampanye ini
         $existingFundraising = Fundraising::where('user_id', $user->id)
@@ -119,23 +130,76 @@ class FundraisingController extends Controller
 
     public function withdrawFunds(Request $request)
     {
+        // Validasi input
+    $validator = Validator::make($request->all(), [
+        'amount' => 'required|numeric|min:100000',
+        'payment_method' => 'required|string',
+        'account_name' => 'required|string|max:255',
+        'account_number' => 'required|string|max:50',
+    ]);
+
+    if ($validator->fails()) {
+        return redirect()->back()
+            ->with('error', 'Validation error: ' . $validator->errors()->first())
+            ->withInput();
+    }
+
+
         $user = Auth::user();
         $fundraisings = Fundraising::where('user_id', $user->id)->get();
         $totalCommission = $fundraisings->sum('commission');
+
+        if ($request->amount <= 0) {
+            return redirect()->back()->with('error', 'Jumlah penarikan harus lebih dari 0.');
+        }
+
+        if ($totalCommission < $request->amount) {
+            return redirect()->back()->with('error', 'Jumlah yang diminta melebihi jumlah komisi yang tersedia.');
+        }
         
         if ($totalCommission < 100000) {
             return redirect()->back()->with('error', 'Minimal pencairan dana adalah Rp 100.000');
         }
 
-        // FundraisingWithdrawal::create($request->);
+        DB::beginTransaction();
+    try {
+        // Cari fundraising dengan komisi terbesar untuk dijadikan sebagai fundraising_id
+        $primaryFundraising = $fundraisings->sortByDesc('commission')->first();
         
-        // Logic untuk pencairan dana bisa ditambahkan di sini
-        // Misalnya: membuat record di tabel FundraisingWithdrawal
+        $admin = User::where('role', 'super_admin')->first();
+
+        // Buat entri pencairan dana
+        $withdrawal = FundraisingWithdrawal::create([
+            'fundraising_id' => $primaryFundraising->id,
+            'user_id' => $user->id,
+            'amount' => $request->amount,
+            'payment_method' => $request->payment_method,
+            'account_name' => $request->account_name,
+            'account_number' => $request->account_number,
+            'status' => 'menunggu',
+        ]);
         
-        return redirect()->back()->with('success', 'Permintaan pencairan dana berhasil diajukan');
+            
+        $this->notificationService->createNotification(
+            $admin,
+            'Permintaan Pencairan Fundraising Baru',
+            'Permintaan pencairan dana fundraising baru dari ' . $user->name . ' sebesar Rp ' . number_format($request->amount, 0, ',', '.'),
+            'fundraising_withdraw',
+            ['withdrawal_id' => $withdrawal->id]
+        );
+
+        Mail::to("apin82y@gmail.com")->send(new FundraisingWithdrawalMail($withdrawal));
+
+        DB::commit();
+        
+        return redirect()->back()->with('success', 'Permintaan pencairan dana berhasil diajukan! Kami akan memproses dalam 1x24 jam.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+    }
     }
 
-    public function showCampaignWithReferral(Request $request,Campaign $kampanye,$title,$code)
+    public function showCampaignWithReferral(Request $request,Campaign $kampanye,$slug,$code)
     {
 
         $fundraising = Fundraising::where('code_link', $code)->firstOrFail();        
@@ -152,7 +216,7 @@ class FundraisingController extends Controller
                 $query->where('status', 'sukses')
                       ->orderBy('created_at', 'desc');  // Menambahkan pengurutan berdasarkan waktu terbaru
             }
-        ])->where('title', $title)->first();
+        ])->where('slug', $slug)->first();
 
         
         $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();

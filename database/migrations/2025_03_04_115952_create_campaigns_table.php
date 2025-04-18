@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->string('photo');
             $table->string('title');
+            $table->string('slug')->unique()->nullable();
             $table->text('description');
             $table->enum('status', ['aktif', 'selesai', 'ditolak', 'validasi', 'berakhir'])->default('validasi');
             $table->date('deadline')->nullable();

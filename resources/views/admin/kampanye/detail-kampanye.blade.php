@@ -294,9 +294,9 @@
             <div class="p-3  rounded">
                 <p class="fw-bold text-dark mb-2">Update Informasi Kampanye ?</p>
                 <div class="d-flex gap-2">
-                    <a href="{{ url('admin/kampanye/'.$campaign->title.'/edit-kampanye') }}" class="btn btn-second flex-fill text-white">Edit Kampanye</a>
-                    <a href="{{url('admin/kampanye/'.$campaign->title.'/kabar-terbaru')}}" class="btn btn-second flex-fill text-white">Kabar Terbaru</a>
-                    <a href="{{url('admin/kampanye/'.$campaign->title.'/kabar-pencairan')}}" class="btn btn-second flex-fill text-white">Pencairan Dana</a>
+                    <a href="{{ url('admin/kampanye/'.$campaign->slug.'/edit-kampanye') }}" class="btn btn-second flex-fill text-white">Edit Kampanye</a>
+                    <a href="{{url('admin/kampanye/'.$campaign->slug.'/kabar-terbaru')}}" class="btn btn-second flex-fill text-white">Kabar Terbaru</a>
+                    <a href="{{url('admin/kampanye/'.$campaign->slug.'/kabar-pencairan')}}" class="btn btn-second flex-fill text-white">Pencairan Dana</a>
                 </div>
             </div>
         </div>

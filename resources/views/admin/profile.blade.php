@@ -4,6 +4,13 @@
 
 @push('after-style')
 <style>
+      /* Profile Avatar */
+      .profile-avatar .avatar-container img {
+        width: 150px;
+        height: 150px;
+        bottom: -45px;
+        border: 6px solid white;
+      }
     .btn-danger {
         background-color: #FF4747;
     }
@@ -18,12 +25,6 @@
         /* Hapus padding body */
     }
 
-    .profile-img {
-        width: 150px;
-        height: 150px;
-        border: 7px solid white;
-        margin-top: -75px;
-    }
 
     .content-box {
         background: white;
@@ -126,13 +127,31 @@
 @section('content')
 
        <!-- Profile & Banner Section -->
-       <div class="content-box text-center">
-        <div class="position-relative">
-            <img src="{{ $admin->thumbnail ? asset('storage/' . $admin->thumbnail) : asset('assets/img/banner/banner-slider.png') }}" class="rounded-circle profile-img shadow img-fluid" alt="Banner Thumbnail">
-            <img src="{{ $admin->avatar ? asset('storage/' . $admin->avatar) : asset('assets/img/avatar/main-avatar.png') }}" class="rounded-circle profile-img shadow img-fluid" alt="Profile">
+       <div class="profile-header position-relative mt-4 px-4">
+        <img
+         src="{{ $admin->thumbnail ? asset('storage/' . $admin->thumbnail) : asset('assets/img/banner/banner-slider.png') }}"
+          alt="Banner"
+          class="w-100" style="border-radius: 10px;max-height:400px;"
+        />
+        <div class="profile-avatar text-center">
+          <div class="avatar-container position-relative d-inline-block">
+            <img
+              src="{{ $admin->avatar ? asset('storage/' . $admin->avatar) : asset('assets/img/avatar/main-avatar.png') }}"
+              alt="William Saliba"
+              class="rounded-circle position-absolute start-50 translate-middle-x"
+            />
+          </div>
         </div>
+      </div>
+
+      
+       <div class="content-box text-center">
+
+        
+     
+
         <div class="d-flex flex-column align-items-center">
-            <p class="mb-2 text-center mt-3 fw-bold text-second">  {{$admin->name}} </p>
+            <p class="mb-2 text-center mt-4 fs-5 fw-bold text-second"> {{$admin->name}} </p>
             <div class="d-flex align-items-center bg-opacity rounded-pill px-3 py-1">
                 <img src="{{asset('assets/img/icon/verify.svg')}}" alt="Akun Terverifikasi" class="me-2"
                     style="width: 16px; height: 16px;">
@@ -140,7 +159,7 @@
             </div>
         </div>
 
-        <p class="text-muted mx-3 mt-1 mb-1">
+        <p class="text-muted mx-3 mt-2 mb-1">
             {{$admin->bio ?? 'Bio belum tersedia'}}
         </p>
         <div class="d-flex justify-content-center gap-3 mt-3">

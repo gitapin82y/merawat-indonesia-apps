@@ -3,7 +3,8 @@
 @section('title', 'Dashboard')
 
 @push('after-style')
-
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 @endpush
 
 
@@ -168,7 +169,7 @@
                 <!-- Card Header - Dropdown -->
                 <div
                     class="card-header  bg-danger text-white py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-main">Grafik Penjualan 2024</h6>
+                    <h6 class="m-0 font-weight-bold text-main">Grafik Total Donasi Tahun ini</h6>
                 </div>
                 <!-- Card Body -->
                 <div class="card-body">
@@ -184,7 +185,7 @@
         <div class="col-xl-4 col-lg-5">
             <div class="card mb-4">
                 <div class="card-header bg-danger text-white py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-main">Persentase Akun</h6>
+                    <h6 class="m-0 font-weight-bold text-main">Performa Kategori</h6>
                 </div>
                 <div class="card-body">
                     <div class="chart-pie pt-0 pb-2">
@@ -224,7 +225,6 @@
 @push('after-script')
 <script>
 var ctx = document.getElementById("donasiChart").getContext("2d");
-var ctx = document.getElementById("donasiChart").getContext("2d");
 var myBarChart = new Chart(ctx, {
     type: 'bar',  // Ubah dari 'line' menjadi 'bar'
     data: {
@@ -236,7 +236,20 @@ var myBarChart = new Chart(ctx, {
             borderWidth: 1,
             hoverBackgroundColor: "rgba(255, 71, 71, 0.8)",
             hoverBorderColor: "#FF4747",
-            data: [100000, 120000, 90000, 150000, 200000, 180000, 220000, 250000, 230000, 260000, 280000, 300000], // Data donasi
+            data: [
+                {{ $monthlyData[1] ?? 0 }}, // Januari
+                {{ $monthlyData[2] ?? 0 }}, // Februari
+                {{ $monthlyData[3] ?? 0 }}, // Maret
+                {{ $monthlyData[4] ?? 0 }}, // April
+                {{ $monthlyData[5] ?? 0 }}, // Mei
+                {{ $monthlyData[6] ?? 0 }}, // Juni
+                {{ $monthlyData[7] ?? 0 }}, // Juli
+                {{ $monthlyData[8] ?? 0 }}, // Agustus
+                {{ $monthlyData[9] ?? 0 }}, // September
+                {{ $monthlyData[10] ?? 0 }}, // Oktober
+                {{ $monthlyData[11] ?? 0 }}, // November
+                {{ $monthlyData[12] ?? 0 }}  // Desember
+            ],
         }],
     },
     options: {
@@ -289,34 +302,73 @@ var categoryValues = Object.values(donationData).map(value => ((value / totalDon
 // Warna untuk setiap kategori
 var categoryColors = ['#4e73df', '#1cc88a', '#e74a3b', '#f6c23e', '#36b9cc', '#858796'];
 
+// PIE CHART - Data donasi dalam kategori (dinamis dari database)
+var donationData = {
+    @foreach($categoryData as $category => $amount)
+        "{{ $category }}": {{ $amount }},
+    @endforeach
+};
+
+// Hitung total donasi
+var totalDonasi = Object.values(donationData).reduce((a, b) => a + b, 0);
+
+// Hitung persentase setiap kategori
+var categoryLabels = Object.keys(donationData);
+var categoryValues = Object.values(donationData).map(value => ((value / totalDonasi) * 100).toFixed(2));
+
+// Warna untuk setiap kategori
+var categoryColors = ['#4e73df', '#1cc88a', '#e74a3b', '#f6c23e', '#36b9cc', '#858796'];
+
+// Jika ada lebih dari 6 kategori, generate warna tambahan
+if (categoryLabels.length > 6) {
+    for (let i = 6; i < categoryLabels.length; i++) {
+        let randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+        categoryColors.push(randomColor);
+    }
+}
+
+
 var ctxPie = document.getElementById("myPieChart").getContext('2d');
 var myPieChart = new Chart(ctxPie, {
     type: 'doughnut',
     data: {
-        labelItems: categoryLabels,
+        labels: categoryLabels,
         datasets: [{
             data: categoryValues,
-            backgroundColor: categoryColors,
-            hoverBackgroundColor: categoryColors.map(color => shadeColor(color, -20)),
+            backgroundColor: categoryColors.slice(0, categoryLabels.length),
+            hoverBackgroundColor: categoryColors.slice(0, categoryLabels.length).map(color => shadeColor(color, -20)),
             hoverBorderColor: "rgba(234, 236, 244, 1)",
         }],
     },
     options: {
         maintainAspectRatio: false,
-        cutoutPercentage: 80,
-        tooltips: {
-            callbacks: {
-                label: function(tooltipItem, chart) {
-                    var label = chart.labelItems[tooltipItem.index];
-                    var value = chart.datasets[0].data[tooltipItem.index];
-                    return `${label}: ${value}%`;
+        cutout: '80%',
+        plugins: {
+            legend: {
+                display: false // Sembunyikan legenda di chart karena sudah ada di bawah
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(tooltipItem) {
+                        const category = categoryLabels[tooltipItem.dataIndex];
+                        const value = categoryValues[tooltipItem.dataIndex];
+                        const amount = donationData[category].toLocaleString();
+                        return `${category}: ${value}% (Rp ${amount})`;
+                    }
                 }
             }
         }
     },
 });
 
-// Fungsi untuk menggelapkan warna hover
+// Update legenda manual di bawah chart
+document.querySelector('.mt-4.text-center.small').innerHTML = categoryLabels.map((label, index) => {
+    return `<span class="mr-2">
+                <i class="fas fa-circle" style="color:${categoryColors[index]}"></i> ${label}
+            </span>`;
+}).join('');
+
+
 function shadeColor(color, percent) {
     var num = parseInt(color.replace("#", ""), 16),
         amt = Math.round(2.55 * percent),
@@ -325,6 +377,7 @@ function shadeColor(color, percent) {
         B = (num & 0x0000FF) + amt;
     return `rgb(${R < 255 ? R : 255}, ${G < 255 ? G : 255}, ${B < 255 ? B : 255})`;
 }
+
 
 </script>
 
@@ -556,7 +609,7 @@ $(document).ready(function() {
     $('#kategoriForm').submit(function(e) {
     e.preventDefault();
 
-    let formData = new FormData();
+    let formData = new FormData(this);
     formData.append('name', $('#kategori_name').val());
     if ($('#kategori_icon')[0].files.length > 0) {
     formData.append('icon', $('#kategori_icon')[0].files[0]);
@@ -724,7 +777,7 @@ $(document).ready(function() {
         $('#bannerForm').submit(function(e) {
         e.preventDefault();
     
-        let formData = new FormData();
+        let formData = new FormData(this);
         if ($('#banner_photo')[0].files.length > 0) {
         formData.append('photo', $('#banner_photo')[0].files[0]);
         }
@@ -1024,5 +1077,180 @@ $(document).ready(function() {
             });
         });
     });
+</script>
+<script>
+    // Revisi implementasi cropper untuk Banner
+let bannerCropper;
+
+// Gunakan fungsi terpisah untuk inisialisasi cropper
+function initBannerCropper() {
+  const img = document.getElementById('cropBannerImage');
+  if (bannerCropper) {
+    bannerCropper.destroy();
+  }
+  
+  bannerCropper = new Cropper(img, {
+    aspectRatio: 2 / 1,
+    viewMode: 1,
+    autoCropArea: 0.8,
+    responsive: true,
+    restore: false
+  });
+}
+
+// Reset event listener untuk modal banner
+$('#cropBannerModal').on('hidden.bs.modal', function() {
+  if (bannerCropper) {
+    bannerCropper.destroy();
+    bannerCropper = null;
+  }
+});
+
+// Event listener untuk perubahan file banner
+$(document).on('change', '#banner_photo', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = document.getElementById('cropBannerImage');
+    img.src = event.target.result;
+    
+    // Hilangkan modal form terlebih dahulu
+    $('#bannerFormModal').modal('hide');
+    
+    // Tampilkan modal crop setelah modal form tertutup
+    setTimeout(function() {
+      $('#cropBannerModal').modal('show');
+      
+      // Inisialisasi cropper setelah modal muncul
+      $('#cropBannerModal').one('shown.bs.modal', function() {
+        initBannerCropper();
+      });
+    }, 500);
+  };
+  reader.readAsDataURL(file);
+});
+
+// Implementasi untuk kategori dengan perubahan serupa
+let kategoriCropper;
+
+function initKategoriCropper() {
+  const img = document.getElementById('cropKategoriImage');
+  if (kategoriCropper) {
+    kategoriCropper.destroy();
+  }
+  
+  kategoriCropper = new Cropper(img, {
+    aspectRatio: 1 / 1,
+    viewMode: 1,
+    autoCropArea: 0.8,
+    responsive: true,
+    restore: false
+  });
+}
+
+$('#cropKategoriModal').on('hidden.bs.modal', function() {
+  if (kategoriCropper) {
+    kategoriCropper.destroy();
+    kategoriCropper = null;
+  }
+});
+
+$(document).on('change', '#kategori_icon', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = document.getElementById('cropKategoriImage');
+    img.src = event.target.result;
+    
+    $('#kategoriFormModal').modal('hide');
+    
+    setTimeout(function() {
+      $('#cropKategoriModal').modal('show');
+      
+      $('#cropKategoriModal').one('shown.bs.modal', function() {
+        initKategoriCropper();
+      });
+    }, 500);
+  };
+  reader.readAsDataURL(file);
+});
+
+// Perbaiki juga event crop untuk memastikan cropper ada sebelum mencoba mengakses metodenya
+$(document).on('click', '#cropBannerButton', function() {
+  if (!bannerCropper) {
+    console.error('Banner cropper not initialized');
+    return;
+  }
+  
+  try {
+    bannerCropper.getCroppedCanvas({
+      width: 1200,
+      height: 600
+    }).toBlob(function(blob) {
+      const fileInput = document.getElementById('banner_photo');
+      const myFile = new File([blob], "banner.jpg", {type: "image/jpeg"});
+      
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(myFile);
+      fileInput.files = dataTransfer.files;
+      
+      const imageUrl = URL.createObjectURL(blob);
+      $('#photo_preview').attr('src', imageUrl).show();
+      
+      $('#cropBannerModal').modal('hide');
+      
+      setTimeout(function() {
+        $('#bannerFormModal').modal('show');
+      }, 500);
+    }, 'image/jpeg', 0.9);
+  } catch (error) {
+    console.error('Error cropping banner:', error);
+    $('#cropBannerModal').modal('hide');
+    setTimeout(function() {
+      $('#bannerFormModal').modal('show');
+    }, 500);
+  }
+});
+
+// Sama untuk kategori
+$(document).on('click', '#cropKategoriButton', function() {
+  if (!kategoriCropper) {
+    console.error('Kategori cropper not initialized');
+    return;
+  }
+  
+  try {
+    kategoriCropper.getCroppedCanvas({
+      width: 300,
+      height: 300
+    }).toBlob(function(blob) {
+      const fileInput = document.getElementById('kategori_icon');
+      const myFile = new File([blob], "icon.jpg", {type: "image/jpeg"});
+      
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(myFile);
+      fileInput.files = dataTransfer.files;
+      
+      const imageUrl = URL.createObjectURL(blob);
+      $('#icon_preview').attr('src', imageUrl).show();
+      
+      $('#cropKategoriModal').modal('hide');
+      
+      setTimeout(function() {
+        $('#kategoriFormModal').modal('show');
+      }, 500);
+    }, 'image/jpeg', 0.9);
+  } catch (error) {
+    console.error('Error cropping kategori:', error);
+    $('#cropKategoriModal').modal('hide');
+    setTimeout(function() {
+      $('#kategoriFormModal').modal('show');
+    }, 500);
+  }
+});
 </script>
 @endpush

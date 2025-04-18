@@ -5,7 +5,7 @@
         <i class="fa fa-bars"></i>
     </button>
 
-    <a class="navbar-nav d-none d-md-flex" href="{{url('/')}}" style="text-decoration: none;">
+    <a href="{{url('/')}}" class="navbar-nav d-none d-md-flex" style="text-decoration: none;">
             <img src="{{asset('assets/img/merawat-indonesia-logo.png')}}" alt="logo lulus bersama" height="40px">
             <h5 class="text-danger align-self-center mb-0 ms-2">
                 Merawat Indonesia

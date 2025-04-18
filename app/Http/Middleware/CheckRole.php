@@ -6,6 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Admin;
+use Carbon\Carbon;
 
 class CheckRole
 {
@@ -22,6 +24,17 @@ class CheckRole
                 'message' => 'Anda Tidak Memiliki Akses'
             ]);
         }
+
+        if (Auth::check() && Auth::user()->role === 'yayasan') {
+            // Find the admin record associated with the user
+            $admin = Admin::where('user_id', Auth::id())->first();
+            
+            if ($admin) {
+                // Update the log_activity timestamp
+                $admin->update(['log_activity' => Carbon::now()]);
+            }
+        }
+
         return $next($request);
     }
 }
