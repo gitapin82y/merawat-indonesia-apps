@@ -12,7 +12,7 @@
     <div class="card mb-4">
         <div class="card-header bg-white py-3 align-items-center justify-content-between row m-0">
             <div class="col-12 col-sm-6 p-0">
-                <h4 class="m-0 font-weight-bold float-left text-danger">Manajemen Prioritas Kampanye</h4>
+                <h4 class="m-0 font-weight-bold float-left text-danger">Manajemen Kampanye</h4>
             </div>
             <div class="col-12 col-sm-6">
                 <a href="{{ route('kampanye.create') }}" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">Tambah Kampanye</a>

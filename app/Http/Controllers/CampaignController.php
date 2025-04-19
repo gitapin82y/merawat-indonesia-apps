@@ -49,7 +49,7 @@ public function __construct(NotificationService $notificationService)
                     return $actionBtn;
                 })
                 ->addColumn('category', function($row) {
-                    return $row->category->name ?? 'N/A'; // Menampilkan nama kategori
+                    return $row->category->name ?? 'N/A'; 
                 })
                 ->addColumn('status', function($row) {
                     $statusColor = [

@@ -15,7 +15,7 @@
                 <h4 class="m-0 font-weight-bold float-left text-danger">Semua Data Fundraising</h4>
             </div>
             <div class="col-12 col-sm-6">
-                <a href="" class="btn btn-danger float-left me-2 mt-sm-0 float-sm-right shadow-sm">Ubah Persentase Komisi</a>
+                <a href="javascript:void(0)" class="btn btn-danger float-left me-2 mt-sm-0 float-sm-right shadow-sm btn-ubah-komisi">Ubah Persentase Komisi</a>
             </div>
         </div>
         <div class="card-body">
@@ -118,5 +118,115 @@ function deleteFundraising(id) {
 }
 
 
+// Add this to your after-script section
+$(document).ready(function() {
+  
+    $('.btn-ubah-komisi').click(function(e) {
+    e.preventDefault();
+    
+    // Show loading while fetching current value
+    Swal.fire({
+        title: 'Loading...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Fetch current commission percentage
+    $.ajax({
+        url: "{{ route('commission.get') }}",
+        type: 'GET',
+        success: function(response) {
+            if (response.success) {
+                showCustomCommissionModal(response.data.amount);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.message || 'Gagal memuat data persentase komisi'
+                });
+            }
+        },
+        error: function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Terjadi kesalahan saat memuat data persentase komisi'
+            });
+        }
+    });
+});
+
+function showCustomCommissionModal(currentValue) {
+    Swal.fire({
+        title: 'Ubah Persentase Komisi',
+        titleText: 'Ubah Persentase Komisi',
+        html: `
+            <div style="background-color: #FFEBE9; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: left;">
+                <p style="color: #E74C3C; font-size: 18px; margin-bottom: 5px; font-weight: bold;">Persentase Komisi Saat Ini : ${currentValue}%</p>
+                <p style="color: #E74C3C; margin: 0;">Jika Mengubah Persentase Komisi Akan Berlaku Untuk Fundraising Selanjutnya</p>
+            </div>
+            <input id="swal-input-commission" class="swal2-input" placeholder="Masukan Persentase (jika ingin dirubah)" type="number" min="0" max="100" style="width: 100%; margin: 10px 0; padding: 12px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;">
+        `,
+        showCancelButton: false,
+        showConfirmButton: true,
+        confirmButtonText: 'Simpan Data',
+        confirmButtonColor: '#E74C3C',
+        customClass: {
+            popup: 'custom-popup',
+            title: 'custom-title',
+            confirmButton: 'custom-confirm-button',
+            closeButton: 'custom-close-button'
+        },
+        showCloseButton: true,
+        preConfirm: () => {
+            const value = document.getElementById('swal-input-commission').value;
+            
+            if (!value) {
+                Swal.showValidationMessage('Persentase komisi tidak boleh kosong');
+                return false;
+            }
+            
+            if (value < 0 || value > 100) {
+                Swal.showValidationMessage('Persentase komisi harus berada di antara 0-100%');
+                return false;
+            }
+            
+            return $.ajax({
+                url: "{{ route('commission.update') }}",
+                type: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    amount: value
+                }
+            }).then(response => {
+                if (!response.success) {
+                    throw new Error(response.message || 'Gagal mengubah persentase komisi');
+                }
+                return response;
+            }).catch(error => {
+                Swal.showValidationMessage(
+                    `Gagal: ${error.responseJSON?.message || error.message || 'Terjadi kesalahan'}`
+                );
+            });
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Persentase komisi berhasil diubah',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+    });
+}
+});
+
+
 </script>
+
+
 @endpush

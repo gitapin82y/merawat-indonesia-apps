@@ -54,13 +54,13 @@ class KabarTerbaruController extends Controller
                     $title = $row->campaign?->title ?? 'N/A';
                     return '
                         <div class="btn-group" role="group">
-                         <a href="'.route('kabar-terbaru.edit', $row->id).'" class="btn text-white btn-info btn-sm">Lihat Kabar Terbaru</a>
+                         <a href="'.route('kabar-terbaru.edit', $row->campaign->id).'" class="btn text-white btn-info btn-sm">Lihat Kabar Terbaru</a>
                             <button onclick="deleteKabarTerbaru('.$row->id.')" class="btn btn-warning btn-sm"><i class="fas fa-times text-white"></i></button>
                         </div>
                     ';
                 })
                 ->addColumn('total', function($row) {
-                    return '<span class="badge bg-primary text-white">'.$row->campaign?->total_kabar_terbaru.'</span>';
+                    return '<span class="badge bg-primary text-white">'.$row->count().'</span>';
                 })
                 ->rawColumns(['total','category', 'status', 'admin', 'action'])
                 ->make(true);
@@ -115,8 +115,11 @@ class KabarTerbaruController extends Controller
     }
 
 
-    public function edit(KabarTerbaru $kabarTerbaru)
+    public function edit($id)
     {
+        $kabarTerbaru = KabarTerbaru::whereHas('campaign', function($query) use ($id) {
+            $query->where('id', $id);
+        })->get();
         return view('super_admin.kabar_terbaru.form', compact('kabarTerbaru'));
     }
     

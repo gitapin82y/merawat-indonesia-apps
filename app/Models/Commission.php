@@ -10,6 +10,7 @@ class Commission extends Model
     use HasFactory;
 
     protected $table = 'commission';
+    public $timestamps = false;
 
     protected $fillable = [
         'amount'

@@ -4,6 +4,34 @@
 <link href="{{asset('vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
+    :root {
+    /* Warna Utama dan Sekunder */
+    --main-color: #FE0101;
+    --second-color: #FF4747;
+  
+    /* Warna Teks */
+    --title-color: #202020;
+    --desc-color: #606060;
+  
+    /* Tipografi */
+    --font-family-title: 'Poppins', sans-serif;
+    --font-family-desc: 'Poppins', sans-serif;
+  
+    /* Ukuran Font */
+    --font-size-title: 16px;
+    --font-size-desc: 15px;
+  
+    /* Gaya Font */
+    --font-weight-bold: bold;
+    --font-weight-regular: normal;
+  
+    /* Button */
+    --border-radius: 6px;
+    --button-height: 50px;
+  
+    /* shadow */
+    --box-shadow-default: 0px 10px 30px rgba(0, 0, 0, 0.1);
+  }
     .swal2-popup{
         width: auto !important;
     }
@@ -84,6 +112,23 @@
 </style>
 
 <style>
+     .circle-dropdown {
+    color: white;
+    background-color: var(--second-color);
+    padding: 5px;
+    border-radius: 20px;
+  }
+    .circle-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #FF4747;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
     .select2-container .select2-selection--single {
     height: 55px !important; /* Sesuaikan tinggi */
     display: flex !important;

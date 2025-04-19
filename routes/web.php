@@ -100,7 +100,6 @@ Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
 
 Route::post('/donation/{donationId}/like', [DonationLikeController::class, 'store'])->name('donation.like');
 
-Route::resource('commissions', CommissionController::class);
 Route::resource('donation-likes', DonationLikeController::class);
 Route::resource('donations', DonationController::class);
 Route::get('/kampanye/{slug}/donasi', [DonationController::class, 'showDonationForm']);
@@ -128,6 +127,11 @@ Route::resource('campaign-withdrawals', CampaignWithdrawalController::class);
 Route::post('kampanye/toggle-save', [CampaignController::class, 'toggleSave'])->name('campaign.toggle-save');
 Route::prefix('super-admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
+
+    Route::get('/commission', [CommissionController::class, 'getCommission'])
+    ->name('commission.get');
+Route::post('/commission/update', [CommissionController::class, 'updateCommission'])
+    ->name('commission.update');
     
     Route::resource('admin', AdminController::class);
     Route::resource('user', UserController::class);
