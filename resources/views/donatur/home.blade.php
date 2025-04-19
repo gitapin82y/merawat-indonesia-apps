@@ -34,7 +34,7 @@
             <a href="{{url('kalkulator-zakat')}}"><img src="{{asset('assets/img/kategori/kalkulator zakat.svg')}}" alt="Kalkulator Zakat"><p>Kalkulator Zakat</p></a>
              {{-- Loop through the categories --}}
             @foreach($categories as $category)
-                <a href="kampanye.html?detail={{ $category->name }}">
+                <a href="/eksplore?category={{ $category->name }}">
                     <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
                     <p>{{ $category->name }}</p>
                 </a>
@@ -53,9 +53,14 @@
         </div>
         <div class="swiper donaturSwiper mt-2">
             <div class="swiper-wrapper">
-                @foreach($donaturLeaderboard as $donatur)
+                @forelse($donaturLeaderboard as $donatur)
                     <a href="{{route('profileDonatur',$donatur['name'] )}}" class="text-center avatar swiper-slide"><img src="{{ asset('storage/' . $donatur['avatar']) }}" alt="Donasi"><p>{{ $donatur['name'] }}</p></a>
-                @endforeach
+                @empty
+                <div class="d-flex align-items-center justify-content-center">
+                  <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3 pe-3" style="width: 50px; height: 50px;">
+                  <p>Belum ada leaderboard donatur</p>
+              </div>
+            @endforelse
         </div>
         </div>
     </div>

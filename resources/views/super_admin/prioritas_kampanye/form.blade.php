@@ -3,7 +3,22 @@
 @section('title', 'Manajemen Kampanye')
 
 @push('after-style')
-
+<style>
+    .prioritas-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        margin: 2px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+    
+    .prioritas-badge.used {
+        background-color: #dc3545;
+        color: white;
+        text-decoration: line-through;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -13,13 +28,18 @@
             <h4 class="m-0 font-weight-bold float-left text-white">{{ isset($prioritasKampanye->id) ? 'Edit Prioritas Kampanye' : 'Tambah Prioritas Kampanye' }}</h4>
         </div>
     </div>
-        <div class="card-body">
+    <div class="card-body">
+        @if(count($campaigns) == 0)
+            <div class="alert alert-warning">
+                Semua kampanye sudah berada dalam daftar prioritas. <a href="{{ route('prioritas-kampanye.index') }}">Kembali ke daftar</a>
+            </div>
+        @else
             <form action="{{ isset($prioritasKampanye->id) ? route('prioritas-kampanye.update', $prioritasKampanye->id) : route('prioritas-kampanye.store') }}" 
                     method="POST" enctype="multipart/form-data" id="kampanyeForm">
-                  @csrf
-                  @if(isset($prioritasKampanye->id))
-                      @method('PUT')
-                  @endif
+                @csrf
+                @if(isset($prioritasKampanye->id))
+                    @method('PUT')
+                @endif
               
                 <div class="row">
                     <div class="col-md-6">
@@ -28,7 +48,7 @@
                             <select name="campaign_id" class="form-control @error('campaign_id') is-invalid @enderror" required>
                                 <option value="">Pilih Kampanye</option>
                                 @foreach($campaigns as $campaign)
-                                    <option value="{{ $campaign->id }}" {{ (old('campaign_id', $prioritasKampanye->id ?? '') == $campaign->id) ? 'selected' : '' }}>
+                                    <option value="{{ $campaign->id }}" {{ (old('campaign_id', $prioritasKampanye->campaign_id ?? '') == $campaign->id) ? 'selected' : '' }}>
                                         {{ $campaign->title }}
                                     </option>
                                 @endforeach
@@ -43,8 +63,10 @@
                             <select name="prioritas" class="form-control @error('prioritas') is-invalid @enderror" required>
                                 <option value="">Pilih Prioritas</option>
                                 @for ($i = 1; $i <= 10; $i++)
-                                    <option value="{{ $i }}" {{ (old('prioritas', $prioritasKampanye->prioritas ?? '') == $i) ? 'selected' : '' }}>
-                                        {{ $i }}
+                                    <option value="{{ $i }}" 
+                                        {{ (old('prioritas', $prioritasKampanye->prioritas ?? '') == $i) ? 'selected' : '' }}
+                                        {{ isset($usedPriorities) && in_array($i, $usedPriorities) ? 'disabled' : '' }}>
+                                        {{ $i }}{{ isset($usedPriorities) && in_array($i, $usedPriorities) ? ' (Sudah digunakan)' : '' }}
                                     </option>
                                 @endfor
                             </select>                            
@@ -52,21 +74,34 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        
+                        <div class="mt-3 mb-4">
+                            <p><strong>Status Prioritas:</strong></p>
+                            <div class="d-flex flex-wrap">
+                                @for ($i = 1; $i <= 10; $i++)
+                                    <span class="prioritas-badge {{ isset($usedPriorities) && in_array($i, $usedPriorities) ? 'used' : '' }}">
+                                        {{ $i }}
+                                    </span>
+                                @endfor
+                            </div>
+                            <small class="text-muted">Nomor yang dicoret telah digunakan</small>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <button type="submit" class="btn btn-danger">Simpan Kampanye</button>
+                    <button type="submit" class="btn btn-danger">Simpan Prioritas</button>
                     <a href="{{ route('prioritas-kampanye.index') }}" class="btn btn-secondary">Kembali</a>
                 </div>
             </form>
-        </div>
+        @endif
+    </div>
 </div>
 @endsection
 
 @push('after-script')
 <script>
-       @if(session('success'))
+    @if(session('success'))
     Swal.fire({
       icon: 'success',
       title: 'Berhasil!',
@@ -83,14 +118,15 @@
       timer: 3000
     });
     @endif
+    
     $(document).ready(function() {
         $('#kampanyeForm').on('submit', function(e) {
             var form = this;
             e.preventDefault();
     
             Swal.fire({
-                title: 'Konfirmasi Simpan Kampanye',
-                text: 'Apakah Anda yakin ingin menyimpan kampanye ini?',
+                title: 'Konfirmasi Simpan Prioritas',
+                text: 'Apakah Anda yakin ingin menyimpan prioritas kampanye ini?',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Simpan',

@@ -432,10 +432,10 @@ public function __construct(NotificationService $notificationService)
             $admin->delete();
 
             DB::commit();
-            return response()->json(['success' => true, 'message' => 'Admin berhasil dihapus']);
+            return response()->json(['status' => 'success', 'message' => 'Admin berhasil dihapus']);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Gagal menghapus admin: ' . $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => 'Gagal menghapus admin: ' . $e->getMessage()], 500);
         }
     }
 

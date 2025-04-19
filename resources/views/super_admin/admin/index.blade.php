@@ -118,7 +118,18 @@ $(function () {
                 orderable: false, 
                 searchable: false
             },
-        ]
+        ],
+        language: {
+            processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>',
+            emptyTable: "Tidak ada data yang tersedia",
+            info: "Menampilkan _START_ hingga _END_ dari _TOTAL_ entri",
+            infoEmpty: "Menampilkan 0 hingga 0 dari 0 entri",
+            infoFiltered: "(disaring dari _MAX_ entri keseluruhan)",
+            lengthMenu: "Tampilkan _MENU_ entri",
+            loadingRecords: "Sedang memuat...",
+            search: "Cari:",
+            zeroRecords: "Tidak ditemukan data yang sesuai"
+        }
     });
 });
 
@@ -134,7 +145,7 @@ function deleteAdmin(id) {
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: '/admin/' + id,
+                url: '/super-admin/admin/' + id,
                 type: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'

@@ -253,7 +253,7 @@
               Diambil berdasarkan jumlah transaksi donasi terbanyak
             </p>
   
-            @foreach($donaturLeaderboard as $donatur)
+            @forelse($donaturLeaderboard as $donatur)
             <a href="{{route('profileDonatur',$donatur['name'] )}}" class="leaderboard-item">
               <div class="leaderboard-user">
                 <div class="avatar-container">
@@ -281,7 +281,12 @@
                 <p class="donation-text">Total Donasi</p>
               </div>
             </a>
-            @endforeach
+            @empty
+            <div class="text-center">
+              <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
+              <p>Belum ada leaderboard donatur</p>
+          </div>
+        @endforelse
 
             <!-- Add padding at the bottom for footer -->
             <div style="height: 80px"></div>
@@ -296,7 +301,7 @@
               Diambil berdasarkan jumlah donatur terbanyak
             </p>
 
-            @foreach($adminLeaderboard as $admin)
+            @forelse($adminLeaderboard as $admin)
             <!-- Leaderboard Items -->
             <a href="{{route('galangDanaProfile',$admin['name'] )}}" class="leaderboard-item">
               <div class="leaderboard-user">
@@ -320,7 +325,12 @@
                 <p class="donation-text">Total Donatur</p>
               </div>
             </a>
-            @endforeach
+            @empty
+            <div class="text-center">
+              <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
+              <p>Belum ada leaderboard donatur</p>
+          </div>
+        @endforelse
   
       
   

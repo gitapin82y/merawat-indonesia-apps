@@ -3,10 +3,24 @@
 @section('title', 'Manajemen Kampanye')
 
 @push('after-style')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/css/select2.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/js/select2.min.js"></script>
+<link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/autonumeric"></script>
 <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+<style>
+    /* Fix for cropper modal */
+    .modal {
+        z-index: 1050 !important;
+    }
+    
+    .cropper-container {
+        z-index: 1060 !important;
+    }
+    
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -27,17 +41,16 @@
               <div class="row">
                   <div class="col-md-6">
                         <div class="form-group mb-3">
-
-        <select name="admin_id" id="adminSelect" class="form-select select2 @error('admin_id') is-invalid @enderror">
-            <option value="">Pilih Admin</option>
-            @foreach($admins as $admin)
-                <option value="{{ $admin->id }}" {{ old('admin_id', $kampanye->admin_id ?? '') == $admin->id ? 'selected' : '' }}>
-                    {{ $admin->name }}
-                </option>
-            @endforeach
-        </select>
-        @error('admin_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-    </div>
+                            <select name="admin_id" id="adminSelect" class="form-select select2 @error('admin_id') is-invalid @enderror">
+                                <option value="">Pilih Admin</option>
+                                @foreach($admins as $admin)
+                                    <option value="{{ $admin->id }}" {{ old('admin_id', $kampanye->admin_id ?? '') == $admin->id ? 'selected' : '' }}>
+                                        {{ $admin->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('admin_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
           
                       <div class="form-floating mb-3">
                           <select name="category_id" class="form-select @error('category_id') is-invalid @enderror" id="category_id">
@@ -92,30 +105,41 @@
                   </div>
           
                   <div class="col-md-6">
-          
                       <div class="mb-3">
-                        @if(isset($kampanye) && $kampanye->photo)
-                        <label class="photo">Ubah Foto Thumbnail?</label>
-                        <a href="javascript:void(0);" class="text-danger lihat-preview" data-image="{{ asset('storage/' . $kampanye->photo) }}">Lihat Foto</a>
-                    @else
-                        <label class="photo">Foto Thumbnail</label>
-                    @endif
-                    
-
-                          <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*" id="photo">
-                          @error('photo')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label class="form-label">
+                            Foto Thumbnail
+                            @if(isset($kampanye) && $kampanye->photo)
+                                <a href="javascript:void(0)" class="ms-2 text-primary" onclick="previewImage('{{ asset('storage/'.$kampanye->photo) }}', 'Thumbnail')">
+                                    <small>(Lihat)</small>
+                                </a>
+                            @endif
+                        </label>
+                        <input type="file" id="fileThumbnail" name="photo" class="form-control @error('photo') is-invalid @enderror" accept="image/*">
+                        @error('photo')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        
+                        <!-- Hidden input for cropped data -->
+                        <input type="hidden" name="photo_cropped" id="photo_cropped">
+                        
+                        <!-- Preview container will appear after cropping -->
+                        <div id="thumbnailPreviewContainer" class="mt-2" style="display: none;">
+                            <label class="form-label">Preview Thumbnail:</label>
+                            <img id="croppedThumbnailPreview" src="#" alt="Thumbnail Preview" class="img-fluid rounded" style="max-height: 150px; object-fit: cover;">
+                        </div>
                       </div>
           
                       <div class="mb-3">
-                        @if(isset($kampanye) && $kampanye->document_rab)
-                        <label class="document_rab">Ubah Dokumen RAB?</label>
-                        <a href="{{ asset('storage/' . $kampanye->document_rab) }}" target="_blank" class="text-danger">Lihat Dokumen</a>
-                        @else
-                        <label class="document_rab">Dokumen RAB</label>
-                        @endif
-                 
-                          <input type="file" name="document_rab" class="form-control @error('document_rab') is-invalid @enderror" accept=".pdf, .doc, .docx, .xls, .xlsx" id="document_rab">
-                          @error('document_rab')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label class="form-label">
+                            Dokumen RAB
+                            @if(isset($kampanye) && $kampanye->document_rab)
+                                <a href="{{ asset('storage/'.$kampanye->document_rab) }}" class="ms-2 text-primary" target="_blank">
+                                    <small>(Lihat)</small>
+                                </a>
+                            @endif
+                        </label>
+                        <input type="file" name="document_rab" class="form-control @error('document_rab') is-invalid @enderror" accept=".pdf, .doc, .docx, .xls, .xlsx" id="document_rab">
+                        @error('document_rab')<div class="invalid-feedback">{{ $message }}</div>@enderror
                       </div>
           
                       <div class="form-floating mb-3">
@@ -132,15 +156,186 @@
                   <a href="{{ route('kampanye.index') }}" class="btn btn-secondary">Kembali</a>
               </div>
           </form>
-          
         </div>
+</div>
+
+<!-- Modal Crop Thumbnail -->
+<div class="modal fade" id="cropThumbnailModal" tabindex="-1" aria-labelledby="cropThumbnailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cropThumbnailModalLabel">Crop Thumbnail</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div style="max-width: 100%; margin: 0 auto;">
+                    <img id="previewThumbnail" src="" style="display: block; max-width: 100%;" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" id="cropThumbnailButton" class="btn btn-primary">Simpan</button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @push('after-script')
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script>
+    // Debug helper
+    function logStatus(message) {
+        console.log(`[CROPPER DEBUG]: ${message}`);
+    }
+
+    // Global variables
+    let thumbnailCropper = null;
+    let thumbnailModal = null;
+    
+    // Initialize Bootstrap modals
+    document.addEventListener('DOMContentLoaded', function() {
+        logStatus("DOM loaded");
+        thumbnailModal = new bootstrap.Modal(document.getElementById('cropThumbnailModal'));
+    });
+    
+    // Thumbnail Cropping (ratio 2:1)
+    document.getElementById('fileThumbnail').addEventListener('change', function(e) {
+        logStatus("Thumbnail file selected");
+        const file = e.target.files[0];
+        if (!file) {
+            logStatus("No file selected");
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            logStatus("File read successfully");
+            const imgElement = document.getElementById('previewThumbnail');
+            imgElement.src = event.target.result;
+            
+            // Show the modal
+            if (thumbnailModal) {
+                thumbnailModal.show();
+                logStatus("Thumbnail modal shown");
+                
+                // Destroy previous cropper if exists
+                if (thumbnailCropper) {
+                    thumbnailCropper.destroy();
+                    logStatus("Previous thumbnail cropper destroyed");
+                }
+                
+                // Initialize cropper with a delay to ensure modal is visible
+                setTimeout(() => {
+                    thumbnailCropper = new Cropper(imgElement, {
+                        aspectRatio: 2 / 1,
+                        viewMode: 1,
+                        dragMode: 'move',
+                        autoCropArea: 0.8,
+                        responsive: true,
+                        restore: false,
+                        guides: true,
+                        center: true,
+                        highlight: false,
+                        cropBoxMovable: true,
+                        cropBoxResizable: true,
+                        toggleDragModeOnDblclick: false,
+                        ready: function() {
+                            logStatus("Thumbnail cropper initialized");
+                        }
+                    });
+                }, 500);
+            } else {
+                logStatus("ERROR: Thumbnail modal is not initialized");
+                alert("Modal tidak tersedia. Mohon muat ulang halaman.");
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+    
+    // Crop Thumbnail Button Click
+    document.getElementById('cropThumbnailButton').addEventListener('click', function() {
+        logStatus("Crop thumbnail button clicked");
+        
+        if (!thumbnailCropper) {
+            logStatus("ERROR: Thumbnail cropper instance not available");
+            return;
+        }
+        
+        try {
+            // Get cropped canvas
+            const canvas = thumbnailCropper.getCroppedCanvas({
+                width: 600,
+                height: 300,
+                minWidth: 100,
+                minHeight: 50,
+                maxWidth: 2000,
+                maxHeight: 1000,
+                fillColor: '#fff',
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+            });
+            
+            logStatus("Canvas generated successfully");
+            
+            // Convert to blob
+            canvas.toBlob(function(blob) {
+                logStatus("Blob created: " + (blob ? "success" : "failure"));
+                
+                if (blob) {
+                    // Create file from blob
+                    const croppedFile = new File([blob], "thumbnail.jpg", { type: "image/jpeg" });
+                    
+                    // Update file input
+                    const fileInput = document.getElementById('fileThumbnail');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(croppedFile);
+                    fileInput.files = dataTransfer.files;
+                    
+                    // Store data URL in hidden input
+                    const dataUrl = canvas.toDataURL('image/jpeg');
+                    document.getElementById('photo_cropped').value = dataUrl;
+                    
+                    // Show preview
+                    document.getElementById('croppedThumbnailPreview').src = URL.createObjectURL(blob);
+                    document.getElementById('thumbnailPreviewContainer').style.display = 'block';
+                    
+                    logStatus("Thumbnail preview updated");
+                }
+                
+                // Hide modal
+                if (thumbnailModal) {
+                    thumbnailModal.hide();
+                    logStatus("Thumbnail modal hidden");
+                }
+            }, 'image/jpeg', 0.9);
+        } catch (error) {
+            logStatus("ERROR during thumbnail cropping: " + error.message);
+            console.error(error);
+        }
+    });
+
+    // Function to preview existing images
+    function previewImage(imageUrl, title) {
+        Swal.fire({
+            title: title,
+            imageUrl: imageUrl,
+            imageWidth: 600,
+            imageHeight: 300,
+            imageAlt: title,
+            confirmButtonText: 'Tutup',
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp'
+            }
+        });
+    }
+</script>
 
 <script>
-       @if(session('success'))
+    @if(session('success'))
     Swal.fire({
       icon: 'success',
       title: 'Berhasil!',
@@ -157,30 +352,7 @@
       timer: 3000
     });
     @endif
-    $(document).ready(function() {
-        $('#kampanyeForm').on('submit', function(e) {
-            var form = this;
-            e.preventDefault();
-    
-            Swal.fire({
-                title: 'Konfirmasi Simpan Kampanye',
-                text: 'Apakah Anda yakin ingin menyimpan kampanye ini?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Simpan',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    var rupiah = $('#jumlah_target_donasi').val();
-                    var clean = rupiah.replace('Rp ', '').replace(/\./g, '').replace(',', '.');
-                    $('#jumlah_target_donasi').val(clean);
-                    form.submit();
-                }
-            });
-        });
-    });
 </script>
-
 
 <script>
     $(document).ready(function() {
@@ -191,18 +363,52 @@
             allowClear: true
         });
 
-        // AutoNumeric untuk format rupiah
-        new AutoNumeric('#jumlah_target_donasi', {
+        // Make sure AutoNumeric is properly initialized with explicit variable
+        const autoNumericInstance = new AutoNumeric('#jumlah_target_donasi', {
             digitGroupSeparator: '.',
             decimalCharacter: ',',
             currencySymbol: 'Rp ',
-            unformatOnSubmit: true,
+            currencySymbolPlacement: 'p',
+            unformatOnSubmit: false,
             decimalPlaces: 0
+        });
+
+        // Check if initialization worked
+        console.log('AutoNumeric initialized:', autoNumericInstance);
+        
+        // Add an event listener to manually handle the form submission
+        $('#kampanyeForm').on('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            
+            Swal.fire({
+                title: 'Konfirmasi Simpan Kampanye',
+                text: 'Apakah Anda yakin ingin menyimpan kampanye ini?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Simpan',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Manually clean the currency value
+                    const targetDonasi = $('#jumlah_target_donasi').val();
+                    const cleanValue = targetDonasi.replace(/[^\d,-]/g, '').replace(/\./g, '').replace(',', '.');
+                    console.log('Original value:', targetDonasi);
+                    console.log('Cleaned value:', cleanValue);
+                    
+                    // Set the cleaned value
+                    $('#jumlah_target_donasi').val(cleanValue);
+                    
+                    // Submit the form
+                    form.submit();
+                }
+            });
         });
     });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+
 <script>
+    
     $(document).ready(function() {
         // Initialize Summernote
         $('#description').summernote({
@@ -247,21 +453,4 @@
         }
     });
 </script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll(".lihat-preview").forEach(function(element) {
-            element.addEventListener("click", function() {
-                let imageUrl = this.getAttribute("data-image");
-                Swal.fire({
-                    imageUrl: imageUrl,
-                    imageAlt: 'Thumbnail',
-                    showCloseButton: true,
-                    showConfirmButton: false,
-                });
-            });
-        });
-    });
-</script>
-    
 @endpush

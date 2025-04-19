@@ -20,15 +20,17 @@ class PrioritasCampaignController extends Controller
         Carbon::setLocale('id');
     
         if ($request->ajax()) {
-            $query = PrioritasCampaign::with(['campaign', 'campaign.category', 'campaign.admin'])->get();
+            $query = PrioritasCampaign::with(['campaign', 'campaign.category', 'campaign.admin'])
+                    ->orderBy('prioritas', 'asc')
+                    ->get();
     
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('title', function($row) {
-                    return $row->campaign?->title ?? 'N/A'; // Pastikan title diambil dari campaign
+                    return $row->campaign?->title ?? 'N/A'; 
                 })
                 ->addColumn('category', function($row) {
-                    return $row->campaign?->category?->name ?? 'N/A'; // Pastikan category tidak null
+                    return $row->campaign?->category?->name ?? 'N/A';
                 })
                 ->addColumn('total_donatur', function($row) {
                     return $row->campaign?->total_donatur.' Donatur';
@@ -70,15 +72,24 @@ class PrioritasCampaignController extends Controller
     
     public function create()
     {
-        $campaigns = Campaign::get();
-        return view('super_admin.prioritas_kampanye.form', compact('campaigns'));
+        // Get campaigns that are not already prioritized
+        $usedCampaignIds = PrioritasCampaign::pluck('campaign_id')->toArray();
+        $campaigns = Campaign::whereNotIn('id', $usedCampaignIds)->get();
+        
+        // Get list of used priorities
+        $usedPriorities = PrioritasCampaign::pluck('prioritas')->toArray();
+        
+        return view('super_admin.prioritas_kampanye.form', compact('campaigns', 'usedPriorities'));
     }    
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'campaign_id' => 'required|exists:campaigns,id',
-            'prioritas' => 'required|numeric',
+            'campaign_id' => 'required|exists:campaigns,id|unique:prioritas_campaigns,campaign_id',
+            'prioritas' => 'required|numeric|unique:prioritas_campaigns,prioritas',
+        ], [
+            'campaign_id.unique' => 'Kampanye ini sudah ada dalam daftar prioritas.',
+            'prioritas.unique' => 'Nomor prioritas ini sudah digunakan, silakan pilih nomor lain.'
         ]);
     
         if ($validator->fails()) {
@@ -89,8 +100,11 @@ class PrioritasCampaignController extends Controller
     
         DB::beginTransaction();
         try {
-
-            $prioritasKampanye = Campaign::create($request->all());
+            // Create new prioritas campaign
+            PrioritasCampaign::create([
+                'campaign_id' => $request->campaign_id,
+                'prioritas' => $request->prioritas
+            ]);
     
             DB::commit();
             return redirect()->route('prioritas-kampanye.index')
@@ -105,15 +119,31 @@ class PrioritasCampaignController extends Controller
     
     public function edit(PrioritasCampaign $prioritasKampanye)
     {
-        $campaigns = Campaign::get();
-        return view('super_admin.prioritas_kampanye.form', compact('campaigns','prioritasKampanye'));
+        // Get campaigns that are not already prioritized (except the current one)
+        $usedCampaignIds = PrioritasCampaign::where('id', '!=', $prioritasKampanye->id)
+            ->pluck('campaign_id')
+            ->toArray();
+        
+        $campaigns = Campaign::whereNotIn('id', $usedCampaignIds)
+            ->orWhere('id', $prioritasKampanye->campaign_id)
+            ->get();
+        
+        // Get list of used priorities (except the current one)
+        $usedPriorities = PrioritasCampaign::where('id', '!=', $prioritasKampanye->id)
+            ->pluck('prioritas')
+            ->toArray();
+        
+        return view('super_admin.prioritas_kampanye.form', compact('campaigns', 'prioritasKampanye', 'usedPriorities'));
     }
 
     public function update(Request $request, PrioritasCampaign $prioritasKampanye)
     {
         $validator = Validator::make($request->all(), [
-            'campaign_id' => 'required|exists:campaigns,id',
-            'prioritas' => 'required|numeric',
+            'campaign_id' => 'required|exists:campaigns,id|unique:prioritas_campaigns,campaign_id,'.$prioritasKampanye->id,
+            'prioritas' => 'required|numeric|unique:prioritas_campaigns,prioritas,'.$prioritasKampanye->id,
+        ], [
+            'campaign_id.unique' => 'Kampanye ini sudah ada dalam daftar prioritas.',
+            'prioritas.unique' => 'Nomor prioritas ini sudah digunakan, silakan pilih nomor lain.'
         ]);
     
         if ($validator->fails()) {
@@ -124,8 +154,10 @@ class PrioritasCampaignController extends Controller
     
         DB::beginTransaction();
         try {
-           
-            $prioritasKampanye->update($request->all());
+            $prioritasKampanye->update([
+                'campaign_id' => $request->campaign_id,
+                'prioritas' => $request->prioritas
+            ]);
     
             DB::commit();
             return redirect()->route('prioritas-kampanye.index')
@@ -138,11 +170,6 @@ class PrioritasCampaignController extends Controller
         }
     }
 
-    // public function show(PrioritasCampaign $prioritasKampanye)
-    // {
-    //     return view('admin.show', compact('admin'));
-    // }
-
     public function destroy(PrioritasCampaign $prioritasKampanye)
     {
         DB::beginTransaction();
@@ -150,10 +177,16 @@ class PrioritasCampaignController extends Controller
             $prioritasKampanye->delete();
 
             DB::commit();
-            return response()->json(['success' => true, 'message' => 'Campaign berhasil dihapus']);
+            return response()->json([
+                'status' => 'success', 
+                'message' => 'Kampanye berhasil dihapus dari daftar prioritas'
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Gagal menghapus admin: ' . $e->getMessage()], 500);
+            return response()->json([
+                'status' => 'error', 
+                'message' => 'Gagal menghapus prioritas kampanye: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -474,10 +474,10 @@ class UserController extends Controller
             $user->delete();
 
             DB::commit();
-            return response()->json(['success' => true, 'message' => 'Admin berhasil dihapus']);
+            return response()->json(['status' => 'success', 'message' => 'User berhasil dihapus']);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Gagal menghapus User: ' . $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => 'Gagal menghapus User: ' . $e->getMessage()], 500);
         }
     }
 }

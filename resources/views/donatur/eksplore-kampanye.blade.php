@@ -44,7 +44,7 @@
         <a href="{{url('kalkulator-zakat')}}"><img src="{{asset('assets/img/kategori/kalkulator zakat.svg')}}" alt="Kalkulator Zakat"><p>Kalkulator Zakat</p></a>
          {{-- Loop through the categories --}}
         @foreach($categories as $category)
-            <a href="kampanye.html?detail={{ $category->name }}">
+            <a href="/eksplore?category={{ $category->name }}">
                 <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
                 <p>{{ $category->name }}</p>
             </a>

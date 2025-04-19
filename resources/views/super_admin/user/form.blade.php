@@ -3,7 +3,6 @@
 @section('title', 'Manajemen User')
 
 @push('after-style')
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
 <style>
     .btn-upload {
@@ -128,27 +127,41 @@
 
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Avatar</label>
+                            <label class="form-label">
+                                Avatar
+                                @if(isset($user->id) && $user->avatar)
+                                    <a href="javascript:void(0)" class="ms-2 text-primary" onclick="previewImage('{{ asset('storage/'.$user->avatar) }}', 'Avatar')">
+                                        <small>(Lihat)</small>
+                                    </a>
+                                @endif
+                            </label>
                             <input type="file" id="fileAvatar" name="avatar" class="form-control @error('avatar') is-invalid @enderror" 
                                 accept="image/*">
                             @error('avatar')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             
-                            <!-- Hidden input for cropped data -->
-                            <input type="hidden" name="avatar_cropped" id="avatar_cropped">
+                              <!-- Hidden input for cropped data -->
+                              <input type="hidden" name="avatar_cropped" id="avatar_cropped">
                             
-                            <!-- Preview container will appear after cropping -->
-                            <div id="avatarPreviewContainer" class="mt-2" style="display: none;">
-                                <label class="form-label">Preview Avatar:</label>
-                                <div style="width: 100px; height: 100px; overflow: hidden; border-radius: 50%;">
-                                    <img id="croppedAvatarPreview" src="#" alt="Avatar Preview" style="width: 100%; height: 100%; object-fit: cover;">
-                                </div>
-                            </div>
+                              <!-- Preview container will appear after cropping -->
+                              <div id="avatarPreviewContainer" class="mt-2" style="display: none;">
+                                  <label class="form-label">Preview Avatar:</label>
+                                  <div style="width: 100px; height: 100px; overflow: hidden; border-radius: 50%;">
+                                      <img id="croppedAvatarPreview" src="#" alt="Avatar Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                                  </div>
+                              </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Thumbnail</label>
+                            <label class="form-label">
+                                Thumbnail
+                                @if(isset($user->id) && $user->thumbnail)
+                                    <a href="javascript:void(0)" class="ms-2 text-primary" onclick="previewImage('{{ asset('storage/'.$user->thumbnail) }}', 'Thumbnail')">
+                                        <small>(Lihat)</small>
+                                    </a>
+                                @endif
+                            </label>
                             <input type="file" id="fileThumbnail" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" 
                                 accept="image/*">
                             @error('thumbnail')
@@ -235,6 +248,7 @@
         </div>
 </div>
 
+
 <!-- Modal Crop Avatar -->
 <div class="modal fade" id="cropAvatarModal" tabindex="-1" aria-labelledby="cropAvatarModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -277,14 +291,25 @@
     </div>
 </div>
 
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewModalLabel">Preview Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="previewImage" src="" style="max-width: 100%;" alt="Preview">
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('after-script')
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     // Debug helper
     function logStatus(message) {
@@ -535,6 +560,24 @@
             console.error(error);
         }
     });
+
+    // Function to preview existing images
+    function previewImage(imageUrl, title) {
+        Swal.fire({
+            title: title,
+            imageUrl: imageUrl,
+            imageWidth: 400,
+            imageHeight: title === 'Thumbnail' ? 200 : 400,
+            imageAlt: title,
+            confirmButtonText: 'Tutup',
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp'
+            }
+        });
+    }
 </script>
 
 <script>

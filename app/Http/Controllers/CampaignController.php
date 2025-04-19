@@ -130,6 +130,7 @@ public function __construct(NotificationService $notificationService)
     
             $campaign = Campaign::create($campaignData);
             DB::commit();
+        if (Auth::check()) {
             if(Auth::user()->role == 'super_admin'){
                 return redirect()->back()
                 ->with('success', 'Kampanye berhasil ditambahkan');
@@ -137,6 +138,12 @@ public function __construct(NotificationService $notificationService)
                 return redirect()->back()
                 ->with('success', 'Kampanye berhasil diajukan');
             }
+        } else {
+            // Default message if user is not authenticated (optional)
+            return redirect()->back()
+                ->with('success', 'Kampanye berhasil diajukan');
+        }
+
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
@@ -182,15 +189,17 @@ public function __construct(NotificationService $notificationService)
     
     }
     
-    public function edit(Campaign $kampanye)
-    {
-        $admins = Admin::get();
-        $categories = Category::get();
-        return view('super_admin.kampanye.form', compact('categories','kampanye','admins'));
-    }
+    public function edit($id)
+{
+    $kampanye = Campaign::findOrFail($id);
+    $admins = Admin::get();
+    $categories = Category::get();
+    return view('super_admin.kampanye.form', compact('categories','kampanye','admins'));
+}
 
-    public function update(Request $request, Campaign $kampanye)
+    public function update(Request $request, $id)
     {
+        $kampanye = Campaign::findOrFail($id);
         $user = auth()->user(); // Ambil user yang sedang login
         $role = $user->role; // Misalnya role ada di dalam field 'role'
 

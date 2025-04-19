@@ -1061,8 +1061,33 @@ public function ceklis(Request $request)
                 return '<span class="badge bg-'.$statusColor[$row->status].' text-white">'.ucfirst($row->status).'</span>';
             })
             ->addColumn('action', function($row) {
-                // Your action column code...
-            })            
+                $whatsappUrl = "https://wa.me/". $row->phone;
+                
+                $actionBtn = '<div class="btn-group" role="group">';
+            
+                // Jika status masih pending, tampilkan tombol ceklis & silang lebih dulu
+                if ($row->status == 'pending') {
+                    $actionBtn .= '
+                        <button onclick="updateStatus('.$row->id.', \'sukses\')" class="btn btn-primary btn-sm">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button onclick="updateStatus('.$row->id.', \'gagal\')" class="btn btn-danger btn-sm">
+                            <i class="fas fa-times"></i>
+                        </button>';
+                }
+            
+                // Tambahkan tombol WhatsApp & Hapus setelahnya
+                $actionBtn .= '
+                    <a href="'.$whatsappUrl.'" target="_blank" class="btn btn-success btn-sm">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <button onclick="deleteDonasi('.$row->id.')" class="btn btn-danger btn-sm">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>'; // Tutup div.btn-group
+            
+                return $actionBtn;
+            })               
             ->rawColumns(['amount','status','method','created_at','action'])
             // Remove this line that's causing the error:
             // ->orderColumn('DT_RowIndex', false)
