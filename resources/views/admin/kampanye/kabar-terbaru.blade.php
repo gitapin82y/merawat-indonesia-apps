@@ -44,7 +44,7 @@
                         <div class="d-flex align-items-center gap-3">
                             <div class="circle-number">{{ $index + 1 }}</div>
                             <div>
-                                <div class="text-muted small mb-1">{{ $kabar->created_at->format('d F Y') }}</div>
+                                <div class="text-muted small fw-normal mb-1">{{ $kabar->created_at->format('d F Y') }}</div>
                                 <div class="fw-bold text-danger">{{ $kabar->title }}</div>
                             </div>
                         </div>

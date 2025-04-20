@@ -17,10 +17,20 @@ class KabarTerbaruController extends Controller
 {
     public function index(Request $request)
     {
+        $user = Auth::user();
+        if($user->role !== 'super_admin'){
+            return redirect()->back();
+        }
+
         Carbon::setLocale('id');
     
         if ($request->ajax()) {
             $query = KabarTerbaru::with(['campaign', 'campaign.category', 'campaign.admin'])->get();
+
+            $campaignCounts = KabarTerbaru::select('campaign_id', DB::raw('count(*) as total'))
+                   ->groupBy('campaign_id')
+                   ->pluck('total', 'campaign_id')
+                   ->toArray();
     
             return DataTables::of($query)
                 ->addIndexColumn()
@@ -59,9 +69,10 @@ class KabarTerbaruController extends Controller
                         </div>
                     ';
                 })
-                ->addColumn('total', function($row) {
-                    return '<span class="badge bg-primary text-white">'.$row->count().'</span>';
-                })
+                ->addColumn('total', function($row) use ($campaignCounts) {
+                    $count = $campaignCounts[$row->campaign_id] ?? 0;
+                    return '<span class="badge bg-primary text-white">'.$count.'</span>';
+                })                
                 ->rawColumns(['total','category', 'status', 'admin', 'action'])
                 ->make(true);
         }

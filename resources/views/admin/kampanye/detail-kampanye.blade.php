@@ -179,100 +179,57 @@
 
                 <!-- Content Sections -->
                 <div class="tab-content keterangan">
-                    <p>{!! $campaign->description !!}</p>
+                    <div class="description-preview">
+                        <p id="description-short">
+                            {!! \Illuminate\Support\Str::limit(strip_tags($campaign->description), 300, '...') !!}
+                        </p>
+                        
+                        @if(strlen(strip_tags($campaign->description)) > 300)
+                            <button type="button" class="btn btn-outline-danger btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#descriptionModal">
+                                <i class="fa-solid fa-book-open"></i> Lihat Lebih Lengkap
+                            </button>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="tab-content kabar-terbaru d-none">
                     <div class="accordion" id="penyaluranDanaAccordion">
-                        @forelse($campaign->kabarTerbaru as $index => $kabar)
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed d-flex justify-content-between align-items-center"
-                                    type="button" data-bs-toggle="collapse" data-bs-target="#collapseKabarTerbaru{{ $index }}">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="circle-number">{{ $index + 1 }}</div>
-                                        <div>
-                                            <div class="text-muted small mb-1">{{ $kabar->created_at->format('d F Y') }}</div>
-                                            <div class="fw-bold text-danger">{{ $kabar->title }}</div>
-                                        </div>
-                                    </div>
-                                    <i class="fa-solid fa-chevron-down ms-auto circle-dropdown"></i>
-                                </button>
-                            </h2>
-                            <div id="collapseKabarTerbaru{{ $index }}" class="accordion-collapse collapse"
-                                data-bs-parent="#penyaluranDanaAccordion">
-                                <div class="accordion-body">
-                                    {!! $kabar->description !!}
-                                    @if($kabar->image)
-                                        <img src="{{ asset($kabar->image) }}" alt="{{ $kabar->title }}" class="img-fluid rounded">
-                                    @endif
-                                </div>
-                            </div>
+                        <div id="kabar-terbaru-container">
+                            @include('partials.kabar-terbaru')
                         </div>
-                        @empty
-                        <div class="text-center">
-                          <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                          <p>Belum ada kabar terbaru</p>
-                      </div>
-                    @endforelse
                     </div>
+                    
+                    @if($kabarTerbaru->hasMorePages())
+                        <button id="load-more-kabar" data-next-page="{{ $kabarTerbaru->nextPageUrl() }}&load_tab=kabar-terbaru" class="btn btn-primary mt-3 w-100 load-more-btn" data-tab="kabar-terbaru">
+                            Lihat Lebih Banyak
+                        </button>
+                    @endif
                 </div>
 
                 <div class="tab-content donatur d-none">
-                    @forelse($campaign->donations as $donation)
-                    <div class="card box-shadow mx-0 p-3 w-100 mb-2">
-                        <div class="col-12 row">
-                            <div class="col-7">
-                                <h2>{{ $donation->name }}</h2>
-                                <small>{{ $donation->created_at->diffForHumans() }}</small>
-                            </div>
-                            <div class="col-5 align-self-center text-end p-0">
-                                <span class="text-color large">Rp {{ number_format($donation->amount, 0, ',', '.') }}</span>
-                            </div>
-                        </div>
+                    <div id="donatur-container">
+                        @include('partials.donatur')
                     </div>
-                    @empty
-                    <div class="text-center">
-                      <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                      <p>Belum ada donatur, jadilah orang pertama yang memberikan donasi</p>
-                  </div>
-                @endforelse
+                    
+                    @if($donations->hasMorePages())
+                        <button id="load-more-donatur" data-next-page="{{ $donations->nextPageUrl() }}&load_tab=donatur" class="btn btn-primary mt-3 w-100 load-more-btn" data-tab="donatur">
+                            Lihat Lebih Banyak
+                        </button>
+                    @endif
                 </div>
 
                 <div class="tab-content kabar-pencairan d-none">
                     <div class="accordion" id="kabarPencairanAccordion">
-                        @forelse($campaign->kabarPencairan as $index => $pencairan)
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed d-flex justify-content-between align-items-center"
-                                    type="button" data-bs-toggle="collapse" data-bs-target="#collapsePencairan{{ $index }}">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="circle-number">{{ $index + 1 }}</div>
-                                        <div>
-                                            <div class="text-muted small mb-1">{{ $pencairan->created_at->format('d F Y') }}</div>
-                                            <div class="fw-bold text-danger">{{ $pencairan->title }}</div>
-                                        </div>
-                                    </div>
-                                    <i class="fa-solid fa-chevron-down ms-auto circle-dropdown"></i>
-                                </button>
-                            </h2>
-                            <div id="collapsePencairan{{ $index }}" class="accordion-collapse collapse"
-                                data-bs-parent="#kabarPencairanAccordion">
-                                <div class="accordion-body">
-                                    <p>{!! $pencairan->description !!}</p>
-                                    <a href="{{ asset('storage/' . $pencairan->document_rab) }}" target="_blank" class="button my-3 d-block text-center">
-                                        <i class="fa-solid fa-download"></i> &nbsp; Laporan Penggunaan Dana
-                                    </a>
-                                </div>
-                            </div>
+                        <div id="kabar-pencairan-container">
+                            @include('partials.kabar-pencairan')
                         </div>
-                        @empty
-                        <div class="text-center">
-                          <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                          <p>Belum ada kabar pencairan</p>
-                        </div>
-                        @endforelse
                     </div>
+                    
+                    @if($kabarPencairan->hasMorePages())
+                        <button id="load-more-pencairan" data-next-page="{{ $kabarPencairan->nextPageUrl() }}&load_tab=kabar-pencairan" class="btn btn-primary mt-3 w-100 load-more-btn" data-tab="kabar-pencairan">
+                            Lihat Lebih Banyak
+                        </button>
+                    @endif
                 </div>
             </div>
 
@@ -283,34 +240,18 @@
 
     <div class="line-spacing"></div>
 
-    <div class="row col-12 m-0 px-3 doa-orang-baik mt-3">
+      
+    <div class="row col-12 m-0 px-3 doa-orang-baik mt-3 pb-5">
         <h2 class="mx-0 px-0">Doa Orang Baik</h2>
-        @forelse($campaign->donations->where('doa', '!=', null) as $donation)
-        <div class="card box-shadow mb-2">
-            <div class="d-flex justify-content-between">
-                <h3>{{ $donation->name }}</h3>
-                <small>{{ $donation->created_at->diffForHumans() }}</small>
-            </div>
-            <p>{{ $donation->doa }}</p>
-            <div class="justify-content-between d-flex">
-                <a href="javascript:void(0);" class="badge pt-1 px-3 rounded-pill bg-main-opacity text-color fw-normal like-button
-                     {{ $donation->donationLikes()->where('user_id', auth()->id())->exists() ? 'liked' : '' }}" data-donation-id="{{ $donation->id }}">
-                     <i class="fa-solid fa-hands-praying"></i> &nbsp; 
-                     <span class="like-count">{{ $donation->donationLikes->count() }}</span> Aaminn
-                </a>
-                <h2 class="d-flex mb-0 align-self-center">
-                    Rp {{ number_format($donation->amount, 0, ',', '.') }} 
-                    <small class="fw-normal ms-1 mt-1">Donasi Terkirim</small>
-                </h2>
-            </div>
+        <div id="comments-container">
+            @include('partials.comments', ['comments' => $comments, 'guestIdentifier' => $guestIdentifier])
         </div>
-        @empty
-        <div class="text-center">
-            <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-            <p>Belum ada doa orang baik, donasi sekarang dan jadilah orang pertama yang memberikan doa</p>
-        </div>
-        @endforelse
-
+    
+        @if($comments->hasMorePages())
+            <button id="load-more" data-next-page="{{ $comments->nextPageUrl() }}" class="btn btn-primary mt-3 mb-5 w-100 load-more-btn" data-tab="comments">
+                Lihat Lebih Banyak
+            </button>
+        @endif
     </div>
         
     <div class="footer">
@@ -458,5 +399,152 @@
     });
 });
 </script>
+
+<script>
+    $(document).ready(function() {
+     // Handle pagination for all tabs
+     $('.load-more-btn').click(function() {
+         var button = $(this);
+         var nextPageUrl = button.data('next-page');
+         var tab = button.data('tab');
+         var container;
+         
+         // Determine which container to update based on the tab
+         switch(tab) {
+             case 'kabar-terbaru':
+                 container = $('#kabar-terbaru-container');
+                 break;
+             case 'donatur':
+                 container = $('#donatur-container');
+                 break;
+             case 'kabar-pencairan':
+                 container = $('#kabar-pencairan-container');
+                 break;
+             case 'comments':
+                 container = $('#comments-container');
+                 break;
+         }
+         
+         // Show loading indicator
+         button.html('<i class="fa fa-spinner fa-spin"></i> Memuat...');
+         button.prop('disabled', true);
+         
+         // Perform AJAX request
+         $.ajax({
+             url: nextPageUrl,
+             type: 'GET',
+             success: function(response) {
+                 // Append new content
+                 container.append(response.html);
+                 
+                 // Update or hide the load more button
+                 if (!response.hasMorePages) {
+                     button.hide();
+                 } else {
+                     button.data('next-page', response.nextPageUrl);
+                     button.html('Lihat Lebih Banyak');
+                     button.prop('disabled', false);
+                 }
+                 
+                 // Re-attach event listeners for accordion buttons
+                 attachAccordionEvents();
+             },
+             error: function() {
+                 button.html('Lihat Lebih Banyak');
+                 button.prop('disabled', false);
+                 alert('Terjadi kesalahan, silakan coba lagi.');
+             }
+         });
+     });
+     
+     // Update existing load-more button for comments to use the same system
+     $('#load-more').addClass('load-more-btn').data('tab', 'comments');
+     
+     // Function to re-attach accordion event listeners
+     function attachAccordionEvents() {
+         document.querySelectorAll(".accordion-button").forEach((button) => {
+             button.addEventListener("click", () => {
+                 const icon = button.querySelector("i");
+                 icon.classList.toggle("fa-chevron-up");
+                 icon.classList.toggle("fa-chevron-down");
+             });
+         });
+     }
+ 
+ });
+ 
+ // Update comments pagination to match the rest of the tabs
+ $(document).ready(function() {
+     // Modify existing comments load-more button behavior
+     $('#load-more').off('click').on('click', function() {
+         var button = $(this);
+         var nextPageUrl = button.data('next-page') + '&load_tab=comments';
+         var container = $('#comments-container');
+         
+         // Show loading indicator
+         button.html('<i class="fa fa-spinner fa-spin"></i> Memuat...');
+         button.prop('disabled', true);
+         
+         $.ajax({
+             url: nextPageUrl,
+             type: 'GET',
+             success: function(response) {
+                 // Append new content
+                 container.append(response.html);
+                 
+                 // Update or hide the load more button
+                 if (!response.hasMorePages) {
+                     button.hide();
+                 } else {
+                     button.data('next-page', response.nextPageUrl);
+                     button.html('Lihat Lebih Banyak');
+                     button.prop('disabled', false);
+                 }
+                 
+                 // Re-attach event listeners for like buttons if needed
+                 attachLikeEvents();
+             },
+             error: function() {
+                 button.html('Lihat Lebih Banyak');
+                 button.prop('disabled', false);
+                 alert('Terjadi kesalahan, silakan coba lagi.');
+             }
+         });
+     });
+     
+     // Function to re-attach like button event listeners to newly loaded comments
+     function attachLikeEvents() {
+         $('.like-button').off('click').on('click', function(e) {
+             e.preventDefault();
+             
+             var donationId = $(this).data('donation-id');
+             var button = $(this);
+             
+             $.ajax({
+                 url: '/donation/' + donationId + '/like',
+                 type: 'POST',
+                 data: {
+                     _token: '{{ csrf_token() }}',
+                 },
+                 xhrFields: {
+                     withCredentials: true
+                 },
+                 success: function(response) {
+                     if (response.status === 'liked') {
+                         button.find('.like-count').text(response.count);
+                         button.addClass('liked');
+                     } else {
+                         button.find('.like-count').text(response.count);
+                         button.removeClass('liked');
+                     }
+                 },
+                 error: function(xhr, status, error) {
+                     console.log('Error: ' + error);
+                 }
+             });
+         });
+     }
+ });
+ </script>
 @endpush
 

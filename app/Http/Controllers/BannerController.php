@@ -26,7 +26,7 @@ public function store(Request $request)
         'photo' => $photoPath
     ]);
 
-    return response()->json(['message' => 'Kategori berhasil ditambahkan!']);
+    return response()->json(['message' => 'Banner berhasil ditambahkan!']);
 }
 
 
@@ -39,9 +39,9 @@ public function destroy($id)
         Storage::disk('public')->delete($banner->photo);
     }
 
-    // Hapus kategori dari database
+    // Hapus Banner dari database
     $banner->delete();
 
-    return response()->json(['message' => 'Kategori berhasil dihapus!'], 200);
+    return response()->json(['message' => 'Banner berhasil dihapus!'], 200);
 }
 }

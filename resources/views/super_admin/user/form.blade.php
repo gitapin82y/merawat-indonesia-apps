@@ -263,7 +263,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelAvatarButton">Batal</button>
                 <button type="button" id="cropAvatarButton" class="btn btn-primary">Simpan</button>
             </div>
         </div>
@@ -284,7 +284,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"  id="cancelThumbnailButton">Batal</button>
                 <button type="button" id="cropThumbnailButton" class="btn btn-primary">Simpan</button>
             </div>
         </div>
@@ -311,6 +311,41 @@
 @push('after-script')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
+    // Event handler untuk tombol batal pada modal avatar
+document.getElementById('cancelAvatarButton').addEventListener('click', function() {
+    logStatus("Cancel avatar button clicked");
+    if (avatarModal) {
+        avatarModal.hide();
+        logStatus("Avatar modal hidden");
+    }
+});
+
+// Event handler untuk tombol silang pada modal avatar
+document.querySelector('#cropAvatarModal .btn-close').addEventListener('click', function() {
+    logStatus("Close avatar button clicked");
+    if (avatarModal) {
+        avatarModal.hide();
+        logStatus("Avatar modal hidden");
+    }
+});
+
+// Event handler untuk tombol batal pada modal thumbnail
+document.getElementById('cancelThumbnailButton').addEventListener('click', function() {
+    logStatus("Cancel thumbnail button clicked");
+    if (thumbnailModal) {
+        thumbnailModal.hide();
+        logStatus("Thumbnail modal hidden");
+    }
+});
+
+// Event handler untuk tombol silang pada modal thumbnail
+document.querySelector('#cropThumbnailModal .btn-close').addEventListener('click', function() {
+    logStatus("Close thumbnail button clicked");
+    if (thumbnailModal) {
+        thumbnailModal.hide();
+        logStatus("Thumbnail modal hidden");
+    }
+});
     // Debug helper
     function logStatus(message) {
         console.log(`[CROPPER DEBUG]: ${message}`);

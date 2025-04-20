@@ -3,7 +3,14 @@
 @section('title', 'Merawat Indonesia')
 
 @push('after-style')
-
+<style>
+      .avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+</style>
 @endpush
 
 @section('content')
@@ -28,18 +35,17 @@
     <div class="category-menu">
         <h2>Sudahkan Anda Berbuat Baik?</h2>
         <div class="grid-category">
-            {{-- menu yang hanya menampilkan 9 menu termasuk category --}}
             <a href="{{url('eksplore-kampanye')}}"><img src="{{asset('assets/img/kategori/donasi.svg')}}" alt="Donasi"><p>Donasi</p></a>
             <a href="{{url('galang-dana')}}"><img src="{{asset('assets/img/kategori/galang dana.svg')}}" alt="Galang Dana"><p>Galang Dana</p></a>
             <a href="{{url('kalkulator-zakat')}}"><img src="{{asset('assets/img/kategori/kalkulator zakat.svg')}}" alt="Kalkulator Zakat"><p>Kalkulator Zakat</p></a>
              {{-- Loop through the categories --}}
             @foreach($categories as $category)
                 <a href="/eksplore?category={{ $category->name }}">
-                    <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
+                    <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}" style="border-radius:10px;">
                     <p>{{ $category->name }}</p>
                 </a>
             @endforeach
-            @if($categoriesCount >= 9)
+            @if($categoriesCount >= 6)
                 <a href="{{ url('menu-lainnya') }}"><img src="{{ asset('assets/img/kategori/lainnya.svg') }}" alt="Lainnya"><p>Lainnya</p></a>
             @endif
         </div>
@@ -54,7 +60,12 @@
         <div class="swiper donaturSwiper mt-2">
             <div class="swiper-wrapper">
                 @forelse($donaturLeaderboard as $donatur)
-                    <a href="{{route('profileDonatur',$donatur['name'] )}}" class="text-center avatar swiper-slide"><img src="{{ asset('storage/' . $donatur['avatar']) }}" alt="Donasi"><p>{{ $donatur['name'] }}</p></a>
+                    <a href="{{route('profileDonatur',$donatur['name'] )}}" class="text-center swiper-slide">
+                        <div class="avatar-container">
+                            <img src="{{ $donatur['avatar'] }}" alt="Donasi" class="avatar">
+                            <p>{{ strlen($donatur['name']) > 10 ? substr($donatur['name'], 0, 10) . '..' : $donatur['name'] }}</p>
+                        </div>
+                    </a>
                 @empty
                 <div class="d-flex align-items-center justify-content-center">
                   <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3 pe-3" style="width: 50px; height: 50px;">
@@ -76,9 +87,9 @@
          <div class="swiper mySwiper mt-2">
             <div class="swiper-wrapper">
                 @if($prioritasCampaigns->isEmpty())
-                <div class="text-center">
+                <div class="text-center w-100">
                     <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                    <p>Anda Belum Memiliki Riwayat Donasi di Kampanye</p>
+                    <p>Belum Ada Prioritas Galang Dana</p>
                 </div>
             @else
                 @foreach($prioritasCampaigns as $prioritas)
@@ -114,10 +125,10 @@
          <div class="swiper mySwiper mt-2">
             <div class="swiper-wrapper">
             @if($weekendCampaigns->isEmpty())
-                <div class="text-center">
-                    <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                    <p>Belum Ada Galang Dana Akhir Pekan</p>
-                </div>
+            <div class="text-center w-100">
+                <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
+                <p>Belum Ada Galang Dana Akhir Pekan</p>
+            </div>
             @else
                 @foreach($weekendCampaigns as $campaign)
                         @include('includes.main-campaign-card', ['campaign' => $campaign])
@@ -136,10 +147,10 @@
             <a href="{{url('eksplore-kampanye')}}">Lihat Semua</a>
          </div>
          @if($campaigns->isEmpty())
-         <div class="text-center">
-             <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-             <p>Belum Ada Galang Dana</p>
-         </div>
+         <div class="text-center w-100">
+            <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
+            <p>Belum Ada Galang Dana</p>
+        </div>
         @else
         <div id="campaigns-container">
             @foreach ($campaigns as $campaign)

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class Admin extends Model
 {
@@ -34,4 +35,20 @@ class Admin extends Model
     {
         return $this->hasMany(CampaignWithdrawal::class);
     }
+
+// Di model User.php
+public function getAvatarUrlAttribute()
+{
+    return $this->avatar && !Str::startsWith($this->avatar, 'default/') 
+        ? asset('storage/' . $this->avatar) 
+        : asset('assets/img/' . $this->avatar);
+}
+
+public function getThumbnailUrlAttribute()
+{
+    return $this->thumbnail && !Str::startsWith($this->thumbnail, 'default/') 
+        ? asset('storage/' . $this->thumbnail) 
+        : asset('assets/img/' . $this->thumbnail);
+}
+
 }

@@ -127,9 +127,10 @@ class UserController extends Controller
         // Handle avatar upload and delete old file
         if ($request->hasFile('avatar')) {
             // Delete old avatar if exists
-            if ($user->avatar) {
+            if ($user->avatar && $user->avatar != 'default/default-avatar.png') {
                 Storage::disk('public')->delete($user->avatar);
             }
+
             $avatarPath = $request->file('avatar')->store('avatars', 'public');
             $userData['avatar'] = $avatarPath;
         }
@@ -157,10 +158,10 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Delete associated files
-        if ($user->avatar) {
+        if ($user->avatar && $user->avatar != 'default/default-avatar.png') {
             Storage::disk('public')->delete($user->avatar);
         }
+
         if ($user->thumbnail) {
             Storage::disk('public')->delete($user->thumbnail);
         }

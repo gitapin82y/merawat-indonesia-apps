@@ -1,4 +1,4 @@
-<a href="{{ route('campaign.detail', $campaign->title) }}" class="col-12 row mt-2">
+<a href="{{ route('campaign.detail', $campaign->slug) }}" class="col-12 row mt-2">
     <div class="foto col-6 col-sm-6 col-md-4 align-self-center mb-3 position-relative">
         <img src="{{ asset('storage/' . $campaign->photo) }}" class="image-campaign-card" alt="{{ $campaign->title }}">
     </div>

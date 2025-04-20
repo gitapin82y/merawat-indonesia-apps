@@ -1,4 +1,4 @@
-<a href="{{ route('campaign.detail', $campaign->title) }}" class="card swiper-slide">
+<a href="{{ route('campaign.detail', $campaign->slug) }}" class="card swiper-slide">
     <div class="thumbnail">
         <img src="{{asset('assets/img/icon/prioritas-kampanye.svg')}}" class="prioritas" alt="">
         <img src="{{ asset('storage/' . $campaign->photo) }}" class="image-campaign-card" alt="{{ $campaign->title }}">

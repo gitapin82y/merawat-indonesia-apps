@@ -76,6 +76,7 @@
                 @method('PUT')
 
                 <input type="hidden" name="user_id" value="{{ $admin->user_id }}">
+                <input type="hidden" name="email" value="{{ $admin->email }}">
                 <input type="hidden" name="leader_name" value="{{ $admin->leader_name }}">
                 
             <!-- Thumbnail Profil -->

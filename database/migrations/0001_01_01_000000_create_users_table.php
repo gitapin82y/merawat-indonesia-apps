@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('provider')->nullable();
             $table->string('provider_id')->nullable();
             $table->enum('role', ['super_admin', 'yayasan', 'donatur'])->default('donatur');
-            $table->string('thumbnail')->nullable();
-            $table->string('avatar')->nullable();
+            $table->string('thumbnail')->default('default/default-thumbnail.png');
+            $table->string('avatar')->default('default/default-avatar.png');
             $table->string('bio')->nullable();
             $table->json('social')->nullable(); // FB, TikTok, YouTube
             $table->rememberToken();

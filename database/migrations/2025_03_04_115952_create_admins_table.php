@@ -20,9 +20,9 @@ return new class extends Migration
             $table->string('address');
             $table->string('legality');
             $table->string('email')->unique();
-            $table->string('avatar')->nullable();
+            $table->string('avatar')->default('default/default-thumbnail.png');
             $table->string('bio')->nullable();
-            $table->string('thumbnail')->nullable();
+            $table->string('thumbnail')->default('default/default-avatar.png');
             $table->json('social')->nullable(); // FB, TikTok, YouTube
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');
             $table->date('log_activity')->nullable();

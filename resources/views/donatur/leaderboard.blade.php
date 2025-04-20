@@ -258,24 +258,26 @@
               <div class="leaderboard-user">
                 <div class="avatar-container">
                   <img
-                    src="{{ asset('storage/' . $donatur['avatar']) }}"
+                    src="{{ $donatur['avatar'] }}"
                     alt="Lisa Bella"
                     class="avatar"
                   />
-                  <img
-                    src="{{asset('assets/img/icon/top1-donasi.svg')}}"
-                    alt="Top 1"
-                    class="top-badge"
-                  />
+                  @if($loop->index < 3)
+                    <img
+                        src="{{asset('assets/img/icon/top'.($loop->index + 1).'-donasi.svg')}}"
+                        alt="Top {{ $loop->index + 1 }}"
+                        class="top-badge"
+                    />
+                @endif
                 </div>
                 <div class="user-details">
                   <h4>{{ $donatur['name'] }}</h4>
-                  <span class="user-rank">Top{{ $loop->index + 1 }} Leaderboard</span>
+                  <span class="user-rank">Top {{ $loop->index + 1 }} Leaderboard</span>
                 </div>
               </div>
               <div class="donation-amount">
                 <h3>
-                  <img src="{{asset('assets/img/icon/dompet.svg')}}" alt="Dompet" />
+                  <img src="{{asset('assets/img/icon/pencairan-dana.svg')}}" alt="Donatur" />
                   {{ $donatur['total_donation_formatted'] }}
                 </h3>
                 <p class="donation-text">Total Donasi</p>
@@ -307,10 +309,17 @@
               <div class="leaderboard-user">
                 <div class="avatar-container">
                   <img
-                    src="{{ asset('storage/' . $admin['avatar']) }}"
+                    src="{{ $admin['avatar'] }}"
                     alt="Merawat Indonesia"
                     class="avatar"
                   />
+                  @if($loop->index < 3)
+                    <img
+                        src="{{asset('assets/img/icon/top'.($loop->index + 1).'-donasi.svg')}}"
+                        alt="Top {{ $loop->index + 1 }}"
+                        class="top-badge"
+                    />
+                  @endif
                 </div>
                 <div class="user-details">
                   <h4>{{ $admin['name'] }}</h4>

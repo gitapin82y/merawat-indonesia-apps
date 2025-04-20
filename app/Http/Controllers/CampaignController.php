@@ -32,6 +32,10 @@ public function __construct(NotificationService $notificationService)
 }
     public function index(Request $request)
     {
+        $user = Auth::user();
+        if($user->role !== 'super_admin'){
+            return redirect('galang-dana');
+        }
         Carbon::setLocale('id');
         if ($request->ajax()) {
             $query = Campaign::with(['admin','category'])->get();
@@ -54,7 +58,7 @@ public function __construct(NotificationService $notificationService)
                 ->addColumn('status', function($row) {
                     $statusColor = [
                         'aktif' => 'success',
-                        'selesai' => 'primary',
+                        'selesai' => 'info',
                         'ditolak' => 'danger',
                         'validasi' => 'warning',
                         'berakhir' => 'secondary'
@@ -280,66 +284,162 @@ public function __construct(NotificationService $notificationService)
         }
     }
 
-    public function donaturKampanye(Request $request, Campaign $kampanye,$title)
+    public function donaturKampanye(Request $request, Campaign $kampanye, $slug)
     {
-        $campaign = Campaign::with([
-            'kabarTerbaru', 
-            'kabarPencairan' => function ($query) {
-                $query->where('status', 'disetujui');
-            },
-            'admin', 
-            'donations' => function ($query) {
-                $query->where('status', 'sukses')
-                      ->orderBy('created_at', 'desc');  // Menambahkan pengurutan berdasarkan waktu terbaru
+        $perPage = 4; // Set the number of items per page
+        
+        $campaign = Campaign::where('slug', $slug)->first();
+        
+        // Get paginated data for each tab
+        $kabarTerbaru = $campaign->kabarTerbaru()->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'kabar_page');
+        
+        $donations = $campaign->donations()
+            ->where('status', 'sukses')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'donatur_page');
+        
+        $kabarPencairan = $campaign->kabarPencairan()
+            ->where('status', 'disetujui')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'pencairan_page');
+        
+        $comments = Donation::where('campaign_id', $campaign->id)
+            ->where('status', 'sukses')
+            ->whereNotNull('doa')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'comments_page');
+        
+        $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();
+        $totalKampanye = Campaign::where('status', 'aktif')->count();
+        
+        // Get guest identifier from cookie
+        $guestIdentifier = $request->cookie('guest_identifier');
+        
+        // Handle AJAX requests for each tab
+        if ($request->ajax()) {
+            if ($request->has('load_tab')) {
+                switch ($request->load_tab) {
+                    case 'kabar-terbaru':
+                        return response()->json([
+                            'html' => view('partials.kabar-terbaru', compact('kabarTerbaru'))->render(),
+                            'hasMorePages' => $kabarTerbaru->hasMorePages(),
+                            'nextPageUrl' => $kabarTerbaru->nextPageUrl() . '&load_tab=kabar-terbaru',
+                        ]);
+                    
+                    case 'donatur':
+                        return response()->json([
+                            'html' => view('partials.donatur', compact('donations'))->render(),
+                            'hasMorePages' => $donations->hasMorePages(),
+                            'nextPageUrl' => $donations->nextPageUrl() . '&load_tab=donatur',
+                        ]);
+                    
+                    case 'kabar-pencairan':
+                        return response()->json([
+                            'html' => view('partials.kabar-pencairan', compact('kabarPencairan'))->render(),
+                            'hasMorePages' => $kabarPencairan->hasMorePages(),
+                            'nextPageUrl' => $kabarPencairan->nextPageUrl() . '&load_tab=kabar-pencairan',
+                        ]);
+                    
+                    case 'comments':
+                        return response()->json([
+                            'html' => view('partials.comments', compact('comments', 'guestIdentifier'))->render(),
+                            'hasMorePages' => $comments->hasMorePages(),
+                            'nextPageUrl' => $comments->nextPageUrl() . '&load_tab=comments',
+                        ]);
+                }
             }
-        ])->where('title', $title)->first();
-
-    $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();
-    
-    // Hitung jumlah total kampanye
-    $totalKampanye = $campaign->where('status', 'aktif')->count();
-
-    $comments = Donation::where('campaign_id', $campaign->id)
-    ->where('status', 'sukses')
-    ->whereNotNull('doa')
-    ->orderBy('created_at', 'desc')  // Menambahkan pengurutan berdasarkan waktu terbaru
-    ->paginate(6);
-
-    if ($request->ajax()) {
-        return response()->json([
-            'comments' => view('partials.comments', compact('comments'))->render(),
-            'hasMorePages' => $comments->hasMorePages(),
-            'nextPageUrl' => $comments->nextPageUrl(),
-        ]);
-    }
-
+        }
+        
         return view('donatur.detail-kampanye', [
             'campaign' => $campaign,
+            'kabarTerbaru' => $kabarTerbaru,
+            'donations' => $donations,
+            'kabarPencairan' => $kabarPencairan,
             'comments' => $comments,
-            'request' => request(), 
+            'guestIdentifier' => $guestIdentifier,
             'totalDonaturs' => $totalDonaturs,
             'totalKampanye' => $totalKampanye,
         ]);
     }
 
-    public function show(Campaign $kampanye,$title)
+    public function show(Request $request, Campaign $kampanye, $slug)
     {
-        $campaign = Campaign::with([
-            'kabarTerbaru', 
-            'kabarPencairan' => function ($query) {
-                $query->where('status', 'disetujui');
-            },
-            'admin', 
-            'donations' => function ($query) {
-                $query->where('status', 'sukses')
-                      ->orderBy('created_at', 'desc');  // Menambahkan pengurutan berdasarkan waktu terbaru
+        $perPage = 4; // Set the number of items per page
+        
+        $campaign = Campaign::where('slug', $slug)->first();
+        
+        // Get paginated data for each tab
+        $kabarTerbaru = $campaign->kabarTerbaru()->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'kabar_page');
+        
+        $donations = $campaign->donations()
+            ->where('status', 'sukses')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'donatur_page');
+        
+        $kabarPencairan = $campaign->kabarPencairan()
+            ->where('status', 'disetujui')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'pencairan_page');
+        
+        $comments = Donation::where('campaign_id', $campaign->id)
+            ->where('status', 'sukses')
+            ->whereNotNull('doa')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'comments_page');
+        
+        $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();
+        $totalKampanye = Campaign::where('status', 'aktif')->count();
+        
+        // Get guest identifier from cookie
+        $guestIdentifier = $request->cookie('guest_identifier');
+        
+        // Handle AJAX requests for each tab
+        if ($request->ajax()) {
+            if ($request->has('load_tab')) {
+                switch ($request->load_tab) {
+                    case 'kabar-terbaru':
+                        return response()->json([
+                            'html' => view('partials.kabar-terbaru', compact('kabarTerbaru'))->render(),
+                            'hasMorePages' => $kabarTerbaru->hasMorePages(),
+                            'nextPageUrl' => $kabarTerbaru->nextPageUrl() . '&load_tab=kabar-terbaru',
+                        ]);
+                    
+                    case 'donatur':
+                        return response()->json([
+                            'html' => view('partials.donatur', compact('donations'))->render(),
+                            'hasMorePages' => $donations->hasMorePages(),
+                            'nextPageUrl' => $donations->nextPageUrl() . '&load_tab=donatur',
+                        ]);
+                    
+                    case 'kabar-pencairan':
+                        return response()->json([
+                            'html' => view('partials.kabar-pencairan', compact('kabarPencairan'))->render(),
+                            'hasMorePages' => $kabarPencairan->hasMorePages(),
+                            'nextPageUrl' => $kabarPencairan->nextPageUrl() . '&load_tab=kabar-pencairan',
+                        ]);
+                    
+                    case 'comments':
+                        return response()->json([
+                            'html' => view('partials.comments', compact('comments', 'guestIdentifier'))->render(),
+                            'hasMorePages' => $comments->hasMorePages(),
+                            'nextPageUrl' => $comments->nextPageUrl() . '&load_tab=comments',
+                        ]);
+                }
             }
-        ])->where('title', $title)->first();
-
+        }
+        
         return view('admin.kampanye.detail-kampanye', [
             'campaign' => $campaign,
+            'kabarTerbaru' => $kabarTerbaru,
+            'donations' => $donations,
+            'kabarPencairan' => $kabarPencairan,
+            'comments' => $comments,
+            'guestIdentifier' => $guestIdentifier,
+            'totalDonaturs' => $totalDonaturs,
+            'totalKampanye' => $totalKampanye,
         ]);
     }
+
 
     // form edit admin
     public function editKampanye($slug)

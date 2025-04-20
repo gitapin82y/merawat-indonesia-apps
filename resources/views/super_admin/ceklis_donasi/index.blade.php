@@ -24,6 +24,9 @@
                 <h4 class="m-0 font-weight-bold float-left text-danger">Semua Data Ceklis Donasi</h4>
             </div>
             <div class="col-12 col-sm-6">
+                <button type="button" data-toggle="modal" data-target="#statusFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
+                    <i class="fas fa-filter fa-sm mr-1"></i> Filter Status
+                </button>
                 <button type="button" data-toggle="modal" data-target="#methodFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">
                     <i class="fas fa-filter fa-sm mr-1"></i> Filter Metode
                 </button>
@@ -85,6 +88,37 @@
         </div>
     </div>
 
+    <!-- Status Filter Modal -->
+<div class="modal fade" id="statusFilterModal" tabindex="-1" role="dialog" aria-labelledby="statusFilterModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusFilterModalLabel">Filter Berdasarkan Status</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="statusFilterForm">
+                    <div class="form-group">
+                        <label for="status">Pilih Status</label>
+                        <select class="form-control" id="status" name="status">
+                            <option value="">Semua Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="sukses">Sukses</option>
+                            <option value="gagal">Gagal</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-danger btn-apply-filter" id="applyStatusFilter">Terapkan Filter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('after-script')
@@ -97,6 +131,7 @@ $(function () {
             url: "{{ route('ceklis-donasi.index') }}",
             data: function(d) {
                 d.payment_type = $('#payment_type').val();
+                d.status = $('#status').val(); 
             }
         },
         columns: [
@@ -127,6 +162,21 @@ $(function () {
         }
     });
 
+    $('#applyStatusFilter').click(function() {
+        const status = $('#status').val();
+        const statusLabel = $('#status option:selected').text();
+        
+        // Update active filters display
+        updateActiveFilters();
+        
+        // Reload the table with filter
+        table.ajax.reload();
+        
+        // Close the modal
+        $('#statusFilterModal').modal('hide');
+    });
+
+
     // Apply payment method filter
     $('#applyMethodFilter').click(function() {
         const paymentType = $('#payment_type').val();
@@ -142,15 +192,20 @@ $(function () {
         $('#methodFilterModal').modal('hide');
     });
 
-    // Function to update active filters display
     function updateActiveFilters() {
         const paymentType = $('#payment_type').val();
         const paymentLabel = $('#payment_type option:selected').text();
+        const status = $('#status').val();
+        const statusLabel = $('#status option:selected').text();
         
         let filtersHtml = '';
         
         if (paymentType) {
             filtersHtml += `<span class="badge badge-danger mr-2 p-2">Metode: ${paymentLabel} <i class="fas fa-times ml-1 clear-filter" data-filter="payment"></i></span>`;
+        }
+        
+        if (status) {
+            filtersHtml += `<span class="badge badge-danger mr-2 p-2">Status: ${statusLabel} <i class="fas fa-times ml-1 clear-filter" data-filter="status"></i></span>`;
         }
         
         if (filtersHtml) {
@@ -162,7 +217,13 @@ $(function () {
 
     // Handle clearing filters
     $(document).on('click', '.clear-filter', function() {
-        $('#payment_type').val('');
+        const filterType = $(this).data('filter');
+        
+        if (filterType === 'payment') {
+            $('#payment_type').val('');
+        } else if (filterType === 'status') {
+            $('#status').val('');
+        }
         
         // Update display and reload table
         updateActiveFilters();
@@ -172,6 +233,7 @@ $(function () {
     // Handle clearing all filters
     $(document).on('click', '#clearAllFilters', function() {
         $('#payment_type').val('');
+        $('#status').val('');
         
         // Update display and reload table
         $('#active-filters').html('');

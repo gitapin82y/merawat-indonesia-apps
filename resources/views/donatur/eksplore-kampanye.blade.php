@@ -4,7 +4,12 @@
 
 @push('after-style')
 <style>
-    
+      .avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
     .accordion-button::after {
   display: none;
 }
@@ -45,11 +50,11 @@
          {{-- Loop through the categories --}}
         @foreach($categories as $category)
             <a href="/eksplore?category={{ $category->name }}">
-                <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}">
+                <img src="{{ asset('storage/' . $category->icon) }}" alt="{{ $category->name }}" style="border-radius:10px;">
                 <p>{{ $category->name }}</p>
             </a>
         @endforeach
-        @if($categoriesCount >= 9)
+        @if($categoriesCount >= 6)
             <a href="{{ url('menu-lainnya') }}"><img src="{{ asset('assets/img/kategori/lainnya.svg') }}" alt="Lainnya"><p>Lainnya</p></a>
         @endif
     </div>
@@ -64,7 +69,9 @@
       <div class="swiper donaturSwiper mt-2">
           <div class="swiper-wrapper">
             @foreach($donaturLeaderboard as $donatur)
-            <a href="{{route('profileDonatur',$donatur['name'] )}}"  class="text-center avatar swiper-slide"><img src="{{ asset('storage/' . $donatur['avatar']) }}" alt="Donasi"><p>{{ $donatur['name'] }}</p></a>
+            <a href="{{route('profileDonatur',$donatur['name'] )}}"  class="text-center swiper-slide"><img src="{{  $donatur['avatar'] }}" alt="Donasi" class="avatar">
+                <p>{{ strlen($donatur['name']) >10 ? substr($donatur['name'], 0,10) . '..' : $donatur['name'] }}</p>
+            </a>
         @endforeach
       </div>
       </div>

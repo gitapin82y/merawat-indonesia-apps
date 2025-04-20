@@ -11,6 +11,9 @@
         background-color: #fce8e8;
         color: #333;
     }
+    .donaturSwiper .swiper-slide {
+    margin-right: 15px; /* Adjust this value for spacing */
+  }
     .image-campaign-card{
         width: 100%;
         aspect-ratio: 2 / 1.1; /* atau 4 / 3, tergantung proporsi gambar yang diinginkan */

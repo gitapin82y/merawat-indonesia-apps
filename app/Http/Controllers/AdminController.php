@@ -29,8 +29,13 @@ public function __construct(NotificationService $notificationService)
     $this->notificationService = $notificationService;
 }
 
+
     public function index(Request $request)
     {
+        $user = Auth::user();
+        if($user->role !== 'super_admin'){
+            return redirect('galang-dana');
+        }
         Carbon::setLocale('id');
         if ($request->ajax()) {
             $query = Admin::with('user')->withCount('campaigns') // Hitung jumlah campaign
@@ -362,7 +367,7 @@ public function __construct(NotificationService $notificationService)
             // Handle file uploads
             if ($request->hasFile('avatar')) {
                 // Delete old avatar
-                if ($admin->avatar) {
+                if ($admin->avatar && $admin->avatar != 'default/default-avatar.png') {
                     Storage::disk('public')->delete($admin->avatar);
                 }
                 $adminData['avatar'] = $request->file('avatar')->store('admin_avatar', 'public');
@@ -420,8 +425,7 @@ public function __construct(NotificationService $notificationService)
     {
         DB::beginTransaction();
         try {
-            // Hapus file avatar dan thumbnail jika ada
-            if ($admin->avatar) {
+            if ($admin->avatar && $admin->avatar != 'default/default-avatar.png') {
                 Storage::disk('public')->delete($admin->avatar);
             }
             

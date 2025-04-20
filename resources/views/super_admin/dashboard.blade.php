@@ -498,7 +498,7 @@ $(document).ready(function() {
                     rows += `
                        <div class="row d-flex mb-2 justify-content-around mx-0">
     <div class="col-auto ps-0 align-self-center">
-        <img src="/storage/${kategori.icon}" width="40">
+        <img src="/storage/${kategori.icon}" width="50" style="border-radius:10px;">
     </div>
     <div class="col-auto align-self-center">
         ${kategori.name}
@@ -693,7 +693,7 @@ $(document).ready(function() {
                         rows += `
                            <div class="row d-flex mb-2 justify-content-around mx-0">
                             <div class="col-auto ps-0 align-self-center">
-                                <img src="/storage/${banner.photo}" width="40">
+                                <img src="/storage/${banner.photo}" width="300">
                             </div>
                             <div class="col-auto pe-0 align-self-center">
                                 <button class="btn btn-danger btn-delete-banner" data-id="${banner.id}">
@@ -971,65 +971,83 @@ $(document).ready(function() {
             }
         });
         
-        // Submit form metode pembayaran
         $('#paymentForm').submit(function(e) {
-            e.preventDefault();
-            
-            let formData = new FormData(this);
-            formData.append('is_active', $('#is_active').is(':checked') ? 1 : 0);
-            
-            const id = $('#payment_id').val();
-            const url = id 
-                ? `/super-admin/manual-payment-methods/${id}` 
-                : '/super-admin/manual-payment-methods';
-            const method = id ? 'PUT' : 'POST';
-            
-            // Reset error messages
-            $('.is-invalid').removeClass('is-invalid');
-            $('.invalid-feedback').text('');
-            
-            $.ajax({
-                url: url,
-                method: method,
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: response.message,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 2000
-                    }).then(() => {
-                        $('#paymentFormModal').modal('hide');
-                        loadPaymentMethods();
-                    });
-                },
-                error: function(xhr) {
-                    const errors = xhr.responseJSON?.errors;
-                    
-                    if (errors) {
-                        Object.keys(errors).forEach(function(key) {
-                            $(`#${key}`).addClass('is-invalid');
-                            $(`#error-${key}`).text(errors[key][0]);
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal!',
-                            text: xhr.responseJSON?.message || 'Terjadi kesalahan sistem.',
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000
-                        });
-                    }
-                }
+    e.preventDefault();
+    
+    let formData = new FormData(this);
+    
+    // Selalu tambahkan is_active secara eksplisit
+    formData.append('is_active', $('#is_active').is(':checked') ? 1 : 0);
+    
+    const id = $('#payment_id').val();
+    const url = id 
+        ? `/super-admin/manual-payment-methods/${id}` 
+        : '/super-admin/manual-payment-methods';
+    
+    // Jika update (PUT), tambahkan method spoofing
+    if (id) {
+        formData.append('_method', 'PUT');
+    }
+    
+    // Reset error messages
+    $('.is-invalid').removeClass('is-invalid');
+    $('.invalid-feedback').text('');
+    
+    // Tambahkan debug console log
+    console.log('Form data:', {
+        id: id,
+        url: url,
+        has_file: formData.has('icon'),
+        is_active: formData.get('is_active')
+    });
+    
+    $.ajax({
+        url: url,
+        method: 'POST', // Selalu gunakan POST
+        data: formData,
+        contentType: false,
+        processData: false,
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            console.log('Success response:', response);
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: response.message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000
+            }).then(() => {
+                $('#paymentFormModal').modal('hide');
+                loadPaymentMethods();
             });
-        });
+        },
+        error: function(xhr) {
+            console.error('Error response:', xhr.responseJSON);
+            const errors = xhr.responseJSON?.errors;
+            
+            if (errors) {
+                Object.keys(errors).forEach(function(key) {
+                    $(`#${key}`).addClass('is-invalid');
+                    $(`#error-${key}`).text(errors[key][0]);
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: xhr.responseJSON?.message || 'Terjadi kesalahan sistem.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        }
+    });
+});
         
         // Delete metode pembayaran
         $(document).on('click', '.btn-delete-payment', function() {

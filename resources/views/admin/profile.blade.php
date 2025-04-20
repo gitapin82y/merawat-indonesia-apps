@@ -129,14 +129,14 @@
        <!-- Profile & Banner Section -->
        <div class="profile-header position-relative mt-4 px-4">
         <img
-         src="{{ $admin->thumbnail ? asset('storage/' . $admin->thumbnail) : asset('assets/img/banner/banner-slider.png') }}"
+         src="{{ $admin->thumbnail_url }}"
           alt="Banner"
           class="w-100" style="border-radius: 10px;max-height:400px;"
         />
         <div class="profile-avatar text-center">
           <div class="avatar-container position-relative d-inline-block">
             <img
-              src="{{ $admin->avatar ? asset('storage/' . $admin->avatar) : asset('assets/img/avatar/main-avatar.png') }}"
+              src="{{ $admin->avatar_url }}"
               alt="William Saliba"
               class="rounded-circle position-absolute start-50 translate-middle-x"
             />

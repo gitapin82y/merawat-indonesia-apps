@@ -61,11 +61,14 @@
   
   /* Gaya untuk Deskripsi (p, small, span, a) */
   p,
-  span {
+  span,.accordion-body{
     font-family: var(--font-family-desc);
     font-size: var(--font-size-desc);
     font-weight: var(--font-weight-regular);
     color: var(--desc-color);
+  }
+  .accordion-body{
+    padding-top: 0px;
   }
   
   label {

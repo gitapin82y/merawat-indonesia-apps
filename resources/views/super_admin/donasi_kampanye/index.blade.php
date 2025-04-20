@@ -4,6 +4,7 @@
 
 @push('after-style')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .modal-header {
         background-color: #e74a3b;
@@ -71,7 +72,7 @@
                     <form id="campaignFilterForm">
                         <div class="form-group">
                             <label for="campaign_id">Pilih Kampanye</label>
-                            <select class="form-control" id="campaign_id" name="campaign_id">
+                            <select class="form-control select2" id="campaign_id" name="campaign_id">
                                 <option value="">Semua Kampanye</option>
                                 @foreach($campaigns as $campaign)
                                     <option value="{{ $campaign->id }}">{{ $campaign->title }}</option>
@@ -121,8 +122,15 @@
 @endsection
 @push('after-script')
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(function () {
+    $('#campaign_id').select2({
+        placeholder: 'Pilih Kampanye',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#campaignFilterModal')
+    });
     // Initialize datepickers
     $(".date-picker").flatpickr({
         dateFormat: "Y-m-d",
@@ -248,11 +256,7 @@ $(function () {
         $('#active-filters').html('');
         table.ajax.reload();
     });
-    
-    // Debugging helper
-    table.on('xhr', function() {
-        console.log('DataTables XHR:', table.ajax.json());
-    });
+ 
 });
 </script>
 @endpush

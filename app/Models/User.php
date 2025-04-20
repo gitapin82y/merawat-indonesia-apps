@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -109,5 +110,20 @@ public function hasPassword()
     {
         return $this->hasMany(Notification::class);
     }
+
+// Di model User.php
+public function getAvatarUrlAttribute()
+{
+    return $this->avatar && !Str::startsWith($this->avatar, 'default/') 
+        ? asset('storage/' . $this->avatar) 
+        : asset('assets/img/' . $this->avatar);
+}
+
+public function getThumbnailUrlAttribute()
+{
+    return $this->thumbnail && !Str::startsWith($this->thumbnail, 'default/') 
+        ? asset('storage/' . $this->thumbnail) 
+        : asset('assets/img/' . $this->thumbnail);
+}
 
 }

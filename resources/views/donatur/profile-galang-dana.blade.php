@@ -134,14 +134,14 @@
                <!-- Profile & Banner Section -->
        <div class="profile-header position-relative mt-4 px-4">
         <img
-         src="{{ $admin->thumbnail ? asset('storage/' . $admin->thumbnail) : asset('assets/img/banner/banner-slider.png') }}"
+         src="{{ $admin->thumbnail_url }}"
           alt="Banner"
           class="w-100" style="border-radius: 10px;max-height:400px;"
         />
         <div class="profile-avatar text-center">
           <div class="avatar-container position-relative d-inline-block">
             <img
-              src="{{ $admin->avatar ? asset('storage/' . $admin->avatar) : asset('assets/img/avatar/main-avatar.png') }}"
+              src="{{ $admin->avatar_url }}"
               alt="William Saliba"
               class="rounded-circle position-absolute start-50 translate-middle-x"
             />
@@ -154,11 +154,27 @@
 
         <div class="d-flex flex-column align-items-center">
             <p class="mb-2 text-center mt-4 fs-5 fw-bold text-second">  {{$admin->name}} </p>
+            @if($admin->status === 'disetujui')
             <div class="d-flex align-items-center bg-opacity rounded-pill px-3 py-1">
                 <img src="{{asset('assets/img/icon/verify.svg')}}" alt="Akun Terverifikasi" class="me-2"
                     style="width: 16px; height: 16px;">
                 <small class="text-second">Akun Terverifikasi</small>
             </div>
+            @else
+            <div class="d-flex align-items-center bg-opacity rounded-pill px-3 py-1">
+                <img src="{{asset('assets/img/icon/unverify.svg')}}" alt="Belum Terverifikasi" class="me-2"
+                    style="width: 16px; height: 16px;">
+                <small class="text-danger">
+                    @if($admin->status === 'menunggu')
+                        Menunggu Verifikasi
+                    @elseif($admin->status === 'ditolak')
+                        Verifikasi Ditolak
+                    @else
+                        Belum Terverifikasi
+                    @endif
+                </small>
+            </div>
+            @endif
         </div>
 
         <p class="text-muted mx-3 mt-2 mb-1">

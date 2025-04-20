@@ -1032,6 +1032,9 @@ public function ceklis(Request $request)
         if ($request->has('payment_type') && $request->payment_type) {
             $query->where('payment_type', $request->payment_type);
         }
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
         
         // IMPORTANT: Use the query builder version of DataTables, not the collection version
         return DataTables::of($query)

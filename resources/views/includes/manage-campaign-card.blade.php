@@ -1,4 +1,4 @@
-<a href="{{ route('admin.campaign.detail', $campaign->title) }}" class="col-12 row mt-2">
+<a href="{{ route('admin.campaign.detail', $campaign->slug) }}" class="col-12 row mt-2">
     <div class="foto col-6 col-sm-6 col-md-4 align-self-center position-relative">
         <div class="status-overlay text-danger position-absolute top-0 ms-1 mt-1 bg-white p-1 rounded">
             <small>

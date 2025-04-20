@@ -50,7 +50,7 @@
                 <p class="notification-date">{{ $notification->created_at->format('d F Y, H:i') }}</p>
               </div>
               <div class="col-4 align-self-center text-end">
-                <form action="{{ route('notifications.destroy', $notification) }}" method="POST">
+                <form action="{{ route('notifications.destroy', $notification) }}" method="POST" id="hapus-notif">
                   @csrf
                   @method('DELETE')
                       <button type="button" class="btn btn-outline-danger btn-konfirmasi-hapus">
@@ -81,7 +81,7 @@
   document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.btn-konfirmasi-hapus').forEach(function (button) {
           button.addEventListener('click', function (e) {
-              const form = this.closest('.form-hapus');
+              const form = $('#hapus-notif');
               Swal.fire({
                   title: 'Apakah Anda yakin?',
                   text: "Notifikasi yang dihapus tidak bisa dikembalikan.",

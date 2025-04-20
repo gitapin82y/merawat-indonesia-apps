@@ -1,4 +1,4 @@
-<a href="{{ route('campaign.detail', $campaign->title) }}" class="card swiper-slide">
+<a href="{{ route('campaign.detail', $campaign->slug) }}" class="card swiper-slide">
     <img src="{{ asset('storage/' . $campaign->photo) }}" class="image-campaign-card" alt="{{ $campaign->title }}">
 <small class="my-1 p-0">{{ $campaign->admin->name }}  <img src="{{asset('assets/img/icon/verify.svg')}}" style="margin-top: -3px;" alt=""></small>
 <h3>{{ $campaign->title }}</h3>

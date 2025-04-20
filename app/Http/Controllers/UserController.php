@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+
+
     public function allMenu(Request $request){
         $categories = Category::all();
         return view('donatur.menu-lainnya', compact('categories'));
@@ -37,7 +39,7 @@ class UserController extends Controller
         ->map(function($user) {
             return [
                 'name' => $user->name,
-                'avatar' => $user->avatar ?? 'default-avatar.png',
+                'avatar' => $user->avatar_url,
                 'total_donation' => $user->donations_sum_amount,
                 'total_donation_formatted' => 'Rp ' . number_format($user->donations_sum_amount, 0, ',', '.')
             ];
@@ -47,7 +49,7 @@ class UserController extends Controller
         $oneWeekFromNow = $today->copy()->addWeek();
 
         // Gunakan paginate untuk pagination biasa
-        $campaigns = Campaign::where('status', 'aktif')->paginate(8); // Perhatikan jumlah item per halaman
+        $campaigns = Campaign::where('status', 'aktif')->paginate(6); // Perhatikan jumlah item per halaman
 
         // Filter kampanye yang tinggal 1 minggu lagi
          $weekendCampaigns = Campaign::where('status', 'aktif')
@@ -92,7 +94,7 @@ class UserController extends Controller
         ->map(function($user) {
             return [
                 'name' => $user->name,
-                'avatar' => $user->avatar ?? 'default-avatar.png',
+                'avatar' => $user->avatar_url,
                 'total_donation' => $user->donations_sum_amount,
                 'total_donation_formatted' => 'Rp ' . number_format($user->donations_sum_amount, 0, ',', '.')
             ];
@@ -276,7 +278,7 @@ class UserController extends Controller
             ->map(function($user) {
                 return [
                     'name' => $user->name,
-                    'avatar' => $user->avatar ?? 'default-avatar.png',
+                    'avatar' => $user->avatar_url,
                     'total_donation' => $user->donations_sum_amount,
                     'total_donation_formatted' => 'Rp ' . number_format($user->donations_sum_amount, 0, ',', '.')
                 ];
@@ -295,7 +297,7 @@ class UserController extends Controller
             ->map(function($admin) {
                 return [
                     'name' => $admin->name,
-                    'avatar' => $admin->avatar ?? 'default-avatar.png',
+                    'avatar' => $admin->avatar_url,
                     'total_donatur' => $admin->total_donatur,
                     'total_campaigns' => $admin->campaigns->count()
                 ];
@@ -397,7 +399,7 @@ class UserController extends Controller
         ];
     
         if ($user->role === 'super_admin') {
-            $rules['address'] = 'required|string';
+            $rules['address'] = 'nullable|string';
             $rules['email'] = 'required|email';
         } else {
             $rules['address'] = 'nullable';
@@ -411,6 +413,8 @@ class UserController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
+
+
 
 
         DB::beginTransaction();
@@ -430,10 +434,10 @@ class UserController extends Controller
             
             // Handle file uploads
             if ($request->hasFile('avatar')) {
-                // Delete old avatar
-                if ($user->avatar) {
+                if ($user->avatar && $user->avatar != 'default/default-avatar.png') {
                     Storage::disk('public')->delete($user->avatar);
                 }
+        
                 $userData['avatar'] = $request->file('avatar')->store('admin_avatar', 'public');
             }
             
@@ -468,10 +472,10 @@ class UserController extends Controller
     {
         DB::beginTransaction();
         try {
-            // Hapus file avatar dan thumbnail jika ada
-            if ($user->avatar) {
+            if ($user->avatar && $user->avatar != 'default/default-avatar.png') {
                 Storage::disk('public')->delete($user->avatar);
             }
+
             
             if ($user->thumbnail) {
                 Storage::disk('public')->delete($user->thumbnail);

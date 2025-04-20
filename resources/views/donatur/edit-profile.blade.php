@@ -77,6 +77,7 @@
                 @method('PUT')
 
                 <input type="hidden" name="user_id" value="{{ $user->user_id }}">
+                <input type="hidden" name="email" value="{{ $user->email }}">
                 
             <!-- Thumbnail Profil -->
             <div class="mb-3 position-relative">
