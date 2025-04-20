@@ -24,6 +24,7 @@ class UserController extends Controller
     }
     public function home(Request $request)
     {
+        Campaign::checkAndUpdateExpiredCampaigns();
         $donaturLeaderboard = User::whereHas('donations', function($query) {
             $query->where('status', 'sukses');
         })
@@ -49,10 +50,12 @@ class UserController extends Controller
         $campaigns = Campaign::where('status', 'aktif')->paginate(8); // Perhatikan jumlah item per halaman
 
         // Filter kampanye yang tinggal 1 minggu lagi
-        $weekendCampaigns = Campaign::where('status', 'aktif')
-            ->whereBetween('deadline', [$today, $oneWeekFromNow]) 
-            ->limit(10)  // Ambil hanya 10 kampanye
-        ->get();
+         $weekendCampaigns = Campaign::where('status', 'aktif')
+            ->whereNotNull('deadline')
+            ->whereDate('deadline', '>=', $today->toDateString())
+            ->whereDate('deadline', '<=', $oneWeekFromNow->toDateString())
+            ->limit(10)
+            ->get();
 
         $prioritasCampaigns = prioritasCampaign::with(['campaign'])
         ->orderBy('prioritas', 'asc')
@@ -76,6 +79,7 @@ class UserController extends Controller
 
     public function eksplore(Request $request)
     {
+        Campaign::checkAndUpdateExpiredCampaigns();
         $donaturLeaderboard = User::whereHas('donations', function($query) {
             $query->where('status', 'sukses');
         })
@@ -101,10 +105,12 @@ class UserController extends Controller
         $campaigns = Campaign::where('status', 'aktif')->paginate(8); // Perhatikan jumlah item per halaman
 
         // Filter kampanye yang tinggal 1 minggu lagi
-        $weekendCampaigns = Campaign::where('status', 'aktif')
-            ->whereBetween('deadline', [$today, $oneWeekFromNow]) 
-            ->limit(10)  // Ambil hanya 10 kampanye
-        ->get();
+         $weekendCampaigns = Campaign::where('status', 'aktif')
+            ->whereNotNull('deadline')
+            ->whereDate('deadline', '>=', $today->toDateString())
+            ->whereDate('deadline', '<=', $oneWeekFromNow->toDateString())
+            ->limit(10)
+            ->get();
 
         $prioritasCampaigns = prioritasCampaign::with(['campaign'])
         ->orderBy('prioritas', 'asc')

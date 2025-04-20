@@ -92,8 +92,32 @@
                     </h2>
                 </div>
                 <div class="col d-flex justify-content-end p-0">
-                    <h2>{{ $campaign->remainingDays }}</h2>
-                    <small class="ms-1" style="margin-top:2px;">Hari Lagi</small>
+                    <strong style="margin-top: -4px; margin-right:3px;">
+                        @if($campaign->deadline)
+                            @if($campaign->remainingDays < 0)
+                                0
+                            @elseif($campaign->remainingDays == 0)
+                                {{ floor($campaign->remainingTime) }}
+                            @else
+                                {{ $campaign->remainingDays }}
+                            @endif
+                        @else
+                            <i class="fas fa-infinity"></i>
+                        @endif
+                    </strong>
+                    <small>
+                        @if($campaign->deadline)
+                            @if($campaign->remainingDays < 0)
+                                Hari Lagi
+                            @elseif($campaign->remainingDays == 0)
+                                Jam Lagi
+                            @else
+                                Hari Lagi
+                            @endif
+                        @else
+                            Tanpa Batas Waktu
+                        @endif
+                    </small>
                 </div>
             </div>
 

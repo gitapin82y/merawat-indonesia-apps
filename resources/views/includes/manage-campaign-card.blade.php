@@ -43,12 +43,30 @@
             <div class="col-6 p-0 text-end">
                 <strong>
                     @if($campaign->deadline)
-                        {{ $campaign->remainingDays }}
+                        @if($campaign->remainingDays < 0)
+                            0
+                        @elseif($campaign->remainingDays == 0)
+                            {{ floor($campaign->remainingTime) }}
+                        @else
+                            {{ $campaign->remainingDays }}
+                        @endif
                     @else
-                        0
+                        <i class="fas fa-infinity"></i>
                     @endif
                 </strong>
-                <small>Hari Lagi</small>
+                <small>
+                    @if($campaign->deadline)
+                        @if($campaign->remainingDays <= 0)
+                            Hari Lagi
+                        @elseif($campaign->remainingDays == 0)
+                            Jam Lagi
+                        @else
+                            Hari Lagi
+                        @endif
+                    @else
+                        Tanpa Batas Waktu
+                    @endif
+                </small>
             </div>
         </div>
 

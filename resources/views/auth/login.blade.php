@@ -90,8 +90,8 @@
 <div class="container-fluid h-100">
     <div class="row login-container">
         <!-- Kolom gambar hanya muncul di layar besar -->
-        <div class="col-lg-6 d-none d-lg-block login-image"></div>
-        <div class="col-lg-6 d-flex align-items-center justify-content-center">
+        <div class="col-lg-5 d-none d-lg-block login-image"></div>
+        <div class="col-lg-7 d-flex align-items-center justify-content-center">
             <div class="login-box w-100" style="max-width: 500px;">
                 <div class="d-flex flex-column align-items-center justify-content-center" style="height: 100%;">
                     <div class="d-flex align-items-center">
