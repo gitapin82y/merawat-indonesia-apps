@@ -24,11 +24,13 @@ use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CheckAuth;
 use App\Http\Controllers\SocialiteController;
 
+Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
+
 
 Route::get('admin/kampanye/{slug}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
 Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
 
-Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
+
 
 Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
     Route::get('/buat-kampanye', function(){

@@ -28,8 +28,8 @@ return new class extends Migration
             $table->string('email');
             $table->string('snap_token')->unique();
             $table->integer('amount');
-            $table->enum('payment_type', ['payment_gateway', 'manual']);
-            $table->string('payment_method');
+            $table->enum('payment_type', ['payment_gateway', 'manual'])->nullable();
+            $table->string('payment_method')->nullable();
             $table->enum('status', ['pending', 'sukses', 'gagal'])->default('pending');
             $table->timestamps();
         });

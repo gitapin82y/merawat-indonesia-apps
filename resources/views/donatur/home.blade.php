@@ -18,7 +18,7 @@
     @include('includes.public.navbar')
     <!-- Hero Section -->
     <div class="hero">
-        <img src="{{asset('assets/img/main-banner.png')}}" class="mt-0 pt-0" width="100%" alt="">
+        <img src="{{asset('assets/img/main-banner1.png')}}" class="mt-0 pt-0" width="100%" alt="">
         <div class="caption">
             <h2>Unduh Aplikasi Donasi Sekarang!</h2>
             <p>Nikmati kemudahan berondasi langsung dari perangkat Anda, Download sekarang!</p>
@@ -141,7 +141,7 @@
         </div>
     </div>
 
-    <div class="row kampanye mt-5">
+    <div class="row kampanye mt-5 mb-5">
         <div class="justify-content-between d-flex">
             <h2>Galang Dana Lainnya</h2>
             <a href="{{url('eksplore-kampanye')}}">Lihat Semua</a>
@@ -161,7 +161,7 @@
         @endif
 
      @if ($campaigns->hasMorePages())
-        <button id="load-more" data-next-page="{{ $campaigns->nextPageUrl() }}" class="btn btn-primary mt-4">
+        <button id="load-more" data-next-page="{{ $campaigns->nextPageUrl() }}" class="btn btn-primary mt-1 mb-4">
             Lihat Lebih Banyak
         </button>
     @endif

@@ -133,7 +133,7 @@
       </div>
   </div>
 
-  <div class="row kampanye mt-5">
+  <div class="row kampanye mt-5 mb-5">
       <div class="justify-content-between d-flex">
           <h2>Galang Dana Lainnya</h2>
           {{-- <a href="/kampanye/bantu">Lihat Semua</a> --}}
@@ -153,7 +153,7 @@
       @endif  
 
       @if ($campaigns->hasMorePages())
-      <button id="load-more" data-next-page="{{ $campaigns->nextPageUrl() }}" class="btn btn-primary mt-4">
+      <button id="load-more" data-next-page="{{ $campaigns->nextPageUrl() }}" class="btn btn-primary mt-1 mb-4">
           Lihat Lebih Banyak
       </button>
   @endif

@@ -125,7 +125,7 @@
             <p>Anda dapat mengajukan kembali permintaan pencairan dana setelah memastikan informasi yang diberikan sudah benar dan lengkap.</p>
             
             <div style="text-align: center;">
-                <a href="{{ route('campaign.detail', $withdrawal->campaign->title) }}" class="button">Lihat Kabar Pencairan</a>
+                <a href="{{ route('campaign.detail', $withdrawal->campaign->slug) }}" class="button">Lihat Kabar Pencairan</a>
             </div>
         </div>
         <div class="footer">

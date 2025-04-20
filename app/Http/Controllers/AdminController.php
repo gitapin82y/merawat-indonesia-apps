@@ -182,6 +182,9 @@ public function __construct(NotificationService $notificationService)
         $user = Auth::user();
         if(Auth::check() && $user->role == "yayasan"){
             $admin = $user->admin;
+            if(!$admin){
+               return view('donatur.galang-dana.index');
+            }
             $campaign = Campaign::with([
                 'donations', 
                 'kabarTerbaru', 

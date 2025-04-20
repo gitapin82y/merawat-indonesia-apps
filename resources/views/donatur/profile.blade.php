@@ -218,56 +218,44 @@
 
               <!-- Riwayat Donasi (Awalnya Tersembunyi) -->
               <div id="donationHistory" class="donation-history mt-3 d-none">
-                @if($user->donations->isEmpty())
-                <div class="text-center">
-                    <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                    <p>Belum Memiliki Riwayat Donasi di Kampanye</p>
+                <div id="donations-container">
+                    @include('partials.profile.donations', ['donations' => $donations])
                 </div>
-            @else
-                @foreach($user->donations as $donation)
-                <div class="donation-card p-3 border rounded shadow-sm">
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-bold">{{$donation->name}}</span>
-                        <span class="fw-bold text-end">Rp {{ number_format($donation->amount, 0, ',', '.') }} </span>
-                    </div>
-                    <small class="text-muted d-block">{{ $donation->created_at->diffForHumans() }}</small>
-                </div>
-                @endforeach
-            @endif
-              </div>
+                
+                @if($donations->hasMorePages())
+                    <button id="load-more-donations" data-next-page="{{ $donations->nextPageUrl() }}&tab=donations" 
+                        class="btn btn-outline-danger w-100 mt-3 load-more-btn" data-tab="donations">
+                        Lihat Lebih Banyak
+                    </button>
+                @endif
+            </div>
 
-              <!-- Tersimpan (Awalnya Tersembunyi) -->
-              <div id="tersimpanContent" class="donation-history mt-3 d-none">
-                @if($user->savedCampaigns->isEmpty())
-                <div class="text-center">
-                    <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                    <p>Belum ada Kampanye yang Tersimpan</p>
-                </div>
-            @else
-                @foreach($user->savedCampaigns as $savedCampaigns)
-                @if($savedCampaigns)
-                        @include('includes.campaign-card', ['campaign' => $savedCampaigns])
-                        @endif
-                @endforeach
-            @endif
-              </div>
-
-              <!-- Dukungan (Awalnya Tersembunyi) -->
-             <!-- Dukungan (Tersembunyi Awalnya) -->
-<div id="dukunganContent" class="donation-history mt-3 d-none">
-    @if($user->donations->isEmpty() || $user->donations->every(fn($donation) => !$donation->campaign))
-    <div class="text-center">
-        <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-        <p>Belum Memiliki Riwayat Donasi di Kampanye</p>
-    </div>
-@else
-    @foreach($user->donations as $donation)
-        @if($donation->campaign) <!-- Pastikan kampanye terkait ada -->
-            @include('includes.campaign-card', ['campaign' => $donation->campaign])
+                <!-- Tersimpan (Awalnya Tersembunyi) -->
+    <div id="tersimpanContent" class="donation-history mt-3 d-none">
+        <div id="saved-campaigns-container">
+            @include('partials.profile.saved-campaigns', ['savedCampaigns' => $savedCampaigns])
+        </div>
+        
+        @if($savedCampaigns->hasMorePages())
+            <button id="load-more-saved" data-next-page="{{ $savedCampaigns->nextPageUrl() }}&tab=saved" 
+                class="btn btn-outline-danger w-100 mt-3 load-more-btn" data-tab="saved">
+                Lihat Lebih Banyak
+            </button>
         @endif
-    @endforeach
-@endif
-</div>
+    </div>
+
+    <div id="dukunganContent" class="donation-history mt-3 d-none">
+        <div id="supported-campaigns-container">
+            @include('partials.profile.supported-campaigns', ['supportedCampaigns' => $supportedCampaigns])
+        </div>
+        
+        @if($supportedCampaigns->hasMorePages())
+            <button id="load-more-supported" data-next-page="{{ $supportedCampaigns->nextPageUrl() }}&tab=supported" 
+                class="btn btn-outline-danger w-100 mt-3 load-more-btn" data-tab="supported">
+                Lihat Lebih Banyak
+            </button>
+        @endif
+    </div>
 
           </div>
           <div class="line-spacing"></div>
@@ -324,7 +312,129 @@
 
       // Simulasikan klik tombol "Riwayat" saat halaman pertama kali dimuat
       toggleContent(btnRiwayat, donationHistory);
+      
+      // Handle pagination for all tabs
+      $('.load-more-btn').click(function() {
+          var button = $(this);
+          var nextPageUrl = button.data('next-page');
+          var tab = button.data('tab');
+          var container;
+          
+          // Determine which container to update based on the tab
+          switch(tab) {
+              case 'donations':
+                  container = $('#donations-container');
+                  break;
+              case 'saved':
+                  container = $('#saved-campaigns-container');
+                  break;
+              case 'supported':
+                  container = $('#supported-campaigns-container');
+                  break;
+          }
+          
+          // Show loading indicator
+          button.html('<i class="fa fa-spinner fa-spin"></i> Memuat...');
+          button.prop('disabled', true);
+          
+          // Perform AJAX request
+          $.ajax({
+              url: nextPageUrl,
+              type: 'GET',
+              success: function(response) {
+                  // Append new content
+                  container.append(response.html);
+                  
+                  // Update or hide the load more button
+                  if (!response.hasMorePages) {
+                      button.hide();
+                  } else {
+                      button.data('next-page', response.nextPageUrl);
+                      button.html('Lihat Lebih Banyak');
+                      button.prop('disabled', false);
+                  }
+                  
+                  // Re-attach event listeners for save buttons if needed
+                  attachSaveButtonEvents();
+              },
+              error: function() {
+                  button.html('Lihat Lebih Banyak');
+                  button.prop('disabled', false);
+                  alert('Terjadi kesalahan, silakan coba lagi.');
+              }
+          });
+      });
+      
+      // Function to attach events to campaign save buttons
+      function attachSaveButtonEvents() {
+          $('.save-campaign-btn').off('click').on('click', function(e) {
+              e.preventDefault();
+              
+              var btn = $(this);
+              var campaignId = btn.data('campaign-id');
+              var icon = btn.find('.save-icon');
+              
+              $.ajax({
+                  url: '{{ route("campaign.toggle-save") }}',
+                  method: 'POST',
+                  data: {
+                      campaign_id: campaignId,
+                      _token: '{{ csrf_token() }}'
+                  },
+                  success: function(response) {
+                      if (response.status === 'saved') {
+                          Swal.fire({
+                              icon: 'success',
+                              text: 'Kampanye Berhasil Disimpan di Profile Anda',
+                              toast: true,
+                              position: 'top-end',
+                              showConfirmButton: false,
+                              timer: 3000
+                          });
+                          icon.removeClass('fa-regular').addClass('fa-solid').addClass('text-danger');
+                      } else {
+                          icon.removeClass('fa-solid').addClass('fa-regular').removeClass('text-danger');
+                          
+                          // If we're on the saved tab and unsaving, consider removing the item
+                          if (tersimpanContent.classList.contains('d-none') === false) {
+                              btn.closest('.campaign-card').fadeOut(300, function() {
+                                  $(this).remove();
+                                  
+                                  // If no more campaigns, show empty state
+                                  if ($('#saved-campaigns-container .campaign-card').length === 0) {
+                                      $('#saved-campaigns-container').html(`
+                                          <div class="text-center">
+                                              <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
+                                              <p>Belum ada Kampanye yang Tersimpan</p>
+                                          </div>
+                                      `);
+                                  }
+                              });
+                          }
+                      }
+                  },
+                  error: function(xhr) {
+                      if (xhr.status === 401) {
+                          window.location.href = '{{ route("login") }}';
+                      } else {
+                          Swal.fire({
+                              icon: 'error',
+                              text: 'Terjadi kesalahan. Silakan coba lagi.',
+                              toast: true,
+                              position: 'top-end',
+                              showConfirmButton: false,
+                              timer: 3000
+                          });
+                      }
+                  }
+              });
+          });
+      }
+      
+      // Initialize save button events
+      attachSaveButtonEvents();
   });
 </script>
+
 @endpush
 

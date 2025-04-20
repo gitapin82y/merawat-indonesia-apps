@@ -189,7 +189,7 @@
               
               @foreach($fundraisings as $fundraising)
               <div class="col-12 row kampanye-item">
-                  <a href="{{ route('campaign.detail', $fundraising->campaign->title) }}" class="col-6 align-self-center">
+                  <a href="{{ route('campaign.detail', $fundraising->campaign->slug) }}" class="col-6 align-self-center">
                       <img
                           src="{{ asset('storage/' . $fundraising->campaign->photo) }}"
                           class="image-campaign-card"
@@ -205,7 +205,7 @@
                       <p class="mb-2 donasi-info">
                           Pendapatan dari total donasi <b>{{ number_format($fundraising->commission) }}</b>
                       </p>
-                    <button type="button" class="btn btn-salin btn-action d-inline" data-link="{{ route('campaign.referral', ['title' => $fundraising->campaign->title, 'code' => $fundraising->code_link]) }}">Salin Link</button>
+                    <button type="button" class="btn btn-salin btn-action d-inline" data-link="{{ route('campaign.referral', ['slug' => $fundraising->campaign->slug, 'code' => $fundraising->code_link]) }}">Salin Link</button>
                   </div>
               </div>
               @endforeach

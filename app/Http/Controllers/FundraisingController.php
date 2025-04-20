@@ -85,7 +85,6 @@ class FundraisingController extends Controller
             ->get();
         
         $totalCommission = $fundraisings->sum('commission');
-        
         return view('donatur.fundraishing.index', compact('fundraisings', 'totalCommission'));
     }
 

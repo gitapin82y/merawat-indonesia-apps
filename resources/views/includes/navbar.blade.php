@@ -27,7 +27,7 @@
         </div>
 
         <div class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {{ Request::is('super-admin/admin') || Request::is('super-admin/user') ? 'active' : '' }}" href="#" id="donasiDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a class="nav-link dropdown-toggle {{ Request::is('admin') || Request::is('user') ? 'active' : '' }}" href="#" id="donasiDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Pengguna
             </a>
             <div class="dropdown-menu" aria-labelledby="donasiDropdown">
@@ -38,7 +38,7 @@
     
         <!-- Dropdown Kampanye -->
         <div class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {{ Request::is('super-admin/kampanye') || Request::is('super-admin/prioritas-kampanye') ? 'active' : '' }}" href="#" id="kampanyeDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a class="nav-link dropdown-toggle {{ Request::is('kampanye') || Request::is('super-admin/prioritas-kampanye') ? 'active' : '' }}" href="#" id="kampanyeDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Kampanye
             </a>
             <div class="dropdown-menu" aria-labelledby="kampanyeDropdown">
@@ -47,7 +47,7 @@
             </div>
         </div>
     
-        <a href="{{ route('kabar-terbaru.index') }}" class="nav-item nav-link {{ Request::is('super-admin/kabar-terbaru') ? 'active' : '' }}">Kabar Terbaru</a>
+        <a href="{{ route('kabar-terbaru.index') }}" class="nav-item nav-link {{ Request::is('kabar-terbaru') ? 'active' : '' }}">Kabar Terbaru</a>
         <a href="{{ route('fundraising.index') }}" class="nav-item nav-link {{ Request::is('super-admin/fundraising') ? 'active' : '' }}">Fundraising</a>
     
         <!-- Dropdown Pencairan Dana -->

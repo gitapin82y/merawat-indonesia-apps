@@ -125,10 +125,6 @@
             
             <p>Dana telah ditransfer ke rekening yang Anda berikan. Silakan periksa akun bank Anda.</p>
             <p>Terima kasih telah menggunakan platform kami untuk kegiatan sosial Anda.</p>
-            
-            <div style="text-align: center;">
-                <a href="{{ route('kabar-pencairan', $withdrawal->campaign->title) }}" class="button">Lihat Kabar Pencairan</a>
-            </div>
         </div>
         <div class="footer">
             <p>Email ini dikirim secara otomatis. Mohon tidak membalas email ini.</p>

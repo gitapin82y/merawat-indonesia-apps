@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Admin;
 use App\Models\Campaign;
 use App\Models\Banner;
+use App\Models\Donation;
 use App\Models\Category;
 use App\Models\PrioritasCampaign;
 use Illuminate\Http\Request;
@@ -309,13 +310,95 @@ class UserController extends Controller
         ]);
     }
 
-    public function profileDonatur(){
-        $user = User::with(['donations.campaign','savedCampaigns'])->findOrFail(Auth::user()->id);
-        $totalDonasi = number_format($user->donations->sum('amount'), 0, ',', '.');
-        $jumlahDukungan = $user->donations->groupBy('campaign_id')->count();
-
-        return view('donatur.profile', compact('user', 'totalDonasi', 'jumlahDukungan'));
+    public function profileDonatur(Request $request)
+{
+    $perPage = 4;
+    $user = Auth::user();
+    
+    // Load basic user info without eager loading large collections
+    $userBasic = User::findOrFail($user->id);
+    
+    // Calculate totals for header statistics
+    $totalDonasi = number_format($userBasic->donations()->sum('amount'), 0, ',', '.');
+    $jumlahDukungan = $userBasic->donations()->distinct('campaign_id')->count('campaign_id');
+    
+    // Handle pagination for each tab
+    if ($request->ajax()) {
+        if ($request->has('tab')) {
+            switch ($request->tab) {
+                case 'donations':
+                    $donations = $user->donations()
+                        ->orderBy('created_at', 'desc')
+                        ->paginate($perPage, ['*'], 'donations_page');
+                    
+                    return response()->json([
+                        'html' => view('partials.profile.donations', compact('donations'))->render(),
+                        'hasMorePages' => $donations->hasMorePages(),
+                        'nextPageUrl' => $donations->nextPageUrl() . '&tab=donations',
+                    ]);
+                
+                case 'saved':
+                    $savedCampaigns = $user->savedCampaigns()
+                        ->orderBy('user_campaign_save.created_at', 'desc')
+                        ->paginate($perPage, ['*'], 'saved_page');
+                    
+                    return response()->json([
+                        'html' => view('partials.profile.saved-campaigns', compact('savedCampaigns'))->render(),
+                        'hasMorePages' => $savedCampaigns->hasMorePages(),
+                        'nextPageUrl' => $savedCampaigns->nextPageUrl() . '&tab=saved',
+                    ]);
+                
+                case 'supported':
+                    $supportedCampaigns = $user->donations()
+                        ->with('campaign')
+                        ->whereNotNull('campaign_id')
+                        ->select('campaign_id')
+                        ->distinct()
+                        ->orderBy('created_at', 'desc')
+                        ->paginate($perPage, ['*'], 'supported_page');
+                    
+                    return response()->json([
+                        'html' => view('partials.profile.supported-campaigns', compact('supportedCampaigns'))->render(),
+                        'hasMorePages' => $supportedCampaigns->hasMorePages(),
+                        'nextPageUrl' => $supportedCampaigns->nextPageUrl() . '&tab=supported',
+                    ]);
+            }
+        }
+        
+        return response()->json(['error' => 'Invalid request'], 400);
     }
+    
+    // For initial page load, get first page of each tab
+    $donations = $user->donations()
+        ->orderBy('created_at', 'desc')
+        ->paginate($perPage, ['*'], 'donations_page');
+    
+    $savedCampaigns = $user->savedCampaigns()
+        ->orderBy('user_campaign_save.created_at', 'desc')
+        ->paginate($perPage, ['*'], 'saved_page');
+    
+   // For supported campaigns, get the latest donation for each campaign
+$latestDonationsByCampaign = $user->donations()
+->whereNotNull('campaign_id')
+->select('campaign_id', DB::raw('MAX(id) as max_id'))
+->groupBy('campaign_id')
+->get()
+->pluck('max_id');
+
+$supportedCampaigns = Donation::with('campaign')
+->whereIn('id', $latestDonationsByCampaign)
+->orderBy('created_at', 'desc')
+->paginate($perPage, ['*'], 'supported_page');
+    
+    return view('donatur.profile', compact(
+        'user', 
+        'totalDonasi', 
+        'jumlahDukungan',
+        'donations',
+        'savedCampaigns',
+        'supportedCampaigns'
+    ));
+}
 
     public function profileDonaturLeaderboard($name){
         $user = User::with(['donations.campaign'])->where('name',$name)->first();
