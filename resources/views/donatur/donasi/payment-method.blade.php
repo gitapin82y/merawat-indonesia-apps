@@ -47,7 +47,7 @@
                     </div>
                     <div class="col-5 text-end">
                         <p class="mb-1">{{ $campaign->title }}</p>
-                        <p class="mb-1">{{ $donation->is_anonymous ? 'Orang Baik' : $donation->name }}</p>
+                        <p class="mb-1">{{ $donation->is_anonymous ? 'Sahabat Baik' : $donation->name }}</p>
                         <p class="mb-1 text-danger fw-bold">Rp {{ number_format($donation->amount) }}</p>
                     </div>
                 </div>
@@ -101,7 +101,6 @@
                         <div class="footer mb-5 text-center">
                             <div class="main-menu row col-12 mx-0 justify-content-between d-flex ">
                                 <button type="submit" id="continueGatewayBtn" class="button bg-danger w-100 d-flex align-items-center justify-content-center text-white shadow-sm" disabled>
-                                    <img src="{{asset('assets/img/icon/edit-profile.svg')}}" alt="Kirim" style="width: 20px; height: 20px; margin-right: 8px;" />
                                     <span class="text-white">Lanjutkan Pembayaran</span>
                                 </button>
                             </div>
@@ -163,7 +162,6 @@
                             <div class="footer mb-5 text-center">
                                 <div class="main-menu row col-12 mx-0 justify-content-between d-flex ">
                                     <button type="submit" id="submitManualBtn" class="button bg-danger w-100 d-flex align-items-center justify-content-center text-white shadow-sm">
-                                        <img src="{{asset('assets/img/icon/edit-profile.svg')}}" alt="Kirim" style="width: 20px; height: 20px; margin-right: 8px;" />
                                         <span class="text-white">Kirim Bukti Pembayaran</span>
                                     </button>
                                 </div>

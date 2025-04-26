@@ -209,7 +209,7 @@
     <!-- Kotak Total Transaksi & Statistik -->
     <div class="content-box text-center justify-content-center">
         <div class="row">
-            <!-- Bagian atas: Informasi jumlah donatur, kampanye, kabar terbaru, doa orang baik -->
+            <!-- Bagian atas: Informasi jumlah donatur, kampanye, kabar terbaru, doa sahabat baik -->
             <div class="col-12 row mx-0 my-3">
                 <div class="col-3  text-center">
                     <div class="d-flex align-items-center justify-content-center">
@@ -241,7 +241,7 @@
                         <img src="{{asset('assets/img/icon/doa-orang-baik.svg')}}" alt="" class="me-2" style="height: 20px;">
                         <p class="count m-0 d-flex align-items-center">{{ $totalDoa }}</p>
                     </div>
-                    <small>Doa Orang Baik</small>
+                    <small>Doa Sahabat Baik</small>
                 </div>
             </div>
             <!-- Bagian bawah: Total Donasi Terkumpul & Total Pencairan Dana -->

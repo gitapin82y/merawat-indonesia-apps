@@ -15,6 +15,7 @@ use App\Services\NotificationService;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DonationSuccessMail;
 use App\Mail\CampaignDonationMail;
+use App\Models\TripayPaymentMethod;
 
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -139,7 +140,7 @@ class DonationController extends Controller
                 
                 $notificationData = [
                     'donation_id' => $donation->id,
-                    'donor_name' => $donation->is_anonymous ? 'Orang Baik' : $donation->name,
+                    'donor_name' => $donation->is_anonymous ? 'Sahabat Baik' : $donation->name,
                     'amount' => $donation->amount,
                     'campaign_title' => $donation->campaign->title
                 ];
@@ -147,7 +148,7 @@ class DonationController extends Controller
                 $notif = $this->notificationService->createNotification(
                     $admin,
                     'Donasi Baru Diterima',
-                    'Kampanye Anda "' . $donation->campaign->title . '" telah menerima donasi sebesar Rp ' . number_format($donation->amount) . ' dari ' . ($donation->is_anonymous ? 'Orang Baik' : $donation->name) . '.',
+                    'Kampanye Anda "' . $donation->campaign->title . '" telah menerima donasi sebesar Rp ' . number_format($donation->amount) . ' dari ' . ($donation->is_anonymous ? 'Sahabat Baik' : $donation->name) . '.',
                     'new_donation',
                     $notificationData
                 );
@@ -414,13 +415,32 @@ class DonationController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey
             ])->get($apiUrl . $endpoint);
-    
+
             // Log full URL dan response
             Log::info('Tripay Request URL: ' . $apiUrl . $endpoint);
             Log::info('Tripay Response: ' . $response->body());
             
             if ($response->successful() && isset($response['success']) && $response['success']) {
-                return $response['data'];
+                // Get active payment methods from database
+                $activeMethods = TripayPaymentMethod::where('is_active', true)
+                    ->pluck('code')
+                    ->toArray();
+                
+                // If no methods have been configured yet, return all methods
+                if (empty($activeMethods)) {
+                    // This ensures all methods are shown by default before admin configures them
+                    return $response['data'];
+                }
+                
+                // Filter payment methods to only show active ones
+                $filteredMethods = collect($response['data'])
+                    ->filter(function ($method) use ($activeMethods) {
+                        return in_array($method['code'], $activeMethods);
+                    })
+                    ->values()
+                    ->all();
+                
+                return $filteredMethods;
             }
             
             Log::error('Tripay payment channels error: ' . $response->body());
@@ -431,40 +451,11 @@ class DonationController extends Controller
         }
     }
 
-    // protected function getPaymentChannels()
-    // {
-    //     try {
-    //         // Pastikan URL berakhir dengan slash
-    //         $apiUrl = rtrim($this->apiUrl, '/') . '/';
-    //         $endpoint = 'merchant/payment-channel';
-            
-    //         $response = Http::withHeaders([
-    //             'Authorization' => 'Bearer ' . $this->apiKey
-    //         ])->get($apiUrl . $endpoint);
-    
-    //         // Log full URL dan response
-    //         Log::info('Tripay Request URL: ' . $apiUrl . $endpoint);
-    //         Log::info('Tripay Response: ' . $response->body());
-            
-    //         if ($response->successful() && isset($response['success']) && $response['success']) {
-    //             return $response['data'];
-    //         }
-            
-    //         Log::error('Tripay payment channels error: ' . $response->body());
-    //         return [];
-    //     } catch (\Exception $e) {
-    //         Log::error('Error getting payment channels: ' . $e->getMessage());
-    //         return [];
-    //     }
-    // }
-
-
-
     protected function createTransaction($donation, $campaign)
     {
         $merchantRef = 'DON-' . $donation->id . '-' . time();
         $amount = (int)$donation->amount;
-        $donaturName = $donation->is_anonymous ? 'Orang Baik' : $donation->name;
+        $donaturName = $donation->is_anonymous ? 'Sahabat Baik' : $donation->name;
         
         $data = [
             'method' => $donation->payment_method,
@@ -681,62 +672,62 @@ class DonationController extends Controller
                 if ($transaction['status'] === 'PAID') {
                     $status = 'PAID';
 
-                    $campaign = $donation->campaign;
-                    $campaign->jumlah_donasi += $donation->amount;
-                    $campaign->current_donation += $donation->amount;
-                    $campaign->total_donatur += 1;
-                    $campaign->save();
+                    // $campaign = $donation->campaign;
+                    // $campaign->jumlah_donasi += $donation->amount;
+                    // $campaign->current_donation += $donation->amount;
+                    // $campaign->total_donatur += 1;
+                    // $campaign->save();
 
-                    $this->trackServerSideConversion($donation);
+                    // $this->trackServerSideConversion($donation);
 
-                     // Update donation source statistics
-                    if ($donation->donation_source_id) {
-                        $source = DonationSource::find($donation->donation_source_id);
-                        if ($source) {
-                            $source->total_donations += 1;
-                            $source->total_amount += $donation->amount;
-                            $source->save();
-                        }
-                    }
+                    //  // Update donation source statistics
+                    // if ($donation->donation_source_id) {
+                    //     $source = DonationSource::find($donation->donation_source_id);
+                    //     if ($source) {
+                    //         $source->total_donations += 1;
+                    //         $source->total_amount += $donation->amount;
+                    //         $source->save();
+                    //     }
+                    // }
 
                         
                     // Cek apakah ada referral code di session
-                    $referralCode = session('referral_code');
-                    $fundraisingId = null;
+                    // $referralCode = session('referral_code');
+                    // $fundraisingId = null;
 
                     
-                    if ($referralCode) {
-                        $fundraising = Fundraising::where('code_link', $referralCode)->first();
+                    // if ($referralCode) {
+                    //     $fundraising = Fundraising::where('code_link', $referralCode)->first();
                         
-                        if ($fundraising) {
+                    //     if ($fundraising) {
 
-                            $commissionSetting = Commission::first(); // atau ->find($id) kalau kamu pakai banyak record
-                            $commissionPercent = $commissionSetting->amount ?? 0;
+                    //         $commissionSetting = Commission::first(); // atau ->find($id) kalau kamu pakai banyak record
+                    //         $commissionPercent = $commissionSetting->amount ?? 0;
 
-                            // Hitung komisi sesuai persentase dari database
-                            $commission = ($donation->amount * $commissionPercent) / 100;
+                    //         // Hitung komisi sesuai persentase dari database
+                    //         $commission = ($donation->amount * $commissionPercent) / 100;
                             
                             
-                            // Update data fundraising
-                            $fundraising->total_donatur += 1;
-                            $fundraising->jumlah_donasi += $donation->amount;
-                            $fundraising->commission += $commission;
+                    //         // Update data fundraising
+                    //         $fundraising->total_donatur += 1;
+                    //         $fundraising->jumlah_donasi += $donation->amount;
+                    //         $fundraising->commission += $commission;
                             
-                            // Update array donations
-                            $donations = json_decode($fundraising->donations, true) ?: [];
-                            $donations[] = [
-                                'donation_id' => $donation->id,
-                                'amount' => $donation->amount,
-                                'commission' => $commission,
-                                'user_name' => $user->name ?? null,
-                                'user_email' => $user->email ?? null,
-                                'created_at' => now()->format('Y-m-d H:i:s')
-                            ];
-                            $fundraising->donations = json_encode($donations);
+                    //         // Update array donations
+                    //         $donations = json_decode($fundraising->donations, true) ?: [];
+                    //         $donations[] = [
+                    //             'donation_id' => $donation->id,
+                    //             'amount' => $donation->amount,
+                    //             'commission' => $commission,
+                    //             'user_name' => $user->name ?? null,
+                    //             'user_email' => $user->email ?? null,
+                    //             'created_at' => now()->format('Y-m-d H:i:s')
+                    //         ];
+                    //         $fundraising->donations = json_encode($donations);
                             
-                            $fundraising->save();
-                        }
-                    }
+                    //         $fundraising->save();
+                    //     }
+                    // }
                     
                     if ($donation) {
                         $donation->status = 'sukses';
@@ -831,24 +822,24 @@ public function checkStatus($reference)
                 if ($transaction['status'] === 'PAID') {
                     $status = 'PAID';
 
-                    $campaign = $donation->campaign;
-                    $campaign->jumlah_donasi += $donation->amount;
-                    $campaign->current_donation += $donation->amount;
-                    $campaign->total_donatur += 1;
-                    $campaign->save();
+        //             $campaign = $donation->campaign;
+        //             $campaign->jumlah_donasi += $donation->amount;
+        //             $campaign->current_donation += $donation->amount;
+        //             $campaign->total_donatur += 1;
+        //             $campaign->save();
 
-                    $this->trackServerSideConversion($donation);
+        //             $this->trackServerSideConversion($donation);
 
 
-                     // Update donation source statistics
-        if ($donation->donation_source_id) {
-            $source = DonationSource::find($donation->donation_source_id);
-            if ($source) {
-                $source->total_donations += 1;
-                $source->total_amount += $donation->amount;
-                $source->save();
-            }
-        }
+        //              // Update donation source statistics
+        // if ($donation->donation_source_id) {
+        //     $source = DonationSource::find($donation->donation_source_id);
+        //     if ($source) {
+        //         $source->total_donations += 1;
+        //         $source->total_amount += $donation->amount;
+        //         $source->save();
+        //     }
+        // }
                     
                     $donation = Donation::where('snap_token', $reference)->first();
                     if ($donation) {

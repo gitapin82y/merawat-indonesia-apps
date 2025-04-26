@@ -59,7 +59,7 @@ class Campaign extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function donations()//donation dengan data doa not null merupakan doa orang baik
+    public function donations()//donation dengan data doa not null merupakan doa sahabat baik
     {
         return $this->hasMany(Donation::class);
     }

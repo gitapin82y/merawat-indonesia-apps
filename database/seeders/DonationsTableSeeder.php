@@ -72,12 +72,12 @@ class DonationsTableSeeder extends Seeder
                 if ($isRegisteredUser) {
                     $user = $users->random();
                     $donation->user_id = $user->id;
-                    $donation->name = $isAnonymous ? 'Orang Baik' : $user->name;
+                    $donation->name = $isAnonymous ? 'Sahabat Baik' : $user->name;
                     $donation->email = $user->email;
                     $donation->phone = $user->phone;
                 } else {
                     $donation->user_id = null;
-                    $donation->name = $isAnonymous ? 'Orang Baik' : 'Donatur ' . ($i + 1);
+                    $donation->name = $isAnonymous ? 'Sahabat Baik' : 'Donatur ' . ($i + 1);
                     $donation->email = 'donatur' . ($i + 1) . '@example.com';
                     $donation->phone = '08' . rand(100000000, 999999999);
                 }

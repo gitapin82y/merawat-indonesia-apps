@@ -12,7 +12,7 @@
 <div class="card mb-4">
     <div class="card-body">
     <div class="row justify-content-center pb-4">
-        <div class="col-4 col-md-2 col-lg-3">
+        <div class="col-12 my-2 col-md-2 col-lg-3">
             <a class="w-100 btn btn-danger btn-adsense" data-toggle="modal" data-target="#adsenseModal"
             data-id="{{ optional($adsense)->id }}"
             data-tiktok_pixel="{{ optional($adsense)->tiktok_pixel }}"
@@ -28,19 +28,25 @@
                 Pengaturan Iklan
             </a>
         </div>
-        <div class="col-4 col-md-2 col-lg-2">
+        <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger btn-kategori" data-toggle="modal" data-target="#manageKategoriModal">
                 Manage Kategori
             </a>
         </div>
-        <div class="col-4 col-md-2 col-lg-2">
+        <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#manageBannerModal"">
                 Manage Slider
             </a>
         </div>
-        <div class="col-4 col-md-2 col-lg-2">
+        <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#managePayment"">
                 Pembayaran Manual
+            </a>
+        </div>
+
+        <div class="col-12 my-2 col-md-2 col-lg-2">
+            <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#manageTripayModal">
+                Pembayaran Tripay
             </a>
         </div>
 
@@ -65,6 +71,54 @@
             </div>
           </div>
           <button type="button" class="btn btn-danger mt-3 w-100 btn-tambah-payment">Tambah Metode Pembayaran</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Untuk Manajemen Metode Pembayaran Tripay -->
+<div class="modal fade" id="manageTripayModal" tabindex="-1" aria-labelledby="tripayLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="tripayLabel">Manage Metode Pembayaran Tripay</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between mb-3">
+            <button type="button" id="btnSyncTripay" class="btn btn-primary">
+              <i class="fas fa-sync-alt mr-1"></i> Sinkronisasi dari Tripay
+            </button>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleAllMethods">
+              <label class="form-check-label" for="toggleAllMethods">Aktifkan Semua</label>
+            </div>
+          </div>
+  
+          <!-- Loading indicator -->
+          <div id="tripayLoading" class="text-center py-3">
+            <div class="spinner-border text-danger" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+            <p class="mt-2">Memuat metode pembayaran...</p>
+          </div>
+  
+          <!-- Payment methods error -->
+          <div id="tripayError" class="alert alert-danger d-none">
+            <i class="fas fa-exclamation-circle mr-1"></i>
+            <span id="tripayErrorMessage">Terjadi kesalahan saat memuat metode pembayaran.</span>
+          </div>
+  
+          <!-- Payment methods container -->
+          <div id="tripayMethodsList" class="row">
+            <!-- Will be filled with payment methods -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+          <button type="button" id="btnSaveTripaySettings" class="btn btn-danger">Simpan Perubahan</button>
         </div>
       </div>
     </div>
@@ -1269,6 +1323,177 @@ $(document).on('click', '#cropKategoriButton', function() {
       $('#kategoriFormModal').modal('show');
     }, 500);
   }
+});
+</script>
+<script>
+    $(document).ready(function() {
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    // Load Tripay payment methods when modal is opened
+    $('#manageTripayModal').on('show.bs.modal', function() {
+        loadTripayMethods();
+    });
+
+    // Function to load Tripay payment methods
+    function loadTripayMethods() {
+        $('#tripayLoading').show();
+        $('#tripayMethodsList').empty();
+        $('#tripayError').addClass('d-none');
+
+        $.ajax({
+            url: '/super-admin/tripay-payment-methods',
+            method: 'GET',
+            success: function(response) {
+                renderPaymentMethods(response);
+                $('#tripayLoading').hide();
+            },
+            error: function(xhr) {
+                $('#tripayLoading').hide();
+                $('#tripayError').removeClass('d-none');
+                $('#tripayErrorMessage').text('Gagal memuat metode pembayaran: ' + (xhr.responseJSON?.error || 'Terjadi kesalahan sistem'));
+            }
+        });
+    }
+
+    // Function to render payment methods
+    function renderPaymentMethods(methods) {
+        if (methods.length === 0) {
+            $('#tripayMethodsList').html('<div class="col-12"><div class="alert alert-info">Belum ada metode pembayaran yang tersedia. Klik tombol Sinkronisasi untuk mengambil data dari Tripay.</div></div>');
+            return;
+        }
+
+        let html = '';
+        methods.forEach(function(method) {
+            html += `
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">${method.name}</h6>
+                                    <span class="badge ${method.is_active ? 'badge-success' : 'badge-secondary'}">${method.is_active ? 'Aktif' : 'Nonaktif'}</span>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input toggle-method" id="method-${method.id}" data-code="${method.code}" ${method.is_active ? 'checked' : ''}>
+                                    <label class="custom-control-label" for="method-${method.id}"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        $('#tripayMethodsList').html(html);
+    }
+
+    // Toggle all payment methods
+    $('#toggleAllMethods').change(function() {
+        const isChecked = $(this).prop('checked');
+        $('.toggle-method').prop('checked', isChecked);
+    });
+
+    // Sync payment methods from Tripay
+    $('#btnSyncTripay').click(function() {
+        Swal.fire({
+            title: 'Sinkronisasi Metode Pembayaran',
+            text: 'Yakin ingin menyinkronkan metode pembayaran dari Tripay?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Sinkronkan',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $('#tripayLoading').show();
+                $('#tripayMethodsList').empty();
+                
+                $.ajax({
+                    url: '/super-admin/tripay-payment-methods/sync',
+                    method: 'POST',
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Metode pembayaran berhasil disinkronkan.',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        
+                        loadTripayMethods();
+                    },
+                    error: function(xhr) {
+                        $('#tripayLoading').hide();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Gagal menyinkronkan metode pembayaran: ' + (xhr.responseJSON?.error || 'Terjadi kesalahan sistem'),
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Save changes to payment methods
+    $('#btnSaveTripaySettings').click(function() {
+        const savingPromises = [];
+        
+        $('.toggle-method').each(function() {
+            const code = $(this).data('code');
+            const isActive = $(this).prop('checked') ? '1' : '0';
+            console.log(isActive);
+            
+            const promise = $.ajax({
+                url: '/super-admin/tripay-payment-methods/toggle-status',
+                method: 'POST',
+                data: {
+                    code: code,
+                    is_active: isActive,
+                    _token: $('meta[name="csrf-token"]').attr('content') 
+                }
+            });
+            
+            savingPromises.push(promise);
+        });
+        
+        Promise.all(savingPromises)
+            .then(function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Pengaturan metode pembayaran berhasil disimpan.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    loadTripayMethods();
+                });
+            })
+            .catch(function(error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Gagal menyimpan pengaturan: ' + (error.responseJSON?.error || 'Terjadi kesalahan sistem'),
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            });
+    });
 });
 </script>
 @endpush

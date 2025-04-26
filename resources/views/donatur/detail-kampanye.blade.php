@@ -174,7 +174,7 @@
                         <img src="{{asset('assets/img/icon/doa-orang-baik.svg')}}" alt="" class="me-2" style="height: 20px;">
                         <p class="count m-0 d-flex align-items-center">{{ $campaign->donations->where('doa', '!=', null)->count() }}</p>
                     </div>
-                    <small>Doa Orang Baik</small>
+                    <small>Doa Sahabat Baik</small>
                 </div>
             </div>
 
@@ -318,7 +318,7 @@
     <div class="line-spacing"></div>
     
     <div class="row col-12 m-0 px-3 doa-orang-baik mt-3 pb-5">
-        <h2 class="mx-0 px-0">Doa Orang Baik</h2>
+        <h2 class="mx-0 px-0">Doa Sahabat Baik</h2>
         <div id="comments-container">
             @include('partials.comments', ['comments' => $comments, 'guestIdentifier' => $guestIdentifier])
         </div>
@@ -332,10 +332,10 @@
         
     <div class="footer">
         <div class="main-menu row col-12 mx-0 justify-content-between d-flex">
-            <a href="#" class="button-outline col-3 me-2" data-bs-toggle="modal" data-bs-target="#bagikanModal">
-                <i class="fa-solid fa-share"></i> Bagikan
+            <a href="#" class="col-2 me-2" style="border-radius: 6px;border:1px solid #FF4747; padding:10px;" data-bs-toggle="modal" data-bs-target="#bagikanModal">
+                <i class="fa-solid fa-share"></i>
             </a>
-                <a href="{{url('kampanye/'.$campaign->slug.'/donasi')}}" class="button col-7"><i class="fa-solid fa-hand-holding-heart"></i> Donasi</a>
+                <a href="{{url('kampanye/'.$campaign->slug.'/donasi')}}" class="button col-10"><i class="fa-solid fa-hand-holding-heart"></i> Donasi</a>
         </div>
     </div>
 

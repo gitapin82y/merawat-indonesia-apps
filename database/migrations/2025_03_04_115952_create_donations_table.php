@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('utm_campaign')->nullable();
             $table->string('name')->nullable();
             $table->string('doa')->nullable();
-            $table->boolean('is_anonymous')->default(false); //jika orang baik di ceklis maka menjadi true dan nama donatur menjadi "orang baik"
+            $table->boolean('is_anonymous')->default(false); //jika sahabat baik di ceklis maka menjadi true dan nama donatur menjadi "sahabat baik"
             $table->string('phone');
             $table->string('email');
             $table->string('snap_token')->unique();

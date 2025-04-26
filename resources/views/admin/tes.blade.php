@@ -85,7 +85,7 @@
                         <img src="{{ asset('assets/img/icon/doa-orang-baik.svg') }}" alt="" class="me-2" style="height: 20px;">
                         <p class="count m-0 d-flex align-items-center">{{ $campaign->total_donatur }}</p>
                     </div>
-                    <small>Doa Orang Baik</small>
+                    <small>Doa Sahabat Baik</small>
                 </div>
             </div>
 
@@ -195,7 +195,7 @@
     <div class="line-spacing"></div>
 
     <div class="row col-12 m-0 px-3 doa-orang-baik mt-3">
-        <h2 class="mx-0 px-0">Doa Orang Baik</h2>
+        <h2 class="mx-0 px-0">Doa Sahabat Baik</h2>
         @foreach($campaign->donations->where('prayer', '!=', null) as $donation)
         <div class="card box-shadow mb-2">
             <div class="d-flex justify-content-between">

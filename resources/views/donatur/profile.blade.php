@@ -126,7 +126,7 @@
               <p class="mb-2 text-center mt-4 fs-5 fw-bold text-second">{{$user->name}}</p>
               {{-- <div class="d-flex mb-3 justify-content-center">
                   <label class="form-check-label ms-0 text-second mt-2" for="flexSwitchCheckChecked">Tampilkan Sebagai
-                      anonim “Orang Baik”?</label>
+                      anonim “Sahabat Baik”?</label>
                   <div class="form-check form-switch mx-2 mt-2">
                       <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
                   </div>

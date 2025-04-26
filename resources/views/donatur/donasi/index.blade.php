@@ -93,7 +93,7 @@
                                     <label for="full_name">Nama Lengkap</label>
                                 </div>
                                 <div class="d-flex mb-3">
-                                    <label class="form-check-label ms-0" for="is_anonymous">Tampilkan Sebagai anonim "Orang Baik"?</label>
+                                    <label class="form-check-label ms-0" for="is_anonymous">Tampilkan Sebagai anonim "Sahabat Baik"?</label>
                                     <div class="form-check form-switch mx-2">
                                         <input class="form-check-input" type="checkbox" id="is_anonymous" name="is_anonymous">
                                     </div>
@@ -116,8 +116,7 @@
                             <div class="footer mb-5 text-center">
                                 <div class="main-menu row col-12 mx-0 justify-content-between d-flex ">
                                     <button type="submit" id="submitForm" class="button w-100 d-flex align-items-center justify-content-center text-white shadow-sm">
-                                        <img src="{{asset('assets/img/icon/edit-profile.svg')}}" alt="Kirim" style="width: 20px; height: 20px; margin-right: 8px;" />
-                                        <span class="text-white">Lanjutkan Pembayaran</span>
+                                        <span class="text-white">Pilih Metode Pembayaran</span>
                                     </button>
                                 </div>
                             </div>

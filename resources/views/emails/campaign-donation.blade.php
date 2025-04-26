@@ -93,7 +93,7 @@
             <div class="details">
                 <div class="details-row">
                     <strong>Nama Donatur:</strong>
-                    <span>{{ $donation->is_anonymous ? 'Orang Baik' : $donation->name }}</span>
+                    <span>{{ $donation->is_anonymous ? 'Sahabat Baik' : $donation->name }}</span>
                 </div>
                 <div class="details-row">
                     <strong>Jumlah Donasi:</strong>

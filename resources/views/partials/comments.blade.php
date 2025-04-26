@@ -1,7 +1,7 @@
 @forelse($comments as $comment)
 <div class="card box-shadow mb-2">
     <div class="d-flex justify-content-between">
-        <h3>{{ $comment->is_anonymous ? 'Orang Baik' : $comment->name }}</h3>
+        <h3>{{ $comment->is_anonymous ? 'Sahabat Baik' : $comment->name }}</h3>
         <small>{{ $comment->created_at->diffForHumans() }}</small>
     </div>
     
@@ -32,6 +32,6 @@
 @empty
     <div class="text-center">
         <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-        <p>Belum ada doa orang baik, donasi sekarang dan jadilah orang pertama yang memberikan doa</p>
+        <p>Belum ada doa sahabat baik, donasi sekarang dan jadilah orang pertama yang memberikan doa</p>
     </div>
 @endforelse

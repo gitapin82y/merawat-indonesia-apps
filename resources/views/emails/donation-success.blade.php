@@ -75,7 +75,7 @@
             <h1>Terima Kasih Atas Donasi Anda</h1>
         </div>
         <div class="content">
-            <p>Halo {{ $donation->is_anonymous ? 'Orang Baik' : $donation->name }},</p>
+            <p>Halo {{ $donation->is_anonymous ? 'Sahabat Baik' : $donation->name }},</p>
             
             <p>Terima kasih atas donasi Anda. Donasi Anda telah berhasil diproses dan akan sangat membantu kampanye "{{ $donation->campaign->title }}".</p>
             

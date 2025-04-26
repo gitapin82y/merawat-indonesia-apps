@@ -182,7 +182,7 @@
                             <div class="col-6 text-md-end">
                                 <div class="mb-3">
                                     <p class="mb-1">{{ $campaign->title }}</p>
-                                    <p class="mb-1">{{ $donation->is_anonymous ? 'Orang Baik' : $donation->name }}</p>
+                                    <p class="mb-1">{{ $donation->is_anonymous ? 'Sahabat Baik' : $donation->name }}</p>
                                     <p class="mb-1">{{ $donation->email }}</p>
                                     <p class="mb-1 fw-bold text-danger">Rp {{ number_format($donation->amount) }}</p>
                                     <p class="mb-1">

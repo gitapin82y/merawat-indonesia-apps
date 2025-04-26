@@ -23,6 +23,7 @@ use App\Http\Controllers\ManualPaymentMethodController;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CheckAuth;
 use App\Http\Controllers\SocialiteController;
+use App\Http\Controllers\TripayPaymentMethodController;
 
 Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
 
@@ -194,6 +195,12 @@ Route::post('/commission/update', [CommissionController::class, 'updateCommissio
     Route::put('/manual-payment-methods/{id}', [ManualPaymentMethodController::class, 'update'])->name('manual-payment-methods.update');
     Route::delete('/manual-payment-methods/{id}', [ManualPaymentMethodController::class, 'destroy'])->name('manual-payment-methods.destroy');
     Route::patch('/manual-payment-methods/{id}/toggle-status', [ManualPaymentMethodController::class, 'toggleStatus'])->name('manual-payment-methods.toggle-status');
+
+    // Add these routes to your existing super-admin routes
+Route::get('/tripay-payment-methods', [TripayPaymentMethodController::class, 'index'])->name('tripay-payment-methods.index');
+Route::get('/tripay-payment-methods/fetch', [TripayPaymentMethodController::class, 'fetchFromTripay'])->name('tripay-payment-methods.fetch');
+Route::post('/tripay-payment-methods/sync', [TripayPaymentMethodController::class, 'syncPaymentMethods'])->name('tripay-payment-methods.sync');
+Route::post('/tripay-payment-methods/toggle-status', [TripayPaymentMethodController::class, 'toggleStatus'])->name('tripay-payment-methods.toggle-status');
 });
 
 // custom route
