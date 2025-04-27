@@ -42,7 +42,7 @@ class KabarPencairanController extends Controller
             'bukti_pencairan' => 'nullable|string|max:255',
             'account_number' => 'required|string|max:255',
             'account_name' => 'required|string|max:255',
-            'amount' => 'nullable|numeric',
+            'amount' => 'required|numeric',
             'document_rab' => 'required|mimes:pdf,doc,docx,xls,xlsx|max:5120',
         ]);
     
@@ -189,7 +189,8 @@ class KabarPencairanController extends Controller
         $campaign = Campaign::where('slug',$slug)->first();
         return view('admin.kampanye.pencairan-dana', [
             'idKampanye' => $campaign->id,
-            'slug'=>$slug
+            'slug'=>$slug,
+            'current_donation' => $campaign->current_donation
         ]);
     }
 

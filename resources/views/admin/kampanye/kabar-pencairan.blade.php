@@ -41,7 +41,7 @@
     <div class="container mt-4 flex-grow-1" style="padding-bottom:800px;">
         <div class="d-flex flex-column gap-3">
           <div class="accordion" id="kabarPencairanAccordion">
-            @foreach($kabarPencairan as $index => $pencairan)
+            @forelse($kabarPencairan as $index => $pencairan)
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <div class="accordion-button collapsed d-flex justify-content-between align-items-center"
@@ -69,7 +69,12 @@
                     </div>
                 </div>
             </div>
-            @endforeach
+            @empty
+                <div class="text-center">
+                    <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
+                    <p>Belum ada kabar pencairan</p>
+                </div>
+            @endforelse
 
             <div class="upload-info mb-3 mt-4">
                 <p>Kabar pencairan akan di tampilkan di publik jika status pencairan dana sudah disetujui</p>

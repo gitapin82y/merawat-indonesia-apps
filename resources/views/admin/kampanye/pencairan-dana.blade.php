@@ -84,7 +84,7 @@
                         <option value="bni">Bank BNI</option>
                         <option value="bri">Bank BRI</option>
                     </select>
-                    <label for="payment_method">Kategori</label>
+                    <label for="payment_method">Akun Bank</label>
                     @error('payment_method')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 
@@ -107,6 +107,7 @@
                   value="{{ old('amount') }}" placeholder="Jumlah Pencairan Dana">
               <label for="amount">Jumlah Pencairan Dana</label>
               @error('amount')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              <small class="mt-1">Tidak boleh melebihi jumlah donasi kampanye saat ini : <strong class="text-danger">{{'Rp ' . number_format($current_donation, 0, ',', '.')}}</strong></small>
           </div>
                 
           <div class="mb-3 position-relative">
@@ -150,28 +151,45 @@
       document.getElementById(inputId).value = fileInput.files[0] ? fileInput.files[0].name : "";
   }
 
-  // Menggunakan format JS yang diberikan
   $(document).ready(function() {
-      $('#submitForm').on('click', function(e) {
-          e.preventDefault();
-          
-          Swal.fire({
-              title: 'Konfirmasi Pengiriman Data',
-              text: 'Apakah Anda yakin ingin mengirim request',
-              icon: 'question',
-              showCancelButton: true,
-              confirmButtonText: 'Ya, Kirim',
-              cancelButtonText: 'Batal'
-          }).then((result) => {
-              if (result.isConfirmed) {
-                  var rupiah = $('#amount').val();
-                  var clean = rupiah.replace('Rp ', '').replace(/\./g, '').replace(',', '.');
-                  $('#amount').val(clean);
-                  $('#formData').submit();
-              }
-          });
-      });
-  });
+    $('#submitForm').on('click', function(e) {
+        e.preventDefault();
+        
+        // Ambil nilai amount (jumlah pencairan)
+        var rupiah = $('#amount').val();
+        var cleanAmount = rupiah.replace('Rp ', '').replace(/\./g, '').replace(',', '.');
+        var amountValue = parseFloat(cleanAmount);
+        
+        // Ambil nilai current_donation
+        var currentDonation = {{ $current_donation }};
+        
+        // Validasi: Periksa apakah jumlah pencairan melebihi current_donation
+        if (amountValue > currentDonation) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Jumlah Tidak Valid',
+                text: 'Jumlah pencairan dana tidak boleh melebihi Rp ' + new Intl.NumberFormat('id-ID').format(currentDonation),
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+        
+        // Jika validasi berhasil, tampilkan konfirmasi
+        Swal.fire({
+            title: 'Konfirmasi Pengiriman Data',
+            text: 'Apakah Anda yakin ingin mengirim request?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Kirim',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $('#amount').val(cleanAmount);
+                $('#formData').submit();
+            }
+        });
+    });
+});
 
   new AutoNumeric('#amount', {
           digitGroupSeparator: '.',
