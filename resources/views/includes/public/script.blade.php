@@ -176,28 +176,71 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
   document.addEventListener('DOMContentLoaded', function() {
       // Parse URL parameters
+
       const urlParams = new URLSearchParams(window.location.search);
-      const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+let hasUtmParams = false;
+
+// Cek apakah ada parameter UTM di URL
+utmParams.forEach(param => {
+    if (urlParams.has(param)) {
+        hasUtmParams = true;
+        // Store in localStorage for persistence
+        localStorage.setItem(param, urlParams.get(param));
+        
+        // Send to server to store in session
+        fetch('/store-utm-params', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                [param]: urlParams.get(param)
+            })
+        });
+    }
+});
+
+// Jika tidak ada parameter UTM di URL, hapus dari localStorage dan session
+if (!hasUtmParams) {
+    // Hapus dari localStorage
+    utmParams.forEach(param => {
+        localStorage.removeItem(param);
+    });
+    
+    // Hapus dari session di server
+    fetch('/clear-utm-params', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    });
+}
+
+      // const urlParams = new URLSearchParams(window.location.search);
+      // const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
       
-      // Store UTM parameters in session
-      utmParams.forEach(param => {
-          if (urlParams.has(param)) {
-              // Store in localStorage for persistence
-              localStorage.setItem(param, urlParams.get(param));
+      // // Store UTM parameters in session
+      // utmParams.forEach(param => {
+      //     if (urlParams.has(param)) {
+      //         // Store in localStorage for persistence
+      //         localStorage.setItem(param, urlParams.get(param));
               
-              // Send to server to store in session
-              fetch('/store-utm-params', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                  },
-                  body: JSON.stringify({
-                      [param]: urlParams.get(param)
-                  })
-              });
-          }
-      });
+      //         // Send to server to store in session
+      //         fetch('/store-utm-params', {
+      //             method: 'POST',
+      //             headers: {
+      //                 'Content-Type': 'application/json',
+      //                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      //             },
+      //             body: JSON.stringify({
+      //                 [param]: urlParams.get(param)
+      //             })
+      //         });
+      //     }
+      // });
       
       // Add UTM parameters to all donation links
       document.querySelectorAll('a[href*="donasi"]').forEach(link => {

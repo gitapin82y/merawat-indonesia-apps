@@ -31,8 +31,7 @@ class CampaignWithdrawalController extends Controller
     {
         Carbon::setLocale('id');
         if ($request->ajax()) {
-            $query = CampaignWithdrawal::with(['campaign','admin'])->get();
-            
+            $query = CampaignWithdrawal::with(['campaign','admin'])->orderBy('created_at', 'desc')->get();
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('name', function ($row) {

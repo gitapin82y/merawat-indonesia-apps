@@ -230,8 +230,8 @@ class DonationController extends Controller
             'is_anonymous' => 'nullable',
             'doa' => 'nullable|string',
             'utm_source' => 'nullable|string',
-        'utm_medium' => 'nullable|string',
-        'utm_campaign' => 'nullable|string',
+            'utm_medium' => 'nullable|string',
+            'utm_campaign' => 'nullable|string',
         ]);
         
         $campaign = Campaign::findOrFail($request->campaign_id);
@@ -240,6 +240,7 @@ class DonationController extends Controller
     $utmSource = $request->utm_source ?? session('utm_source');
     $utmMedium = $request->utm_medium ?? session('utm_medium');
     $utmCampaign = $request->utm_campaign ?? session('utm_campaign');
+    $referralCode = session('referral_code');
     
     // Tentukan sumber donasi
     $sourceType = 'direct'; // Default
@@ -254,6 +255,8 @@ class DonationController extends Controller
         ['source_type' => $sourceType, 'utm_source' => $utmSource, 'utm_medium' => $utmMedium, 'utm_campaign' => $utmCampaign],
         ['campaign_name' => $utmCampaign]
     );
+
+        $uniqueCode = rand(100, 999);
       
         // Buat donasi baru dengan status pending
         $donation = Donation::create([
@@ -268,9 +271,11 @@ class DonationController extends Controller
             'payment_type' => null, // Akan diupdate setelah memilih metode pembayaran
             'payment_method' => null, // Akan diupdate setelah memilih metode pembayaran
             'status' => 'pending',
+            'unique_code' => $uniqueCode,
             'snap_token' => Str::random(32), // Placeholder untuk snap_token
             'donation_source_id' => $donationSource->id,
             'utm_source' => $utmSource,
+            'referral_code' => $referralCode,
             'utm_medium' => $utmMedium,
             'utm_campaign' => $utmCampaign,
         ]);
@@ -309,78 +314,9 @@ class DonationController extends Controller
 }
 
 
-    // public function processDonation(Request $request)
-    // {
-
-    //     if($request->has('is_anonymous') && $request['is_anonymous'] == "on"){
-    //         $request['is_anonymous'] = true;
-    //     }else{
-    //         $request['is_anonymous'] = false;
-    //     }
-
-    //     // Validasi input
-    //     $validated = $request->validate([
-    //         'campaign_id' => 'required|exists:campaigns,id',
-    //         'amount' => 'required|numeric|min:10000',
-    //         'name' => 'required|string|max:255',
-    //         'phone' => 'required|string',
-    //         'email' => 'required',
-    //         'is_anonymous' => 'nullable',
-    //         'doa' => 'nullable|string',
-    //         'payment_method' => 'required|string'
-    //     ]);
-        
-    //     $campaign = Campaign::findOrFail($request->campaign_id);
-        
-    //     // Cek apakah ada referral code di session
-    //     $referralCode = session('referral_code');
-    //     $fundraisingId = null;
-        
-    //     // Jika ada referral code, dapatkan fundraisingId
-    //     if ($referralCode) {
-    //         $fundraising = Fundraising::where('code_link', $referralCode)->first();
-    //         if ($fundraising) {
-    //             $fundraisingId = $fundraising->id;
-    //         }
-    //     }
-
-        
-    //     // Buat donasi baru dengan status pending
-    //     $donation = Donation::create([
-    //         'campaign_id' => $request->campaign_id,
-    //         'user_id' => auth()->id(), // Jika user login
-    //         'name' => $request->name,
-    //         'phone' => $request->phone,
-    //         'email' => $request->email,
-    //         'doa' => $request->doa,
-    //         'is_anonymous' => $request->has('is_anonymous'),
-    //         'amount' => $request->amount,
-    //         'payment_type' => 'payment_gateway',
-    //         'payment_method' => $request->payment_method,
-    //         'status' => 'pending',
-    //         'snap_token' => Str::random(32) // Placeholder untuk snap_token
-    //     ]);
-
-
-        
-    //     // Buat transaksi di Tripay
-    //     $transaction = $this->createTransaction($donation, $campaign);
-        
-    //     if (isset($transaction['success']) && $transaction['success'] && isset($transaction['data'])) {
-    //         // Update donasi dengan reference dan checkout URL
-    //         $donation->snap_token = $transaction['data']['reference'];
-    //         $donation->save();
-            
-    //         // Redirect ke halaman pembayaran Tripay
-    //         return redirect($transaction['data']['checkout_url']);
-    //     } else {
-    //         // Jika gagal, hapus donasi dan tampilkan error
-    //         $donation->delete();
-    //         return redirect()->back()->with('error', 'Gagal membuat transaksi pembayaran: ' . ($transaction['message'] ?? 'Terjadi kesalahan sistem'));
-    //     }
-    // }
     public function processManualPayment(Request $request)
     {
+
         $validated = $request->validate([
             'donation_id' => 'required|exists:donations,id',
             'payment_type' => 'required|string|in:manual',
@@ -395,12 +331,17 @@ class DonationController extends Controller
             $path = $request->file('payment_proof')->store('payment_proofs', 'public');
             $donation->payment_proof = $path;
         }
+
+        $originalAmount = $donation->amount;
+        $uniqueCode = $donation->unique_code;
+        $donation->amount = $originalAmount + $uniqueCode;
         
         // Update metode pembayaran donasi
         $donation->payment_type = $request->payment_type;
         $donation->payment_method = 'manual';
         $donation->manual_payment_method_id = $request->selected_payment_method;
         $donation->save();
+
         
         return redirect()->route('donations.status', ['id' => $donation->id]);
     }
@@ -558,20 +499,17 @@ class DonationController extends Controller
                 $campaign->save();
 
                  // Update donation source statistics
-        if ($donation->donation_source_id) {
-            $source = DonationSource::find($donation->donation_source_id);
-            if ($source) {
-                $source->total_donations += 1;
-                $source->total_amount += $donation->amount;
-                $source->save();
-            }
-        }
+                if ($donation->donation_source_id) {
+                    $source = DonationSource::find($donation->donation_source_id);
+                    if ($source) {
+                        $source->total_donations += 1;
+                        $source->total_amount += $donation->amount;
+                        $source->save();
+                    }
+                }
                 
-                // Check if there's referral code in session
-                $referralCode = session('referral_code');
-                
-                if ($referralCode) {
-                    $fundraising = Fundraising::where('code_link', $referralCode)->first();
+                if ($donation->referral_code) {
+                    $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
                     
                     if ($fundraising) {
                         $commissionSetting = Commission::first();
@@ -600,6 +538,8 @@ class DonationController extends Controller
                         $fundraising->save();
                     }
                 }
+
+                $this->clearDonationSessions();
                 
                 Log::info('Donation marked as success via callback: ' . $donation->id);
             } else if (in_array($data['status'], ['EXPIRED', 'FAILED', 'REFUND']) && $donation->status !== 'gagal') {
@@ -733,6 +673,8 @@ class DonationController extends Controller
                         $donation->status = 'sukses';
                         $donation->updated_at = now();
                         $donation->save();
+
+                        $this->clearDonationSessions();
                     }
                 } else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND'])) {
                     $status = 'EXPIRED';
@@ -742,21 +684,23 @@ class DonationController extends Controller
                         $donation->save();
                     }
                 }
-            } else if ($donation->payment_type == 'manual' && $donation->manual_payment_method_id) {
-                $manualMethod = $donation->manualPaymentMethod;
-                
-                if ($manualMethod) {
-                    $paymentDetail = [
-                        'payment_method' => 'Manual - ' . $manualMethod->name,
-                        'manual_account_name' => $manualMethod->account_name,
-                        'manual_account_number' => $manualMethod->account_number,
-                        'manual_instructions' => $manualMethod->instructions,
-                        'payment_proof' => $donation->payment_proof ? asset('storage/' . $donation->payment_proof) : null
-                    ];
-                }
-            }
+            } 
         } catch (\Exception $e) {
             Log::error('Error checking transaction status: ' . $e->getMessage());
+        }
+    }
+
+    if ($donation->payment_type == 'manual' && $donation->manual_payment_method_id) {
+        $manualMethod = $donation->manualPaymentMethod;
+        
+        if ($manualMethod) {
+            $paymentDetail = [
+                'payment_method' => 'Manual - ' . $manualMethod->name,
+                'manual_account_name' => $manualMethod->account_name,
+                'manual_account_number' => $manualMethod->account_number,
+                'manual_instructions' => $manualMethod->instructions,
+                'payment_proof' => $donation->payment_proof ? asset('storage/' . $donation->payment_proof) : null
+            ];
         }
     }
     
@@ -846,6 +790,8 @@ public function checkStatus($reference)
                         $donation->status = 'sukses';
                         $donation->updated_at = now();
                         $donation->save();
+
+                        $this->clearDonationSessions();
                     }
 
                 } else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND'])) {
@@ -1028,7 +974,7 @@ public function ceklis(Request $request)
         }
         
         // IMPORTANT: Use the query builder version of DataTables, not the collection version
-        return DataTables::of($query)
+        return DataTables::of($query->latest())
             ->addIndexColumn()
             ->addColumn('method', function ($row) {
                 if($row->payment_type == "manual"){
@@ -1060,12 +1006,16 @@ public function ceklis(Request $request)
                 $actionBtn = '<div class="btn-group" role="group">';
             
                 // Jika status masih pending, tampilkan tombol ceklis & silang lebih dulu
-                if ($row->status == 'pending') {
+                if ($row->status == 'pending' && $row->payment_type == 'manual') {
+                    $actionBtn .= '
+                    <a href="'.asset('storage/'.$row->payment_proof).'" target="_blank" class="btn btn-info text-white btn-sm">
+                        <i class="fas fa-file"></i>
+                    </a>';
                     $actionBtn .= '
                         <button onclick="updateStatus('.$row->id.', \'sukses\')" class="btn btn-primary btn-sm">
                             <i class="fas fa-check"></i>
                         </button>
-                        <button onclick="updateStatus('.$row->id.', \'gagal\')" class="btn btn-danger btn-sm">
+                        <button onclick="updateStatus('.$row->id.', \'gagal\')" class="btn btn-warning text-white btn-sm">
                             <i class="fas fa-times"></i>
                         </button>';
                 }
@@ -1099,6 +1049,62 @@ public function ceklis(Request $request)
             return response()->json(['success' => false, 'message' => 'Donasi tidak ditemukan']);
         }
 
+        if($request->status == 'sukses' && $donation->payment_type == 'manual'){
+
+                $this->trackServerSideConversion($donation);
+                
+                // Update campaign statistics
+                $campaign = $donation->campaign;
+                $campaign->jumlah_donasi += $donation->amount;
+                $campaign->current_donation += $donation->amount;
+                $campaign->total_donatur += 1;
+                $campaign->save();
+
+                 // Update donation source statistics
+                if ($donation->donation_source_id) {
+                    $source = DonationSource::find($donation->donation_source_id);
+                    if ($source) {
+                        $source->total_donations += 1;
+                        $source->total_amount += $donation->amount;
+                        $source->save();
+                    }
+                }
+                
+                if ($donation->referral_code) {
+                    $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
+                    
+                    if ($fundraising) {
+                        $commissionSetting = Commission::first();
+                        $commissionPercent = $commissionSetting->amount ?? 0;
+                        
+                        // Calculate commission based on percentage from database
+                        $commission = ($donation->amount * $commissionPercent) / 100;
+                        
+                        // Update fundraising data
+                        $fundraising->total_donatur += 1;
+                        $fundraising->jumlah_donasi += $donation->amount;
+                        $fundraising->commission += $commission;
+                        
+                        // Update donations array
+                        $donations = json_decode($fundraising->donations, true) ?: [];
+                        $donations[] = [
+                            'donation_id' => $donation->id,
+                            'amount' => $donation->amount,
+                            'commission' => $commission,
+                            'user_name' => $donation->user ? $donation->user->name : null,
+                            'user_email' => $donation->user ? $donation->user->email : null,
+                            'created_at' => now()->format('Y-m-d H:i:s')
+                        ];
+                        $fundraising->donations = json_encode($donations);
+                        
+                        $fundraising->save();
+                    }
+                }
+
+                $this->clearDonationSessions();
+        }
+
+        $donation->updated_at = now();
         $donation->status = $request->status;
         $donation->save();
 
@@ -1115,37 +1121,18 @@ public function ceklis(Request $request)
         //
     }
 
-
-    /**
-     * Display the specified resource.
-     */
-    // public function show(Request $request, $slug)
-    // {
-    //     Carbon::setLocale('id');
+    private function clearDonationSessions()
+{
+    // Hapus session fundraising
+    session()->forget('referral_code');
     
-    //     if ($request->ajax()) {
-    //         $query = Donation::with('campaign')
-    //             ->whereHas('campaign', function ($q) use ($slug) {
-    //                 $q->where('slug', $slug);
-    //             })
-    //             ->get();
+    // Hapus semua session UTM
+    session()->forget('utm_source');
+    session()->forget('utm_medium');
+    session()->forget('utm_campaign');
     
-    //         return DataTables::of($query)
-    //             ->addIndexColumn()
-    //             ->addColumn('campaign_title', function ($row) {
-    //                 return $row->campaign ? $row->campaign->title : '-';
-    //             })    
-    //             ->addColumn('created_at', function ($row) {
-    //                 return $row->created_at 
-    //                     ? Carbon::parse($row->created_at)->timezone('Asia/Jakarta')->format('d M Y')
-    //                     : '-';
-    //             })
-    //             ->rawColumns(['campaign_title', 'created_at'])
-    //             ->make(true);
-    //     }
-    
-    //     return view('super_admin.donasi_kampanye.show', compact('title'));
-    // }    
+    return true;
+}
 
 
     /**

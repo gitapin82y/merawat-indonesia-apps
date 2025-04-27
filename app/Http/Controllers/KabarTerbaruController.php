@@ -26,7 +26,16 @@ class KabarTerbaruController extends Controller
         Carbon::setLocale('id');
     
         if ($request->ajax()) {
-            $query = KabarTerbaru::with(['campaign', 'campaign.category', 'campaign.admin'])->get();
+            $query = KabarTerbaru::with(['campaign', 'campaign.category', 'campaign.admin'])
+            ->select('campaign_id', DB::raw('MAX(id) as max_id'))
+            ->groupBy('campaign_id')
+            ->get()
+            ->map(function ($item) {
+                // Ambil kabar terbaru terbaru dari setiap campaign
+                return KabarTerbaru::with(['campaign', 'campaign.category', 'campaign.admin'])
+                    ->where('id', $item->max_id)
+                    ->first();
+            });
 
             $campaignCounts = KabarTerbaru::select('campaign_id', DB::raw('count(*) as total'))
                    ->groupBy('campaign_id')
@@ -66,7 +75,7 @@ class KabarTerbaruController extends Controller
                     return '
                         <div class="btn-group" role="group">
                          <a href="'.route('kabar-terbaru.edit', $row->campaign->id).'" class="btn text-white btn-info btn-sm">Lihat Kabar Terbaru</a>
-                            <button onclick="deleteKabarTerbaru('.$row->id.')" class="btn btn-warning btn-sm"><i class="fas fa-times text-white"></i></button>
+                            <button onclick="deleteKabarTerbaru('.$row->campaign->id.')" class="btn btn-warning btn-sm"><i class="fas fa-times text-white"></i></button>
                         </div>
                     ';
                 })
@@ -99,7 +108,7 @@ class KabarTerbaruController extends Controller
         try {
             $kabarTerbaru = KabarTerbaru::create($request->all());
             DB::commit();
-            return redirect()->back()
+            return redirect('admin/kampanye/' . $kabarTerbaru->campaign->slug . '/kabar-terbaru')
                 ->with('success', 'Kabar Terbaru berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -113,6 +122,7 @@ class KabarTerbaruController extends Controller
         $campaign = Campaign::where('slug',$slug)->first();
         return view('admin.kampanye.buat-kabar', [
             'idKampanye' => $campaign->id,
+            'slug' => $slug
         ]);
     }
 
@@ -135,11 +145,11 @@ class KabarTerbaruController extends Controller
         return view('super_admin.kabar_terbaru.form', compact('kabarTerbaru'));
     }
     
-    public function destroy(KabarTerbaru $kabarTerbaru, $id)
+    public function destroy($id)
     {
         DB::beginTransaction();
         try {
-            KabarTerbaru::where('id',$id)->delete();
+            KabarTerbaru::where('campaign_id',$id)->delete();
 
             DB::commit();
             return response()->json(['success' => true, 'message' => 'Kabar Terbaru berhasil dihapus']);

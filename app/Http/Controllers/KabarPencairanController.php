@@ -189,6 +189,7 @@ class KabarPencairanController extends Controller
         $campaign = Campaign::where('slug',$slug)->first();
         return view('admin.kampanye.pencairan-dana', [
             'idKampanye' => $campaign->id,
+            'slug'=>$slug
         ]);
     }
 

@@ -201,44 +201,81 @@ class FundraisingController extends Controller
     public function showCampaignWithReferral(Request $request,Campaign $kampanye,$slug,$code)
     {
 
-        $fundraising = Fundraising::where('code_link', $code)->firstOrFail();        
+        $fundraising = Fundraising::where('code_link', $code)->firstOrFail();      
         session(['referral_code' => $code]);
         
 
-        $campaign = Campaign::with([
-            'kabarTerbaru', 
-            'kabarPencairan' => function ($query) {
-                $query->where('status', 'disetujui');
-            },
-            'admin', 
-            'donations' => function ($query) {
-                $query->where('status', 'sukses')
-                      ->orderBy('created_at', 'desc');  // Menambahkan pengurutan berdasarkan waktu terbaru
-            }
-        ])->where('slug', $slug)->first();
+        $perPage = 4; // Set the number of items per page
+        
+        $campaign = Campaign::where('slug', $slug)->first();
+        
+        // Get paginated data for each tab
+        $kabarTerbaru = $campaign->kabarTerbaru()->paginate($perPage, ['*'], 'kabar_page');
+        
+        $donations = $campaign->donations()
+            ->where('status', 'sukses')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'donatur_page');
+        
+        $kabarPencairan = $campaign->kabarPencairan()
+            ->where('status', 'disetujui')
+            ->paginate($perPage, ['*'], 'pencairan_page');
+        
+        $comments = Donation::where('campaign_id', $campaign->id)
+            ->where('status', 'sukses')
+            ->whereNotNull('doa')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'comments_page');
 
         
         $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();
     
         $totalKampanye = $campaign->where('status', 'aktif')->count();
 
-        $comments = Donation::where('campaign_id', $campaign->id)
-        ->where('status', 'sukses')
-        ->whereNotNull('doa')
-        ->orderBy('created_at', 'desc')  // Menambahkan pengurutan berdasarkan waktu terbaru
-        ->paginate(6);
+           // Get guest identifier from cookie
+           $guestIdentifier = $request->cookie('guest_identifier');
 
         if ($request->ajax()) {
-            return response()->json([
-                'comments' => view('partials.comments', compact('comments'))->render(),
-                'hasMorePages' => $comments->hasMorePages(),
-                'nextPageUrl' => $comments->nextPageUrl(),
-            ]);
+            if ($request->has('load_tab')) {
+                switch ($request->load_tab) {
+                    case 'kabar-terbaru':
+                        return response()->json([
+                            'html' => view('partials.kabar-terbaru', compact('kabarTerbaru'))->render(),
+                            'hasMorePages' => $kabarTerbaru->hasMorePages(),
+                            'nextPageUrl' => $kabarTerbaru->nextPageUrl() . '&load_tab=kabar-terbaru',
+                        ]);
+                    
+                    case 'donatur':
+                        return response()->json([
+                            'html' => view('partials.donatur', compact('donations'))->render(),
+                            'hasMorePages' => $donations->hasMorePages(),
+                            'nextPageUrl' => $donations->nextPageUrl() . '&load_tab=donatur',
+                        ]);
+                    
+                    case 'kabar-pencairan':
+                        return response()->json([
+                            'html' => view('partials.kabar-pencairan', compact('kabarPencairan'))->render(),
+                            'hasMorePages' => $kabarPencairan->hasMorePages(),
+                            'nextPageUrl' => $kabarPencairan->nextPageUrl() . '&load_tab=kabar-pencairan',
+                        ]);
+                    
+                    case 'comments':
+                        return response()->json([
+                            'html' => view('partials.comments', compact('comments', 'guestIdentifier'))->render(),
+                            'hasMorePages' => $comments->hasMorePages(),
+                            'nextPageUrl' => $comments->nextPageUrl() . '&load_tab=comments',
+                        ]);
+                }
+            }
         }    
 
         return view('donatur.detail-kampanye', [
             'campaign' => $campaign,
+            'kabarTerbaru' => $kabarTerbaru,
+            'donations' => $donations,
+            'kabarPencairan' => $kabarPencairan,
             'comments' => $comments,
+            'guestIdentifier' => $guestIdentifier,
             'totalDonaturs' => $totalDonaturs,
             'totalKampanye' => $totalKampanye,
             'request' => request(), 

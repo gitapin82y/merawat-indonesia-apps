@@ -32,7 +32,7 @@ class FundraisingWithdrawalController extends Controller
     {
         Carbon::setLocale('id');
         if ($request->ajax()) {
-            $query = FundraisingWithdrawal::with(['fundraising','user'])->get();
+            $query = FundraisingWithdrawal::with(['fundraising','user'])->orderBy('created_at', 'desc')->get();
             
             return DataTables::of($query)
                 ->addIndexColumn()

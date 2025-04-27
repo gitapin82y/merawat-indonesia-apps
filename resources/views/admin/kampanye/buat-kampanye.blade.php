@@ -54,7 +54,13 @@
 
 @section('content')
 
-    @include('includes.public.navbar-back', ['title' => 'Buat Kampanye'])
+
+    <div class="navbar-back col-12 align-items-center d-flex">
+        <a href="{{ url()->current() == url()->previous() ? url('/galang-dana') : url()->previous() }}" class="bg-white">
+            <i class="fa-solid fa-angle-left"></i>
+        </a>
+        <h1 class="text-white mb-0 ms-2">Buat Kampanye</h1>
+    </div>
 
         <!-- Konten -->
         <div class="container mt-4 flex-grow-1">

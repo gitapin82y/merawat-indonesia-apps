@@ -86,6 +86,12 @@ Route::post('/store-utm-params', function (Request $request) {
     return response()->json(['success' => true]);
 });
 
+Route::post('/clear-utm-params', function (Request $request) {
+    // Hapus semua parameter UTM dari session
+    session()->forget(['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']);
+    return response()->json(['success' => true]);
+});
+
 Route::get('/galang-dana/buat-akun', function(){
     return view('donatur.galang-dana.buat-akun');
 })->middleware(['checkAuth']);
@@ -179,7 +185,7 @@ Route::post('/commission/update', [CommissionController::class, 'updateCommissio
     Route::post('categories/{id}', [CategoryController::class, 'update']);
 
     Route::post('prioritas-kampanye/{id}', [PrioritasCampaignController::class, 'destroy'])->name('prioritas-kampanye.destroy');
-    Route::post('kabar-terbaru/{id}', [KabarTerbaruController::class, 'destroy'])->name('kabar-terbaru.destroy');
+    // Route::post('kabar-terbaru/{id}', [KabarTerbaruController::class, 'destroy'])->name('kabar-terbaru.destroy');
     Route::post('/pencairan-fundraising/update-status', [FundraisingWithdrawalController::class, 'updateStatus'])->name('pencairan-fundraising.updateStatus');
     Route::post('/pencairan-kampanye/update-status', [CampaignWithdrawalController::class, 'updateStatus'])->name('pencairan-kampanye.updateStatus');
     Route::get('/pencairan-kampanye/{id}/approve', [CampaignWithdrawalController::class, 'approve'])->name('pencairan-kampanye.approve');

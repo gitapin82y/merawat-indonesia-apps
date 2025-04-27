@@ -73,8 +73,8 @@ $(function () {
 
 function deleteKabarTerbaru(id) {
     Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: "Anda tidak dapat mengembalikan data yang dihapus!",
+        title: 'Ingin menghapus kabar terbaru?',
+        text: "Anda akan menghapus semua kabar terbaru dari kampanye ini!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -84,7 +84,7 @@ function deleteKabarTerbaru(id) {
         if (result.isConfirmed) {
             $.ajax({
                 url: 'kabar-terbaru/' + id,
-                type: 'POST',
+                type: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'
                 },

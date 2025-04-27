@@ -286,12 +286,14 @@ public function __construct(NotificationService $notificationService)
 
     public function donaturKampanye(Request $request, Campaign $kampanye, $slug)
     {
+        session()->forget('referral_code');
+        
         $perPage = 4; // Set the number of items per page
         
         $campaign = Campaign::where('slug', $slug)->first();
         
         // Get paginated data for each tab
-        $kabarTerbaru = $campaign->kabarTerbaru()->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'kabar_page');
+        $kabarTerbaru = $campaign->kabarTerbaru()->paginate($perPage, ['*'], 'kabar_page');
         
         $donations = $campaign->donations()
             ->where('status', 'sukses')
@@ -300,7 +302,6 @@ public function __construct(NotificationService $notificationService)
         
         $kabarPencairan = $campaign->kabarPencairan()
             ->where('status', 'disetujui')
-            ->orderBy('created_at', 'desc')
             ->paginate($perPage, ['*'], 'pencairan_page');
         
         $comments = Donation::where('campaign_id', $campaign->id)
@@ -369,7 +370,7 @@ public function __construct(NotificationService $notificationService)
         $campaign = Campaign::where('slug', $slug)->first();
         
         // Get paginated data for each tab
-        $kabarTerbaru = $campaign->kabarTerbaru()->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'kabar_page');
+        $kabarTerbaru = $campaign->kabarTerbaru()->paginate($perPage, ['*'], 'kabar_page');
         
         $donations = $campaign->donations()
             ->where('status', 'sukses')
@@ -378,7 +379,6 @@ public function __construct(NotificationService $notificationService)
         
         $kabarPencairan = $campaign->kabarPencairan()
             ->where('status', 'disetujui')
-            ->orderBy('created_at', 'desc')
             ->paginate($perPage, ['*'], 'pencairan_page');
         
         $comments = Donation::where('campaign_id', $campaign->id)

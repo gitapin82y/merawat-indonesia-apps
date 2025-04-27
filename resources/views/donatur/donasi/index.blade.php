@@ -180,16 +180,10 @@
             $('#donationForm').submit();
         });
     });
-        // Parse URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
+    // Parse URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
     const utmParams = ['utm_source', 'utm_medium', 'utm_campaign'];
     
-    // Store UTM parameters in localStorage
-    utmParams.forEach(param => {
-        if (urlParams.has(param)) {
-            localStorage.setItem(param, urlParams.get(param));
-        }
-    });
 
      // Add UTM parameters to donation forms
      document.querySelectorAll('form[action*="donations"]').forEach(form => {

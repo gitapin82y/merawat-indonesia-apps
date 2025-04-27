@@ -86,6 +86,7 @@
                     <!-- Status Donasi -->
                     @if($donation->status == 'pending')
                         <div class="text-center mb-4">
+                            @if($donation->payment_type == 'payment_gateway')
                             <div class="status-box status-pending text-dark">
                                 <h4 class="mb-0"><i class="fa fa-clock me-2"></i> Menunggu Pembayaran</h4>
                             </div>
@@ -97,6 +98,8 @@
                                 <div id="current-date" class="text-muted"></div>
                             </div>
                             <h5 class="countdown" id="countdown">0</h5>
+
+                            @endif
                             
                             <!-- Button bayar sekarang -->
                             <div class="mt-4">
@@ -115,7 +118,7 @@
                                         <i class="fa fa-money-bill-transfer me-1"></i> Bayar Sekarang
                                     </a>
                                 @elseif($donation->payment_type == 'manual' && $donation->payment_proof)
-                                    <button class="btn btn-secondary btn-lg" disabled>
+                                    <button class="btn btn-warning btn-lg" disabled>
                                         <i class="fa fa-clock me-1"></i> Menunggu Verifikasi Admin
                                     </button>
                                 @else
@@ -126,6 +129,7 @@
                             </div>
                         </div>
                             
+                        @if($donation->payment_type == 'payment_gateway')
                         <!-- Tombol Cek Status -->
                         <div class="text-center mt-4">
                             <button id="checkStatus" class="btn btn-primary">
@@ -133,6 +137,7 @@
                             </button>
                             <div id="statusResult" class="mt-3"></div>
                         </div>
+                        @endif
 
                     @elseif($donation->status == 'sukses')
                         <div class="text-center mb-4">
@@ -143,7 +148,7 @@
                             <p>Donasi Anda akan sangat membantu bagi {{ $campaign->title }}.</p>
                             
                             <div class="text-center mt-4">
-                                <a href="{{ route('campaign.detail', $campaign->title) }}" class="btn btn-primary">
+                                <a href="{{ route('campaign.detail', $campaign->slug) }}" class="btn btn-primary">
                                     <i class="fa fa-arrow-left me-1"></i> Kembali ke Kampanye
                                 </a>
                             </div>
@@ -268,6 +273,8 @@
                         </div>
                     @endif
                 </div>
+
+
                 </div>
             </div>
         </div>
@@ -280,6 +287,15 @@
 @push('after-script')
 
 @if($donation->status == 'sukses')
+
+<script>
+    // Hapus localStorage UTM parameters jika ada
+    localStorage.removeItem('utm_source');
+    localStorage.removeItem('utm_medium');
+    localStorage.removeItem('utm_campaign');
+    localStorage.removeItem('referral_code');
+</script>
+
 <!-- Track conversion -->
 @php $adsense = \App\Models\Adsense::first(); @endphp
 
@@ -320,8 +336,8 @@
     @endif
 @endif
 @endif
-
 <script>
+    
 $(document).ready(function() {
     // Live clock function
     function updateClock() {

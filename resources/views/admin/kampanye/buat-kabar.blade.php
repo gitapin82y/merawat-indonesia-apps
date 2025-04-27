@@ -8,7 +8,12 @@
 
 @section('content')
 
-    @include('includes.public.navbar-back', ['title' => 'Buat Kabar Terbaru'])
+    <div class="navbar-back col-12 align-items-center d-flex">
+      <a href="{{ url()->current() == url()->previous() ? url('admin/kampanye/' . $slug . '/kabar-terbaru') : url()->previous() }}" class="bg-white">
+          <i class="fa-solid fa-angle-left"></i>
+      </a>
+      <h1 class="text-white mb-0 ms-2">Buat Kabar Terbaru</h1>
+    </div>
 
     <main class="container mt-3 px-4">
       <div class="lengkapi-data-form">
@@ -66,8 +71,8 @@
             e.preventDefault();
             
             Swal.fire({
-                title: 'Konfirmasi Pengiriman Data',
-                text: 'Apakah Anda yakin ingin mengganti profile admin galang dana?',
+                title: 'Menambahkan Kabar Terbaru',
+                text: 'Apakah Anda yakin menambahkan kabar terbaru kampanye ini?',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Kirim',

@@ -12,7 +12,7 @@ class Donation extends Model
     protected $fillable = [
         'campaign_id', 'user_id', 'name', 'doa', 'is_anonymous', 
         'phone', 'email', 'snap_token', 'amount', 'payment_type', 
-        'payment_method', 'status', 'manual_payment_method_id', 'payment_proof', 'donation_source_id','utm_source','utm_medium','utm_campaign'
+        'payment_method', 'status', 'manual_payment_method_id', 'payment_proof', 'donation_source_id','utm_source','utm_medium','utm_campaign','unique_code','referral_code'
     ];
 
     public function campaign()

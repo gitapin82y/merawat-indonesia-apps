@@ -216,8 +216,8 @@ $(document).ready(function() {
         $('#methodDetails').html(`
             <p class="mb-1"><strong>Bank/E-wallet:</strong> ${methodName}</p>
             <p class="mb-1"><strong>Nomor Rekening:</strong> ${methodInfo}</p>
-            <p class="mb-1"><strong>Nominal Transfer:</strong> <span class="text-danger">Rp {{ number_format($donation->amount) }}</span></p>
-            <p class="mb-0 mt-2 small text-muted">Harap transfer dengan jumlah tepat sesuai nominal di atas.</p>
+            <p class="mb-1"><strong>Nominal Transfer:</strong> <span class="text-danger fw-bold">Rp {{ number_format($donation->amount + $donation->unique_code) }}</span></p>
+            <p class="mb-0 mt-2 text-danger">3 Kode unik dibelakang nominal transfer membantu kami memverifikasi pembayaran Anda. Mohon transfer dengan jumlah TEPAT.</p>
         `);
     });
     

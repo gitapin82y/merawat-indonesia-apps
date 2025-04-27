@@ -53,7 +53,7 @@
 
     <div class="thumbnail-detail-kampanye">
         <div class="justify-content-between nav-top d-flex">
-            <a href="{{url('galang-dana')}}" class="bg-white">
+            <a href="{{ url('/galang-dana') }}" class="bg-white">
                 <i class="fa-solid fa-angle-left"></i>
             </a>
         </div>
@@ -73,7 +73,11 @@
                     <h2 class="text-color">
                         Rp {{ number_format($campaign->jumlah_donasi, 0, ',', '.') }} 
                         <span class="small">Kebutuhan</span> 
-                        <span class="fw-bold">Rp {{ number_format($campaign->jumlah_target_donasi, 0, ',', '.') }}</span> 
+                        @if($campaign->jumlah_target_donasi)
+                        <span class="fw-bold">Rp {{ number_format($campaign->jumlah_target_donasi, 0, ',', '.') }} </span> 
+                        @else
+                        <span class="small"><i class="fas fa-infinity text-danger"></i> Tanpa Target</span>
+                        @endif
                     </h2>
                 </div>
                 <div class="col d-flex justify-content-end p-0">
@@ -266,6 +270,23 @@
             </div>
         </div>
 
+    </div>
+
+    <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="descriptionModalLabel">{{ $campaign->title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {!! $campaign->description !!}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
     </div>
 
 

@@ -63,7 +63,13 @@
 
 @section('content')
 
-    @include('includes.public.navbar-back', ['title' => 'Edit Profile Galang Dana'])
+        <div class="navbar-back col-12 align-items-center d-flex">
+            <a href="{{ url('/galang-dana') }}" class="bg-white">
+                <i class="fa-solid fa-angle-left"></i>
+            </a>
+            <h1 class="text-white mb-0 ms-2">Edit Profile Galang Dana</h1>
+        </div>
+    
 
         <!-- Konten -->
         <?php

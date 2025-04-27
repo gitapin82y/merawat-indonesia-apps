@@ -57,9 +57,10 @@
 
 @section('content')
 
+
     <div class="thumbnail-detail-kampanye">
         <div class="justify-content-between nav-top d-flex">
-            <a href="{{url('/')}}" class="bg-white">
+            <a href="{{ url()->current() == url()->previous() ? url('/') : url()->previous() }}" class="bg-white">
                 <i class="fa-solid fa-angle-left"></i>
             </a>
             @if(Auth::check())
@@ -94,7 +95,11 @@
                     <h2 class="text-color">
                         Rp {{ number_format($campaign->jumlah_donasi, 0, ',', '.') }} 
                         <span class="small">Kebutuhan</span> 
-                        <span class="fw-bold">Rp {{ number_format($campaign->jumlah_target_donasi, 0, ',', '.') }}</span> 
+                        @if($campaign->jumlah_target_donasi)
+                        <span class="fw-bold">Rp {{ number_format($campaign->jumlah_target_donasi, 0, ',', '.') }} </span> 
+                        @else
+                        <span class="small"><i class="fas fa-infinity text-danger"></i> Tanpa Target</span>
+                        @endif
                     </h2>
                 </div>
                 <div class="col d-flex justify-content-end p-0">

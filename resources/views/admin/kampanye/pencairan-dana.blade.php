@@ -51,7 +51,12 @@
 
 @section('content')
 
-    @include('includes.public.navbar-back', ['title' => 'Pencairan Dana'])
+        <div class="navbar-back col-12 align-items-center d-flex">
+          <a href="{{ url()->current() == url()->previous() ? url('admin/kampanye/' . $slug . '/kabar-pencairan') : url()->previous() }}" class="bg-white">
+              <i class="fa-solid fa-angle-left"></i>
+          </a>
+          <h1 class="text-white mb-0 ms-2">Pencairan Dana</h1>
+        </div>
 
         <main class="container mt-3">
             <div class="pencairan-dana-container">

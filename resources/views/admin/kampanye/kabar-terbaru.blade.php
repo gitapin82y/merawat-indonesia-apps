@@ -31,7 +31,12 @@
 
 @section('content')
 
-    @include('includes.public.navbar-back', ['title' => 'Kabar Terbaru'])
+    <div class="navbar-back col-12 align-items-center d-flex">
+        <a href="{{url('admin/kampanye/' . $slug)}}" class="bg-white">
+            <i class="fa-solid fa-angle-left"></i>
+        </a>
+        <h1 class="text-white mb-0 ms-2">Kabar Terbaru</h1>
+    </div>
 
     <div class="container mt-4 flex-grow-1" style="padding-bottom:800px;">
       <div class="d-flex flex-column gap-3">
