@@ -25,6 +25,21 @@ use App\Http\Middleware\CheckAuth;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\TripayPaymentMethodController;
 
+
+
+Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
+    Route::get('admin/edit-profile', function(){
+        return view('admin.edit-profile');
+    });
+    Route::resource('admin', AdminController::class);
+
+    Route::resource('kampanye', CampaignController::class);
+
+    Route::resource('kabar-terbaru', KabarTerbaruController::class);
+
+    Route::resource('kabar-pencairan', KabarPencairanController::class);
+});
+
 Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
 
 
@@ -43,20 +58,6 @@ Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
     Route::get('/kampanye/{slug}/kabar-pencairan', [KabarPencairanController::class, 'kabarPencairan']);
     Route::get('/kampanye/{slug}/buat-kabar', [KabarTerbaruController::class, 'buatKabarTerbaru']);
     Route::get('/kampanye/{slug}/pencairan-dana', [KabarPencairanController::class, 'buatKabarPencairan']);
-});
-
-Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
-    Route::get('admin/edit-profile', function(){
-        return view('admin.edit-profile');
-    });
-    Route::resource('admin', AdminController::class);
-
-    Route::resource('kampanye', CampaignController::class);
-
-    Route::resource('kabar-terbaru', KabarTerbaruController::class);
-
-
-Route::resource('kabar-pencairan', KabarPencairanController::class);
 });
 
 
