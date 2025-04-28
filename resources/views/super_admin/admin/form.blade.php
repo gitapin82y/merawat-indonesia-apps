@@ -209,7 +209,7 @@
                             <label class="form-label">
                                 Avatar
                                 @if(isset($admin->id) && $admin->avatar)
-                                    <a href="javascript:void(0)" class="ms-2 text-primary" onclick="previewImage('{{ $admin->avatar }}', 'Avatar')">
+                                    <a href="javascript:void(0)" class="ms-2 text-primary" onclick="previewImage('{{ $admin->avatar_url }}', 'Avatar')">
                                         <small>(Lihat)</small>
                                     </a>
                                 @endif
