@@ -245,7 +245,7 @@ class UserController extends Controller
                 ->addColumn('action', function($row) {
                     $actionBtn = '
                         <div class="btn-group" role="group">
-                        <a href="'.url('profile-donatur/'.$row->name).'"  class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
+                        <a href="'.url('profile-donatur/'.$row->name).'"  class="btn btn-info btn-sm" target="_blank"><i class="fa-solid fa-eye text-white"></i></a>
                             <a href="'.route('user.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
                             <button onclick="deleteUser('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
                         </div>

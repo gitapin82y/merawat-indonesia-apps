@@ -130,7 +130,7 @@
                             <label class="form-label">
                                 Avatar
                                 @if(isset($user->id) && $user->avatar)
-                                    <a href="javascript:void(0)" class="ms-2 text-primary" onclick="previewImage('{{ asset('storage/'.$user->avatar) }}', 'Avatar')">
+                                    <a href="javascript:void(0)" class="ms-2 text-primary" onclick="previewImage('{{ $user->avatar }}', 'Avatar')">
                                         <small>(Lihat)</small>
                                     </a>
                                 @endif
@@ -157,7 +157,7 @@
                             <label class="form-label">
                                 Thumbnail
                                 @if(isset($user->id) && $user->thumbnail)
-                                    <a href="javascript:void(0)" class="ms-2 text-primary" onclick="previewImage('{{ asset('storage/'.$user->thumbnail) }}', 'Thumbnail')">
+                                    <a href="javascript:void(0)" class="ms-2 text-primary" onclick="previewImage('{{ $user->thumbnail_url }}', 'Thumbnail')">
                                         <small>(Lihat)</small>
                                     </a>
                                 @endif
