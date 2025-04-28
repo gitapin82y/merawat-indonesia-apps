@@ -184,7 +184,7 @@ Route::post('/commission/update', [CommissionController::class, 'updateCommissio
 
     Route::post('categories/{id}', [CategoryController::class, 'update']);
 
-    Route::post('prioritas-kampanye/{id}', [PrioritasCampaignController::class, 'destroy'])->name('prioritas-kampanye.destroy');
+    // Route::post('prioritas-kampanye/{id}', [PrioritasCampaignController::class, 'destroy'])->name('prioritas-kampanye.destroy');
     // Route::post('kabar-terbaru/{id}', [KabarTerbaruController::class, 'destroy'])->name('kabar-terbaru.destroy');
     Route::post('/pencairan-fundraising/update-status', [FundraisingWithdrawalController::class, 'updateStatus'])->name('pencairan-fundraising.updateStatus');
     Route::post('/pencairan-kampanye/update-status', [CampaignWithdrawalController::class, 'updateStatus'])->name('pencairan-kampanye.updateStatus');
