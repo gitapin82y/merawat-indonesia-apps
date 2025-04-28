@@ -28,8 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('manual_payment_methods', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('manual_payment_methods');
     }
 };
