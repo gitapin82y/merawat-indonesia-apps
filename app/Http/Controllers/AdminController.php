@@ -90,7 +90,7 @@ public function __construct(NotificationService $notificationService)
 
     public function create()
     {
-        $users = User::wherewhereDoesntHave('admin')->get();
+        $users = User::whereDoesntHave('admin')->get();
         return view('super_admin.admin.form', compact('users'));
     }
 
