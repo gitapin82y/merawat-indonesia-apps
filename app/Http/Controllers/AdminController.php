@@ -156,7 +156,14 @@ public function __construct(NotificationService $notificationService)
             if ($request->hasFile('legality')) {
                 $adminData['legality'] = $request->file('legality')->store('admin_legality', 'public');
             }
-            $adminData['user_id'] = $user->id;
+            if($role == 'super_admin'){
+                $adminData['user_id'] = $request->user_id;
+                if($request->status == 'disetujui'){
+                    User::where('id', $request->user_id)->update(['role' => 'yayasan']);
+                }
+            }else{
+                $adminData['user_id'] = $user->id;
+            }
             $admin = Admin::create($adminData);
 
             DB::commit();
