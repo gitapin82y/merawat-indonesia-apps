@@ -145,7 +145,7 @@ function deleteAdmin(id) {
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: '/super-admin/admin/' + id,
+                url: '/admin/' + id,
                 type: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'

@@ -86,7 +86,7 @@ function deleteUser(id) {
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: '/super-admin/user/' + id,
+                url: '/user/' + id,
                 type: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'
