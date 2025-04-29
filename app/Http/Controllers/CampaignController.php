@@ -45,7 +45,7 @@ public function __construct(NotificationService $notificationService)
                 ->addColumn('action', function($row) {
                     $actionBtn = '
                         <div class="btn-group" role="group">
-                        <a href="/kampanye/'.$row->title.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
+                        <a href="/kampanye/'.$row->slug.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
                             <a href="'.route('kampanye.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
                             <button onclick="deleteCampaign('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
                         </div>
@@ -363,7 +363,7 @@ public function __construct(NotificationService $notificationService)
         ]);
     }
 
-    public function show(Request $request, Campaign $kampanye, $slug)
+    public function show(Request $request, $slug)
     {
         $perPage = 4; // Set the number of items per page
         
