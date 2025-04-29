@@ -199,7 +199,7 @@
                                 @endif
                             </label>
                             <input type="file" name="legality" class="form-control @error('legality') is-invalid @enderror" 
-                                    value="{{ old('legality') }}">
+                                    value="{{ old('legality') }}" required>
                             @error('legality')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
