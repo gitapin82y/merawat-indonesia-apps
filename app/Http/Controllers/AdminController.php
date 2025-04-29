@@ -90,7 +90,7 @@ public function __construct(NotificationService $notificationService)
 
     public function create()
     {
-        $users = User::whereDoesntHave('admin')->get();
+        $users = User::wherewhereDoesntHave('admin')->get();
         return view('super_admin.admin.form', compact('users'));
     }
 
@@ -101,12 +101,13 @@ public function __construct(NotificationService $notificationService)
 
         $checkadmin = Admin::where('user_id',$user->id)->first();
 
-        if($checkadmin){
+        if($checkadmin && $role == 'donatur'){
             return redirect()->back()->with('toast', [
                 'type' => 'error', 
                 'message' => 'Sebelumnya anda telah mendaftar, tunggu validasi admin'
             ]);
         }
+        // Sebelum menambahkan admin baru pastikan sudah register user biasa atau membuat akun user biasa, setelah itu ubah role/peran menjadi admin, dan baru anda bisa menambahkan admin/yayasan dengan memilih user atas nama akun yang bar usaja dibuat dengan peran akun admin
     
         // Validasi berdasarkan role
         $rules = [
