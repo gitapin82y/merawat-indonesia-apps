@@ -118,7 +118,7 @@
             <p>Silakan tinjau aplikasi ini dan berikan persetujuan atau penolakan melalui panel admin.</p>
             
             <div style="text-align: center;">
-                <a href="{{ route('super-admin.admin.index') }}" class="button">Kelola Admin</a>
+                <a href="{{url('/super-admin')}}" class="button">Kelola Admin</a>
             </div>
         </div>
         <div class="footer">
