@@ -492,7 +492,7 @@ class DonationController extends Controller
                 $campaign = Campaign::find($donation->campaign_id);
                 $campaign->jumlah_donasi += $donation->amount;
                 $campaign->current_donation += $donation->amount;
-                $campaign->total_donatur = 3;
+                $campaign->total_donatur += 1;
                 $campaign->save();
 
                  // Update donation source statistics
@@ -631,70 +631,82 @@ class DonationController extends Controller
                 if ($transaction['status'] === 'PAID') {
                     $status = 'PAID';
 
-                    // $campaign = $donation->campaign;
-                    // $campaign->jumlah_donasi += $donation->amount;
-                    // $campaign->current_donation += $donation->amount;
-                    // $campaign->total_donatur += 1;
-                    // $campaign->save();
+                    $donation->status = 'sukses';
+                    $donation->updated_at = now();
+                    $donation->save();
+
+                    $campaign = $donation->campaign;
+                    $campaign->jumlah_donasi += $donation->amount;
+                    $campaign->current_donation += $donation->amount;
+                    $campaign->total_donatur += 1;
+                    $campaign->save();
 
                     // $this->trackServerSideConversion($donation);
 
-                    //  // Update donation source statistics
-                    // if ($donation->donation_source_id) {
-                    //     $source = DonationSource::find($donation->donation_source_id);
-                    //     if ($source) {
-                    //         $source->total_donations += 1;
-                    //         $source->total_amount += $donation->amount;
-                    //         $source->save();
-                    //     }
-                    // }
-
-                        
-                    // Cek apakah ada referral code di session
-                    // $referralCode = session('referral_code');
-                    // $fundraisingId = null;
-
-                    
-                    // if ($referralCode) {
-                    //     $fundraising = Fundraising::where('code_link', $referralCode)->first();
-                        
-                    //     if ($fundraising) {
-
-                    //         $commissionSetting = Commission::first(); // atau ->find($id) kalau kamu pakai banyak record
-                    //         $commissionPercent = $commissionSetting->amount ?? 0;
-
-                    //         // Hitung komisi sesuai persentase dari database
-                    //         $commission = ($donation->amount * $commissionPercent) / 100;
-                            
-                            
-                    //         // Update data fundraising
-                    //         $fundraising->total_donatur += 1;
-                    //         $fundraising->jumlah_donasi += $donation->amount;
-                    //         $fundraising->commission += $commission;
-                            
-                    //         // Update array donations
-                    //         $donations = json_decode($fundraising->donations, true) ?: [];
-                    //         $donations[] = [
-                    //             'donation_id' => $donation->id,
-                    //             'amount' => $donation->amount,
-                    //             'commission' => $commission,
-                    //             'user_name' => $user->name ?? null,
-                    //             'user_email' => $user->email ?? null,
-                    //             'created_at' => now()->format('Y-m-d H:i:s')
-                    //         ];
-                    //         $fundraising->donations = json_encode($donations);
-                            
-                    //         $fundraising->save();
-                    //     }
-                    // }
-                    
-                    if ($donation) {
-                        $donation->status = 'sukses';
-                        $donation->updated_at = now();
-                        $donation->save();
-
-                        $this->clearDonationSessions();
+                     // Update donation source statistics
+                    if ($donation->donation_source_id) {
+                        $source = DonationSource::find($donation->donation_source_id);
+                        if ($source) {
+                            $source->total_donations += 1;
+                            $source->total_amount += $donation->amount;
+                            $source->save();
+                        }
                     }
+
+                    $this->trackServerSideConversion($donation);
+
+                
+                    if ($donation->referral_code) {
+                        $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
+                        
+                        if ($fundraising) {
+                            $commissionSetting = Commission::first();
+                            $commissionPercent = $commissionSetting->amount ?? 0;
+                            
+                            // Calculate commission based on percentage from database
+                            $commission = ($donation->amount * $commissionPercent) / 100;
+                            
+                            // Update fundraising data
+                            $fundraising->total_donatur += 1;
+                            $fundraising->jumlah_donasi += $donation->amount;
+                            $fundraising->commission += $commission;
+                            
+                            // Update donations array
+                            $donations = json_decode($fundraising->donations, true) ?: [];
+                            $donations[] = [
+                                'donation_id' => $donation->id,
+                                'amount' => $donation->amount,
+                                'commission' => $commission,
+                                'user_name' => $donation->user ? $donation->user->name : null,
+                                'user_email' => $donation->user ? $donation->user->email : null,
+                                'created_at' => now()->format('Y-m-d H:i:s')
+                            ];
+                            $fundraising->donations = json_encode($donations);
+                            
+                            $fundraising->save();
+                        }
+                    }
+    
+                    try {
+                        Mail::to($donation->email)->send(new DonationSuccessMail($donation));
+                        Log::info('Donation success email sent to donor: ' . $donation->email);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
+                    }
+    
+                    try {
+                        $campaign = Campaign::with('admin')->find($donation->campaign_id);
+                        if ($campaign && $campaign->admin && $campaign->admin->email) {
+                            Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
+                            Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
+                        } else {
+                            Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send campaign donation email to admin: ' . $e->getMessage());
+                    }
+    
+                    $this->clearDonationSessions();
                 } else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND'])) {
                     $status = 'EXPIRED';
                 
