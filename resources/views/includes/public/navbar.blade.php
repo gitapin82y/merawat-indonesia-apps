@@ -51,7 +51,7 @@
     <div class="col-7 col-md-8 px-0">
         <div class="search">
             <img src="{{asset('assets/img/icon/search.svg')}}" alt="">
-            <input type="text" placeholder="Cari Program, Bantu Bersama" id="searchInput" value="{{ request()->input('title', '') }}">
+            <input type="text" placeholder="Cari Program, Merawat Indonesia" id="searchInput" value="{{ request()->input('title', '') }}">
         </div>
     </div>
     <div class="text-end">

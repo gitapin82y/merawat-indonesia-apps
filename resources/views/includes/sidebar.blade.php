@@ -36,7 +36,7 @@
     <hr class="sidebar-divider my-0">
 
     <!-- Pengguna (Dropdown) -->
-    <li class="nav-item {{ Request::is('super-admin/admin') || Request::is('super-admin/user') ? 'active' : '' }}">
+    <li class="nav-item {{ Request::is('admin') || Request::is('user') ? 'active' : '' }}">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#penggunaMenu"
             aria-expanded="{{ Request::is('super-admin/admin') || Request::is('super-admin/user') ? 'true' : 'false' }}" 
             aria-controls="penggunaMenu">
@@ -54,7 +54,7 @@
     <hr class="sidebar-divider my-0">
 
     <!-- Kampanye (Dropdown) -->
-    <li class="nav-item {{ Request::is('super-admin/kampanye') || Request::is('super-admin/prioritas-kampanye') ? 'active' : '' }}">
+    <li class="nav-item {{ Request::is('kampanye') || Request::is('super-admin/prioritas-kampanye') ? 'active' : '' }}">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#kampanyeMenu"
             aria-expanded="{{ Request::is('super-admin/kampanye') || Request::is('super-admin/prioritas-kampanye') ? 'true' : 'false' }}" 
             aria-controls="kampanyeMenu">
@@ -72,7 +72,7 @@
     <hr class="sidebar-divider my-0">
 
     <!-- Kabar Terbaru -->
-    <li class="nav-item {{ Request::is('super-admin/kabar-terbaru') ? 'active' : '' }}">
+    <li class="nav-item {{ Request::is('kabar-terbaru') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('kabar-terbaru.index') }}">
             <i class="fas fa-newspaper"></i>
             <span class="text-white">Kabar Terbaru</span>

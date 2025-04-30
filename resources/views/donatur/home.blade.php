@@ -80,7 +80,7 @@
     <!-- Campaign Section -->
     <div class="row kampanye mt-4">
         <div class="justify-content-between d-flex">
-            <h2>Pilihan Kampanye Bantu Bersama</h2>
+            <h2>Pilihan Kampanye Merawat Indonesia</h2>
             <a href="{{url('eksplore-kampanye')}}">Lihat Semua</a>
          </div>
 
