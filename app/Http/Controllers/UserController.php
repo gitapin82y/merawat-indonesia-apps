@@ -319,8 +319,8 @@ class UserController extends Controller
     $userBasic = User::findOrFail($user->id);
     
     // Calculate totals for header statistics
-    $totalDonasi = number_format($userBasic->donations()->sum('amount'), 0, ',', '.');
-    $jumlahDukungan = $userBasic->donations()->distinct('campaign_id')->count('campaign_id');
+    $totalDonasi = number_format($userBasic->donations()->where('status','sukses')->sum('amount'), 0, ',', '.');
+    $jumlahDukungan = $userBasic->donations()->where('status','sukses')->distinct('campaign_id')->count('campaign_id');
     
     // Handle pagination for each tab
     if ($request->ajax()) {
@@ -328,6 +328,7 @@ class UserController extends Controller
             switch ($request->tab) {
                 case 'donations':
                     $donations = $user->donations()
+                    ->where('status','sukses')
                         ->orderBy('created_at', 'desc')
                         ->paginate($perPage, ['*'], 'donations_page');
                     
@@ -351,6 +352,7 @@ class UserController extends Controller
                 case 'supported':
                     $supportedCampaigns = $user->donations()
                         ->with('campaign')
+                        ->where('status','sukses')
                         ->whereNotNull('campaign_id')
                         ->select('campaign_id')
                         ->distinct()
@@ -370,6 +372,7 @@ class UserController extends Controller
     
     // For initial page load, get first page of each tab
     $donations = $user->donations()
+    ->where('status','sukses')
         ->orderBy('created_at', 'desc')
         ->paginate($perPage, ['*'], 'donations_page');
     
@@ -379,6 +382,7 @@ class UserController extends Controller
     
    // For supported campaigns, get the latest donation for each campaign
 $latestDonationsByCampaign = $user->donations()
+->where('status','sukses')
 ->whereNotNull('campaign_id')
 ->select('campaign_id', DB::raw('MAX(id) as max_id'))
 ->groupBy('campaign_id')
@@ -402,8 +406,8 @@ $supportedCampaigns = Donation::with('campaign')
 
     public function profileDonaturLeaderboard($name){
         $user = User::with(['donations.campaign'])->where('name',$name)->first();
-        $totalDonasi = number_format($user->donations->sum('amount'), 0, ',', '.');
-        $jumlahDukungan = $user->donations->groupBy('campaign_id')->count();
+        $totalDonasi = number_format($user->donations()->where('status','sukses')->sum('amount'), 0, ',', '.');
+        $jumlahDukungan = $user->donations()->where('status','sukses')->groupBy('campaign_id')->count();
 
         return view('donatur.profile-donatur', compact('user', 'totalDonasi', 'jumlahDukungan'));
     }
