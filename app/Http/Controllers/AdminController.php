@@ -116,7 +116,7 @@ public function __construct(NotificationService $notificationService)
         $checkadmin = Admin::where('user_id',$user->id)->first();
 
 
-        if($checkadmin && $role == 'donatur'){
+        if($checkadmin && $role == 'donatur' && $checkadmin->status !== 'ditolak'){
             return redirect()->back()->with('toast', [
                 'type' => 'error', 
                 'message' => 'Sebelumnya anda telah mendaftar, tunggu validasi admin'
@@ -188,7 +188,7 @@ public function __construct(NotificationService $notificationService)
                 ->with('success', 'Admin berhasil ditambahkan');
             } else {          
                 // Kirim email ke alamat email tetap
-                Mail::to('merawatindonesia2@gmail.com')->send(new AdminApplicationMail($admin, $user));
+                Mail::to('apin82y@gmail.com')->send(new AdminApplicationMail($admin, $user));
                     return redirect()->back()
                     ->with('success', 'Berhasil Mendaftar, Data sedang divalidasi');
             }

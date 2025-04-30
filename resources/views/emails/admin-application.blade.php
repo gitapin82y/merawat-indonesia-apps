@@ -87,11 +87,7 @@
             
             <p>Ada pendaftaran admin baru yang memerlukan persetujuan Anda.</p>
             
-            <div class="admin-info">
-                @if($admin->avatar_url)
-                    <img src="{{ $admin->avatar_url }}" alt="{{ $admin->name }}" class="avatar">
-                @endif
-                
+            <div class="admin-info">        
                 <div class="admin-detail">
                     <strong>Nama Admin:</strong> {{ $admin->name }}
                 </div>
