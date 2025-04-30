@@ -27,6 +27,13 @@ use App\Http\Controllers\TripayPaymentMethodController;
 
 
 
+Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
+
+
+Route::get('admin/kampanye/{slug}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
+Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
+
+
 Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
     Route::get('admin/edit-profile', function(){
         return view('admin.edit-profile');
@@ -39,12 +46,6 @@ Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
 
     Route::resource('kabar-pencairan', KabarPencairanController::class);
 });
-
-Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
-
-
-Route::get('admin/kampanye/{slug}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
-Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
 
 
 
