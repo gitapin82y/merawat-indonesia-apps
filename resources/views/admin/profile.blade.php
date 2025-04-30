@@ -81,8 +81,6 @@
         .profile-avatar .avatar-container img {
                 width: 120px;
                 height: 120px;
-                margin-top: -60px;
-        border: 6px solid white;
       }
 
         .btn-responsive img {

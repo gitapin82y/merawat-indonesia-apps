@@ -69,6 +69,10 @@
                 /* Ukuran font lebih kecil di layar kecil */
                 padding: 6px 10px;
             }
+            .profile-avatar .avatar-container img {
+                width: 120px;
+                height: 120px;
+      }
 
             .btn-responsive img {
                 width: 10px;
