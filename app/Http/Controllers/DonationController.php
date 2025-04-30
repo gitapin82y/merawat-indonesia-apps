@@ -917,7 +917,7 @@ public function index(Request $request)
     
     if ($request->ajax()) {
         // Start with base query
-        $query = Donation::with('campaign');
+        $query = Donation::with('campaign')->where('status','sukses');
         
         // Apply campaign filter if provided
         if ($request->has('campaign_id') && $request->campaign_id) {
