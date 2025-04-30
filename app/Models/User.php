@@ -114,9 +114,36 @@ public function hasPassword()
 // Di model User.php
 public function getAvatarUrlAttribute()
 {
-    return $this->avatar && !Str::startsWith($this->avatar, 'default/') 
-        ? asset('storage/' . $this->avatar) 
-        : asset('assets/img/' . $this->avatar);
+    // Jika user login menggunakan provider sosial dan avatar adalah URL
+    if ($this->provider && Str::startsWith($this->avatar, ['http://', 'https://'])) {
+        // Gunakan URL avatar langsung dari provider
+        return $this->avatar;
+    }
+    
+    // Jika user memiliki avatar custom (user upload)
+    if ($this->avatar && !Str::startsWith($this->avatar, 'default/')) {
+        return asset('storage/' . $this->avatar);
+    }
+    
+    // Jika menggunakan avatar default
+    if ($this->avatar && Str::startsWith($this->avatar, 'default/')) {
+        return asset('assets/img/' . $this->avatar);
+    }
+    
+    // Fallback ke avatar default berdasarkan provider
+    if ($this->provider) {
+        switch ($this->provider) {
+            case 'google':
+                return asset('assets/img/default/google-avatar.png');
+            case 'facebook':
+                return asset('assets/img/default/facebook-avatar.png');
+            case 'apple':
+                return asset('assets/img/default/apple-avatar.png');
+        }
+    }
+    
+    // Fallback default jika tidak ada kondisi yang terpenuhi
+    return asset('assets/img/default/default-avatar.png');
 }
 
 public function getThumbnailUrlAttribute()
