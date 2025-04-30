@@ -345,36 +345,36 @@
         $('#submitForm').on('click', function(e) {
             e.preventDefault();
             
-            // Cek apakah file-file wajib sudah diisi
-            const legalityFile = document.getElementById('fileLegalitas').files.length;
-            const thumbnailFile = document.getElementById('fileThumbnail').files.length;
-            const avatarFile = document.getElementById('fileFoto').files.length;
+            // // Cek apakah file-file wajib sudah diisi
+            // const legalityFile = document.getElementById('fileLegalitas').files.length;
+            // const thumbnailFile = document.getElementById('fileThumbnail').files.length;
+            // const avatarFile = document.getElementById('fileFoto').files.length;
             
-            // Array untuk pesan kesalahan
-            let errors = [];
+            // // Array untuk pesan kesalahan
+            // let errors = [];
             
-            if (!legalityFile) {
-                errors.push('File Legalitas Organisasi wajib diunggah');
-            }
+            // if (!legalityFile) {
+            //     errors.push('File Legalitas Organisasi wajib diunggah');
+            // }
             
-            if (!thumbnailFile) {
-                errors.push('File Thumbnail Profil wajib diunggah');
-            }
+            // if (!thumbnailFile) {
+            //     errors.push('File Thumbnail Profil wajib diunggah');
+            // }
             
-            if (!avatarFile) {
-                errors.push('File Foto Profil wajib diunggah');
-            }
+            // if (!avatarFile) {
+            //     errors.push('File Foto Profil wajib diunggah');
+            // }
             
-            if (errors.length > 0) {
-                // Tampilkan pesan kesalahan dengan SweetAlert
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validasi Gagal',
-                    html: 'Lengkapi semua input dan upload file',
-                    timer: 3000
-                });
-                return;
-            }
+            // if (errors.length > 0) {
+            //     // Tampilkan pesan kesalahan dengan SweetAlert
+            //     Swal.fire({
+            //         icon: 'error',
+            //         title: 'Validasi Gagal',
+            //         html: 'Lengkapi semua input dan upload file',
+            //         timer: 3000
+            //     });
+            //     return;
+            // }
             
             // Jika validasi berhasil, tampilkan konfirmasi
             Swal.fire({
