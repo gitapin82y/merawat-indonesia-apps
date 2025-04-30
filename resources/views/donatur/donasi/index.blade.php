@@ -89,8 +89,11 @@
                             <div class="row container m-0 pb-5">
                                 <h3>Isi Data Diri</h3>
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="full_name" name="name" placeholder="Nama Lengkap" value="{{ auth()->check() ? auth()->user()->name : old('name') }}" required>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="full_name" name="name" placeholder="Nama Lengkap" value="{{ auth()->check() ? auth()->user()->name : old('name') }}" required>
                                     <label for="full_name">Nama Lengkap</label>
+                                    @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                                 </div>
                                 <div class="d-flex mb-3">
                                     <label class="form-check-label ms-0" for="is_anonymous">Tampilkan Sebagai anonim "Sahabat Baik"?</label>
@@ -100,12 +103,18 @@
                                 </div>
                                 
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="whatsapp" name="phone" placeholder="Nomor Whatsapp" value="{{ auth()->check() && auth()->user()->phone ? auth()->user()->phone : old('phone') }}" required>
+                                    <input type="text" class="form-control @error('phone') is-invalid @enderror" id="whatsapp" name="phone" placeholder="Nomor Whatsapp" value="{{ auth()->check() && auth()->user()->phone ? auth()->user()->phone : old('phone') }}" required>
                                     <label for="whatsapp">Nomor Whatsapp</label>
+                                    @error('phone')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" value="{{ auth()->check() ? auth()->user()->email : old('email') }}" required>
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" placeholder="name@example.com" value="{{ auth()->check() ? auth()->user()->email : old('email') }}" required>
                                     <label for="email">Email</label>
+                                    @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                                 </div>
                                 <div class="form-floating">
                                     <textarea class="form-control" placeholder="Leave a comment here" id="pesan_doa" name="doa" style="height: 100px"></textarea>
