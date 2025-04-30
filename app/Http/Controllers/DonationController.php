@@ -489,14 +489,13 @@ class DonationController extends Controller
                 $donation->updated_at = now();
                 $donation->save();
 
-                
-                // Update campaign statistics
-                $campaign = Campaign::with('admin.user')->find($donation->campaign_id);
-                
-                $campaign->jumlah_donasi += $donation->amount;
-                $campaign->current_donation += $donation->amount;
-                $campaign->total_donatur += 1;
-                $campaign->save();
+                $updated = DB::table('campaigns')
+                ->where('id', $donation->campaign_id)
+                ->update([
+                    'jumlah_donasi' => DB::raw('jumlah_donasi + ' . (int)$donation->amount),
+                    'current_donation' => DB::raw('current_donation + ' . (int)$donation->amount),
+                    'total_donatur' => DB::raw('total_donatur + 1')
+                ]);
 
                  // Update donation source statistics
                 if ($donation->donation_source_id) {
@@ -550,15 +549,15 @@ class DonationController extends Controller
                 }
 
                 try {
-                    if ($campaign->admin && $campaign->admin->email) {
+                    $campaign = Campaign::with('admin')->find($donation->campaign_id);
+                    if ($campaign && $campaign->admin && $campaign->admin->email) {
                         Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
                         Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
                     } else {
-                        Log::warning('Admin email not found for campaign ID: ' . $campaign->id);
+                        Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
                     }
                 } catch (\Exception $e) {
                     Log::error('Failed to send campaign donation email to admin: ' . $e->getMessage());
-                    // Don't rethrow to avoid interrupting the process
                 }
 
                 $this->clearDonationSessions();
