@@ -153,7 +153,7 @@
                 <div class="col-3  text-center">
                     <div class="d-flex align-items-center justify-content-center">
                         <img src="{{asset('assets/img/icon/user-donatur.svg')}}" alt="" class="me-2" style="height: 20px;">
-                        <p class="count m-0 d-flex align-items-center">{{ $campaign->donations->count() }}</p>
+                        <p class="count m-0 d-flex align-items-center">{{ $campaign->donations->where('status', 'sukses')->count() }}</p>
                     </div>
 
                     <small>Donatur</small>
@@ -177,7 +177,7 @@
                 <div class="col-3  text-center">
                     <div class="d-flex align-items-center justify-content-center">
                         <img src="{{asset('assets/img/icon/doa-orang-baik.svg')}}" alt="" class="me-2" style="height: 20px;">
-                        <p class="count m-0 d-flex align-items-center">{{ $campaign->donations->where('doa', '!=', null)->count() }}</p>
+                        <p class="count m-0 d-flex align-items-center">{{ $campaign->donations->where('status', 'sukses')->where('doa', '!=', null)->count() }}</p>
                     </div>
                     <small>Doa Sahabat Baik</small>
                 </div>
