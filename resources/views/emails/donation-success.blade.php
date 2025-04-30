@@ -115,10 +115,10 @@
             </div>
             
             <p>Semoga kebaikan Anda dibalas berlipat ganda.</p>
-            
             <div style="text-align: center;">
-                <a href="{{ route('campaign.detail', $donation->campaign->title) }}" class="button">Lihat Kampanye</a>
+                <a href="{{ url('kampanye/' . $donation->campaign->slug) }}" class="button">Lihat Kampanye</a>
             </div>
+            
         </div>
         <div class="footer">
             <p>Email ini dikirim secara otomatis. Mohon tidak membalas email ini.</p>

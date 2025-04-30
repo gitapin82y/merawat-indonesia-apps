@@ -507,7 +507,7 @@ public function changeStatus(Campaign $campaign, Request $request)
         
         try {
             // Kirim email ke admin kampanye
-            Mail::to($campaign->admin->email)->send(new CampaignStatusMail($campaign, $request->status));
+            Mail::to($campaign->admin->email)->queue(new CampaignStatusMail($campaign, $request->status));
             
             // Buat notifikasi sistem untuk admin
             $status = $request->status === 'disetujui' ? 'disetujui' : 'ditolak';

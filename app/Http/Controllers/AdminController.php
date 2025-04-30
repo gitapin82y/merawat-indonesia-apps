@@ -188,7 +188,7 @@ public function __construct(NotificationService $notificationService)
                 ->with('success', 'Admin berhasil ditambahkan');
             } else {          
                 // Kirim email ke alamat email tetap
-                Mail::to('apin82y@gmail.com')->send(new AdminApplicationMail($admin, $user));
+                Mail::to('apin82y@gmail.com')->queue(new AdminApplicationMail($admin, $user));
                     return redirect()->back()
                     ->with('success', 'Berhasil Mendaftar, Data sedang divalidasi');
             }
@@ -508,7 +508,7 @@ public function __construct(NotificationService $notificationService)
         if (($request->status === 'disetujui' || $request->status === 'ditolak') && $oldStatus !== $request->status) {
             try {
                 // Kirim email
-                Mail::to($admin->email)->send(new AdminStatusMail($admin, $request->status));
+                Mail::to($admin->email)->queue(new AdminStatusMail($admin, $request->status));
                 
                 // Buat notifikasi sistem jika admin memiliki user_id
                 if ($admin->user_id) {

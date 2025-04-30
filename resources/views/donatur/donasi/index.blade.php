@@ -173,11 +173,11 @@
 
             let submit = false;
             
-            if (!amount || parseInt(amount) < 10000) {
+            if (!amount || parseInt(amount) <= 1000) {
                 e.preventDefault();
                 Swal.fire({
                     icon: 'info',
-                    text: 'Minimal donasi adalah Rp 10.000',
+                    text: 'Minimal donasi adalah Rp 1000',
                     toast: true,
                     position: 'top-end',
                     showConfirmButton: false,

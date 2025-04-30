@@ -130,7 +130,7 @@ class DonationController extends Controller
                     }
                 } else {
                     // Jika tidak login, kirim email langsung
-                    Mail::to($donation->email)->send(new DonationSuccessMail($donation));
+                    Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
                 }
             }
             
@@ -223,7 +223,7 @@ class DonationController extends Controller
         // Validasi input
         $validated = $request->validate([
             'campaign_id' => 'required|exists:campaigns,id',
-            'amount' => 'required|numeric|min:10000',
+            'amount' => 'required|numeric|min:1000',
             'name' => 'required|string|max:255',
             'phone' => 'required|string',
             'email' => 'required',
@@ -489,10 +489,10 @@ class DonationController extends Controller
                 $donation->updated_at = now();
                 $donation->save();
 
-                $this->trackServerSideConversion($donation);
                 
                 // Update campaign statistics
-                $campaign = $donation->campaign;
+                $campaign = Campaign::with('admin.user')->find($donation->campaign_id);
+                
                 $campaign->jumlah_donasi += $donation->amount;
                 $campaign->current_donation += $donation->amount;
                 $campaign->total_donatur += 1;
@@ -507,6 +507,9 @@ class DonationController extends Controller
                         $source->save();
                     }
                 }
+
+                $this->trackServerSideConversion($donation);
+
                 
                 if ($donation->referral_code) {
                     $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
@@ -537,6 +540,25 @@ class DonationController extends Controller
                         
                         $fundraising->save();
                     }
+                }
+
+                try {
+                    Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
+                    Log::info('Donation success email sent to donor: ' . $donation->email);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
+                }
+
+                try {
+                    if ($campaign->admin && $campaign->admin->email) {
+                        Mail::to($campaign->admin->email)->queue(new CampaignDonationMail($donation));
+                        Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
+                    } else {
+                        Log::warning('Admin email not found for campaign ID: ' . $campaign->id);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to send campaign donation email to admin: ' . $e->getMessage());
+                    // Don't rethrow to avoid interrupting the process
                 }
 
                 $this->clearDonationSessions();
