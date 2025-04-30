@@ -167,12 +167,12 @@
                         Masuk Dengan Google
                     </a>
                 </button>
-                <button class="btn btn-dark btn-social py-3">
+                {{-- <button class="btn btn-dark btn-social py-3">
                     <a href="{{ route('social.login', ['provider' => 'apple']) }}" class="text-white text-decoration-none d-flex align-items-center justify-content-center w-100">
                         <img src="{{asset('assets/img/icon/apple.svg')}}" alt="apple" width="18" class="me-2">
                         Masuk Dengan Apple
                     </a>
-                </button>
+                </button> --}}
 
                 <p class="mt-3 ">Belum punya akun? <a href="{{url('/register')}}"
                         class="text-second text-decoration-none"><b>Daftar Sekarang</b></a></p>
