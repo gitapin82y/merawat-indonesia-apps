@@ -404,7 +404,7 @@ class UserController extends Controller
     ));
 }
 
-    public function profileDonaturLeaderboard($name){
+    public function profileDonaturLeaderboard(Request $request, $name){
         $perPage = 4;
         $user = User::with(['donations.campaign'])->where('name',$name)->first();
         $totalDonasi = number_format($user->donations()->where('status','sukses')->sum('amount'), 0, ',', '.');
