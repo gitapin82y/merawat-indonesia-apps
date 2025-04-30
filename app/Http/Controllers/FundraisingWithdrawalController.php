@@ -181,7 +181,7 @@ class FundraisingWithdrawalController extends Controller
             $admin = User::where('role', 'super_admin')->first();
             
             // Jika spesifik ke satu email
-            Mail::to('apin82y@gmail.com')->send(new FundraisingWithdrawalMail($withdrawal));
+            Mail::to('merawatindonesia2@gmail.com')->send(new FundraisingWithdrawalMail($withdrawal));
             
             // Create system notification for admin
             $this->notificationService->createNotification(

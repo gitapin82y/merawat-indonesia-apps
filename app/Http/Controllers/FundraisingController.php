@@ -187,7 +187,7 @@ class FundraisingController extends Controller
             ['withdrawal_id' => $withdrawal->id]
         );
 
-        Mail::to("apin82y@gmail.com")->send(new FundraisingWithdrawalMail($withdrawal));
+        Mail::to("merawatindonesia2@gmail.com")->send(new FundraisingWithdrawalMail($withdrawal));
 
         DB::commit();
         
