@@ -99,7 +99,22 @@ public function __construct(NotificationService $notificationService)
         $user = auth()->user(); // Ambil user yang sedang login
         $role = $user->role; // Misalnya role ada di dalam field 'role'
 
+        if(!$user){
+            return redirect()->back()->with('toast', [
+                'type' => 'error', 
+                'message' => 'Login Terlebih dahulu'
+            ]);
+        }
+
+        if (!in_array($role, ['super_admin', 'donatur'])) {
+            return redirect()->back()->with('toast', [
+                'type' => 'error', 
+                'message' => 'Unauthorized action.'
+            ]);
+        }
+
         $checkadmin = Admin::where('user_id',$user->id)->first();
+
 
         if($checkadmin && $role == 'donatur'){
             return redirect()->back()->with('toast', [

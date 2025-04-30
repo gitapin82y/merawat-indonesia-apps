@@ -38,7 +38,7 @@ Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
     Route::get('admin/edit-profile', function(){
         return view('admin.edit-profile');
     });
-    Route::resource('admin', AdminController::class);
+    Route::resource('admin', AdminController::class)->except(['store']);
 
     Route::resource('kampanye', CampaignController::class);
 
