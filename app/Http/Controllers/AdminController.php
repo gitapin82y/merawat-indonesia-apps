@@ -95,35 +95,10 @@ public function __construct(NotificationService $notificationService)
     }
 
     public function store(Request $request)
-    {
+    {    
         $user = auth()->user(); // Ambil user yang sedang login
         $role = $user->role; // Misalnya role ada di dalam field 'role'
 
-        if(!$user){
-            return redirect()->back()->with('toast', [
-                'type' => 'error', 
-                'message' => 'Login Terlebih dahulu'
-            ]);
-        }
-
-        if (!in_array($role, ['super_admin', 'donatur'])) {
-            return redirect()->back()->with('toast', [
-                'type' => 'error', 
-                'message' => 'Unauthorized action.'
-            ]);
-        }
-
-        $checkadmin = Admin::where('user_id',$user->id)->first();
-
-
-        if($checkadmin && $role == 'donatur' && $checkadmin->status !== 'ditolak'){
-            return redirect()->back()->with('toast', [
-                'type' => 'error', 
-                'message' => 'Sebelumnya anda telah mendaftar, tunggu validasi admin'
-            ]);
-        }
-        // Sebelum menambahkan admin baru pastikan sudah register user biasa atau membuat akun user biasa, setelah itu ubah role/peran menjadi admin, dan baru anda bisa menambahkan admin/yayasan dengan memilih user atas nama akun yang bar usaja dibuat dengan peran akun admin
-    
         // Validasi berdasarkan role
         $rules = [
             'name' => 'required|string|max:255',
@@ -135,6 +110,7 @@ public function __construct(NotificationService $notificationService)
         ];
     
         if ($role === 'super_admin') {
+            $rules['user_id'] = 'required|string';
             $rules['legality'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
             $rules['thumbnail'] = 'nullable|file|mimes:jpg,jpeg,png|max:2048';
             $rules['avatar'] = 'nullable|file|mimes:jpg,jpeg,png|max:2048';
@@ -150,6 +126,34 @@ public function __construct(NotificationService $notificationService)
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
+        }
+
+
+        if(!$user){
+            return redirect()->back()->with('toast', [
+                'type' => 'error', 
+                'message' => 'Login Terlebih dahulu'
+            ]);
+        }
+
+        if (!in_array($role, ['super_admin', 'donatur'])) {
+            return redirect()->back()->with('toast', [
+                'type' => 'error', 
+                'message' => 'Unauthorized action.'
+            ]);
+        }
+
+        if ($role === 'super_admin') {
+            $checkadmin = Admin::where('user_id',$request->user_id)->first();
+        } else {
+            $checkadmin = Admin::where('user_id',$user->id)->first();
+        }
+
+        if($checkadmin && $role == 'donatur' && $checkadmin->status !== 'ditolak'){
+            return redirect()->back()->with('toast', [
+                'type' => 'error', 
+                'message' => 'Sebelumnya anda telah mendaftar, tunggu validasi admin'
+            ]);
         }
 
         DB::beginTransaction();
@@ -188,7 +192,7 @@ public function __construct(NotificationService $notificationService)
                 ->with('success', 'Admin berhasil ditambahkan');
             } else {          
                 // Kirim email ke alamat email tetap
-                Mail::to('apin82y@gmail.com')->queue(new AdminApplicationMail($admin, $user));
+                Mail::to('apin82y@gmail.com')->send(new AdminApplicationMail($admin, $user));
                     return redirect()->back()
                     ->with('success', 'Berhasil Mendaftar, Data sedang divalidasi');
             }
@@ -356,6 +360,7 @@ public function __construct(NotificationService $notificationService)
         ];
     
         if ($role === 'super_admin') {
+            $rules['user_id'] = 'required|string';
             $rules['address'] = 'required|string';
             $rules['status'] = 'required|in:menunggu,disetujui,ditolak';
             $rules['email'] = 'required|email|unique:admins,email,'.$admin->id;
@@ -373,6 +378,10 @@ public function __construct(NotificationService $notificationService)
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
+        }
+
+        if ($role === 'super_admin') {
+            $user->id = $request->user_id;
         }
 
         DB::beginTransaction();
@@ -508,7 +517,7 @@ public function __construct(NotificationService $notificationService)
         if (($request->status === 'disetujui' || $request->status === 'ditolak') && $oldStatus !== $request->status) {
             try {
                 // Kirim email
-                Mail::to($admin->email)->queue(new AdminStatusMail($admin, $request->status));
+                Mail::to($admin->email)->send(new AdminStatusMail($admin, $request->status));
                 
                 // Buat notifikasi sistem jika admin memiliki user_id
                 if ($admin->user_id) {
