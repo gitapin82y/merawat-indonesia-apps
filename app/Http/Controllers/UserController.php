@@ -408,7 +408,8 @@ class UserController extends Controller
         $perPage = 4;
         $user = User::with(['donations.campaign'])->where('name',$name)->first();
         $totalDonasi = number_format($user->donations()->where('status','sukses')->sum('amount'), 0, ',', '.');
-        $jumlahDukungan = $user->donations()->where('status','sukses')->groupBy('campaign_id')->count();
+
+        $jumlahDukungan = $user->donations()->where('status','sukses')->distinct('campaign_id')->count('campaign_id');
 
         if ($request->ajax()) {
             if ($request->has('tab')) {
