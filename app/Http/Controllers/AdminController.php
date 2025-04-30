@@ -120,13 +120,13 @@ public function __construct(NotificationService $notificationService)
         ];
     
         if ($role === 'super_admin') {
-            $rules['legality'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['legality'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
             $rules['thumbnail'] = 'nullable|file|mimes:jpg,jpeg,png|max:2048';
             $rules['avatar'] = 'nullable|file|mimes:jpg,jpeg,png|max:2048';
         } else {
             $rules['legality'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
-            $rules['thumbnail'] = 'required|file|mimes:jpg,jpeg,png|max:2048';
-            $rules['avatar'] = 'required|file|mimes:jpg,jpeg,png|max:2048';
+            $rules['thumbnail'] = 'nullable|file|mimes:jpg,jpeg,png|max:2048';
+            $rules['avatar'] = 'nullable|file|mimes:jpg,jpeg,png|max:2048';
         }
 
         $validator = Validator::make($request->all(), $rules);

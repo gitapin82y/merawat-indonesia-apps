@@ -138,7 +138,7 @@
                                 </a>
                             @endif
                         </label>
-                        <input type="file" name="document_rab" class="form-control @error('document_rab') is-invalid @enderror" accept=".pdf, .doc, .docx, .xls, .xlsx" id="document_rab">
+                        <input type="file" name="document_rab" class="form-control @error('document_rab') is-invalid @enderror" accept=".pdf, .doc, .docx, .xls, .xlsx" id="document_rab" required>
                         @error('document_rab')<div class="invalid-feedback">{{ $message }}</div>@enderror
                       </div>
           
