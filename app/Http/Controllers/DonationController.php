@@ -489,11 +489,10 @@ class DonationController extends Controller
                 $donation->updated_at = now();
                 $donation->save();
 
-                $campaign = Campaign::where('id', $donation->campaign_id)
-                ->first();
+                $campaign = Campaign::find($donation->campaign_id);
                 $campaign->jumlah_donasi += $donation->amount;
                 $campaign->current_donation += $donation->amount;
-                $campaign->total_donatur += 1;
+                $campaign->total_donatur = 3;
                 $campaign->save();
 
                  // Update donation source statistics
