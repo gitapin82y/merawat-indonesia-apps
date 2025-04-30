@@ -237,7 +237,7 @@ public function __construct(NotificationService $notificationService)
     
     // Hitung total doa
     $totalDoa = $campaign->sum(function($campaign) {
-        return $campaign->donations->whereNotNull('doa')->count();
+        return $campaign->donations->where('status', 'sukses')->whereNotNull('doa')->count();
     });
     
     // Hitung total donasi terkumpul
@@ -300,7 +300,7 @@ public function __construct(NotificationService $notificationService)
     
     // Hitung total doa
     $totalDoa = $campaign->sum(function($campaign) {
-        return $campaign->donations->whereNotNull('doa')->count();
+        return $campaign->donations->where('status', 'sukses')->whereNotNull('doa')->count();
     });
     
     // Hitung total donasi terkumpul

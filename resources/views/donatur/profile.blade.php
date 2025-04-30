@@ -17,10 +17,7 @@
 
         .content-box {
             background: white;
-
             padding: 15px;
-
-
         }
 
         .donation-card {

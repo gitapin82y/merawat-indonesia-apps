@@ -60,7 +60,7 @@
 
     <div class="thumbnail-detail-kampanye">
         <div class="justify-content-between nav-top d-flex">
-            <a href="{{ url()->current() == url()->previous() ? url('/') : url()->previous() }}" class="bg-white">
+            <a href="{{ url('/') }}" class="bg-white">
                 <i class="fa-solid fa-angle-left"></i>
             </a>
             @if(Auth::check())

@@ -46,56 +46,6 @@ class DonationController extends Controller
         $this->notificationService = $notificationService;
     }
 
-    // private function updateDonationToSuccess($donation)
-    // {
-    //     // Begin transaction
-    //     DB::beginTransaction();
-        
-    //     try {
-    //         // Update donation status
-    //         $donation->status = 'sukses';
-    //         $donation->updated_at = now();
-    //         $donation->save();
-            
-    //         // Update campaign statistics
-    //         $campaign = $donation->campaign;
-    //         $campaign->jumlah_donasi += $donation->amount;
-    //         $campaign->current_donation += $donation->amount;
-    //         $campaign->total_donatur += 1;
-    //         $campaign->save();
-            
-    //         // Track server-side conversion
-    //         $this->trackServerSideConversion($donation);
-            
-    //         // Update donation source statistics
-    //         if ($donation->donation_source_id) {
-    //             $source = DonationSource::find($donation->donation_source_id);
-    //             if ($source) {
-    //                 $source->total_donations += 1;
-    //                 $source->total_amount += $donation->amount;
-    //                 $source->save();
-    //             }
-    //         }
-            
-    //         // Proses fundraising jika ada
-    //         // ...kode fundraising yang sudah ada...
-            
-    //         // Kirim notifikasi email
-    //         $this->sendDonationNotifications($donation);
-            
-    //         // Commit transaction
-    //         DB::commit();
-            
-    //         return true;
-    //     } catch (\Exception $e) {
-    //         // Rollback in case of error
-    //         DB::rollBack();
-    //         Log::error('Error updating donation to success: ' . $e->getMessage());
-            
-    //         return false;
-    //     }
-    // }
-    
     /**
      * Kirim notifikasi email ke donatur dan pemilik kampanye
      */
@@ -796,25 +746,6 @@ public function checkStatus($reference)
                 
                 if ($transaction['status'] === 'PAID') {
                     $status = 'PAID';
-
-        //             $campaign = $donation->campaign;
-        //             $campaign->jumlah_donasi += $donation->amount;
-        //             $campaign->current_donation += $donation->amount;
-        //             $campaign->total_donatur += 1;
-        //             $campaign->save();
-
-        //             $this->trackServerSideConversion($donation);
-
-
-        //              // Update donation source statistics
-        // if ($donation->donation_source_id) {
-        //     $source = DonationSource::find($donation->donation_source_id);
-        //     if ($source) {
-        //         $source->total_donations += 1;
-        //         $source->total_amount += $donation->amount;
-        //         $source->save();
-        //     }
-        // }
                     
                     $donation = Donation::where('snap_token', $reference)->first();
                     if ($donation) {

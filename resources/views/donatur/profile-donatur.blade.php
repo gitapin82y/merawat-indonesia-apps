@@ -208,40 +208,30 @@
 
               <!-- Riwayat Donasi (Awalnya Tersembunyi) -->
               <div id="donationHistory" class="donation-history mt-3 d-none">
-                @if($user->donations->isEmpty())
-                <div class="text-center">
-                    <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                    <p>Belum Memiliki Riwayat Donasi di Kampanye</p>
+                <div id="donations-container">
+                    @include('partials.profile.donations', ['donations' => $donations])
                 </div>
-            @else
-                @foreach($user->donations as $donation)
-                <div class="donation-card p-3 border rounded shadow-sm">
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-bold">{{$donation->name}}</span>
-                        <span class="fw-bold text-end">Rp {{ number_format($donation->amount, 0, ',', '.') }} </span>
-                    </div>
-                    <small class="text-muted d-block">{{ $donation->created_at->diffForHumans() }}</small>
-                </div>
-                @endforeach
-            @endif
-              </div>
+                
+                @if($donations->hasMorePages())
+                    <button id="load-more-donations" data-next-page="{{ $donations->nextPageUrl() }}&tab=donations" 
+                        class="btn btn-outline-danger w-100 mt-3 load-more-btn" data-tab="donations">
+                        Lihat Lebih Banyak
+                    </button>
+                @endif
+            </div>
 
-              <!-- Dukungan (Awalnya Tersembunyi) -->
-             <!-- Dukungan (Tersembunyi Awalnya) -->
-<div id="dukunganContent" class="donation-history mt-3 d-none">
-    @if($user->donations->isEmpty() || $user->donations->every(fn($donation) => !$donation->campaign))
-    <div class="text-center">
-        <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-        <p>Belum Memiliki Riwayat Donasi di Kampanye</p>
-    </div>
-@else
-    @foreach($user->donations as $donation)
-        @if($donation->campaign) <!-- Pastikan kampanye terkait ada -->
-            @include('includes.campaign-card', ['campaign' => $donation->campaign])
-        @endif
-    @endforeach
-@endif
-</div>
+            <div id="dukunganContent" class="donation-history mt-3 d-none">
+                <div id="supported-campaigns-container">
+                    @include('partials.profile.supported-campaigns', ['supportedCampaigns' => $supportedCampaigns])
+                </div>
+                
+                @if($supportedCampaigns->hasMorePages())
+                    <button id="load-more-supported" data-next-page="{{ $supportedCampaigns->nextPageUrl() }}&tab=supported" 
+                        class="btn btn-outline-danger w-100 mt-3 load-more-btn" data-tab="supported">
+                        Lihat Lebih Banyak
+                    </button>
+                @endif
+            </div>
 
           </div>
          
@@ -277,6 +267,52 @@
               activeBtn.classList.add("btn-active"); // Tambahkan efek tombol aktif
           }
       }
+
+       // Handle pagination for all tabs
+       $('.load-more-btn').click(function() {
+          var button = $(this);
+          var nextPageUrl = button.data('next-page');
+          var tab = button.data('tab');
+          var container;
+          
+          // Determine which container to update based on the tab
+          switch(tab) {
+              case 'donations':
+                  container = $('#donations-container');
+                  break;
+              case 'supported':
+                  container = $('#supported-campaigns-container');
+                  break;
+          }
+          
+          // Show loading indicator
+          button.html('<i class="fa fa-spinner fa-spin"></i> Memuat...');
+          button.prop('disabled', true);
+          
+          // Perform AJAX request
+          $.ajax({
+              url: nextPageUrl,
+              type: 'GET',
+              success: function(response) {
+                  // Append new content
+                  container.append(response.html);
+                  
+                  // Update or hide the load more button
+                  if (!response.hasMorePages) {
+                      button.hide();
+                  } else {
+                      button.data('next-page', response.nextPageUrl);
+                      button.html('Lihat Lebih Banyak');
+                      button.prop('disabled', false);
+                  }
+              },
+              error: function() {
+                  button.html('Lihat Lebih Banyak');
+                  button.prop('disabled', false);
+                  alert('Terjadi kesalahan, silakan coba lagi.');
+              }
+          });
+      });
 
       // Event listener untuk masing-masing tombol
       btnRiwayat.addEventListener("click", () => toggleContent(btnRiwayat, donationHistory));

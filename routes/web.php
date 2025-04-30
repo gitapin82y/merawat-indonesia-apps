@@ -146,37 +146,6 @@ Route::get('/donations/{id}/payment-method', [DonationController::class, 'select
 Route::post('/donations/process-payment', [DonationController::class, 'processPayment'])->name('donations.process-payment');
 Route::post('/donations/process-manual-payment', [DonationController::class, 'processManualPayment'])->name('donations.process-manual-payment');
 
-// Callback URL untuk Tripay (harus diakses secara publik)
-Route::post('/tripay/callback', [DonationController::class, 'callback'])->name('tripay.callback')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
-// Tambahkan ke routes/web.php
-Route::get('/debug-tripay', function() {
-    try {
-        $apiKey = env('TRIPAY_API_KEY');
-        $privateKey = env('TRIPAY_PRIVATE_KEY');
-        $merchantCode = env('TRIPAY_MERCHANT_CODE');
-        $apiUrl = rtrim(env('TRIPAY_API_URL', 'https://tripay.co.id/api/'), '/') . '/';
-        $endpoint = 'merchant/payment-channel';
-        
-        echo "<h3>Tripay Configuration:</h3>";
-        echo "API URL: " . $apiUrl . $endpoint . "<br>";
-        echo "API Key: " . substr($apiKey, 0, 10) . "..." . "<br>"; // Hanya tampilkan sebagian untuk keamanan
-        echo "Merchant Code: " . $merchantCode . "<br><br>";
-        
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $apiKey
-        ])->get($apiUrl . $endpoint);
-        
-        echo "<h3>Response Status: " . $response->status() . "</h3>";
-        
-        $data = $response->json();
-        echo "<pre>" . json_encode($data, JSON_PRETTY_PRINT) . "</pre>";
-        
-        return "";
-    } catch (\Exception $e) {
-        return "Error: " . $e->getMessage();
-    }
-});
-
 Route::resource('campaign-withdrawals', CampaignWithdrawalController::class);
 
 

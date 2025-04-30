@@ -381,18 +381,18 @@ class UserController extends Controller
         ->paginate($perPage, ['*'], 'saved_page');
     
    // For supported campaigns, get the latest donation for each campaign
-$latestDonationsByCampaign = $user->donations()
-->where('status','sukses')
-->whereNotNull('campaign_id')
-->select('campaign_id', DB::raw('MAX(id) as max_id'))
-->groupBy('campaign_id')
-->get()
-->pluck('max_id');
+    $latestDonationsByCampaign = $user->donations()
+        ->where('status','sukses')
+        ->whereNotNull('campaign_id')
+        ->select('campaign_id', DB::raw('MAX(id) as max_id'))
+        ->groupBy('campaign_id')
+        ->get()
+    ->pluck('max_id');
 
-$supportedCampaigns = Donation::with('campaign')
-->whereIn('id', $latestDonationsByCampaign)
-->orderBy('created_at', 'desc')
-->paginate($perPage, ['*'], 'supported_page');
+    $supportedCampaigns = Donation::with('campaign')
+        ->whereIn('id', $latestDonationsByCampaign)
+        ->orderBy('created_at', 'desc')
+    ->paginate($perPage, ['*'], 'supported_page');
     
     return view('donatur.profile', compact(
         'user', 
@@ -405,11 +405,68 @@ $supportedCampaigns = Donation::with('campaign')
 }
 
     public function profileDonaturLeaderboard($name){
+        $perPage = 4;
         $user = User::with(['donations.campaign'])->where('name',$name)->first();
         $totalDonasi = number_format($user->donations()->where('status','sukses')->sum('amount'), 0, ',', '.');
         $jumlahDukungan = $user->donations()->where('status','sukses')->groupBy('campaign_id')->count();
 
-        return view('donatur.profile-donatur', compact('user', 'totalDonasi', 'jumlahDukungan'));
+        if ($request->ajax()) {
+            if ($request->has('tab')) {
+                switch ($request->tab) {
+                    case 'donations':
+                        $donations = $user->donations()
+                        ->where('status','sukses')
+                            ->orderBy('created_at', 'desc')
+                            ->paginate($perPage, ['*'], 'donations_page');
+                        
+                        return response()->json([
+                            'html' => view('partials.profile.donations', compact('donations'))->render(),
+                            'hasMorePages' => $donations->hasMorePages(),
+                            'nextPageUrl' => $donations->nextPageUrl() . '&tab=donations',
+                        ]);
+                    
+                    case 'supported':
+                        $supportedCampaigns = $user->donations()
+                            ->with('campaign')
+                            ->where('status','sukses')
+                            ->whereNotNull('campaign_id')
+                            ->select('campaign_id')
+                            ->distinct()
+                            ->orderBy('created_at', 'desc')
+                            ->paginate($perPage, ['*'], 'supported_page');
+                        
+                        return response()->json([
+                            'html' => view('partials.profile.supported-campaigns', compact('supportedCampaigns'))->render(),
+                            'hasMorePages' => $supportedCampaigns->hasMorePages(),
+                            'nextPageUrl' => $supportedCampaigns->nextPageUrl() . '&tab=supported',
+                        ]);
+                }
+            }
+            
+            return response()->json(['error' => 'Invalid request'], 400);
+        }
+
+        $donations = $user->donations()
+        ->where('status','sukses')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'donations_page');
+
+        $latestDonationsByCampaign = $user->donations()
+        ->where('status','sukses')
+        ->whereNotNull('campaign_id')
+        ->select('campaign_id', DB::raw('MAX(id) as max_id'))
+        ->groupBy('campaign_id')
+        ->get()
+    ->pluck('max_id');
+
+    $supportedCampaigns = Donation::with('campaign')
+        ->whereIn('id', $latestDonationsByCampaign)
+        ->orderBy('created_at', 'desc')
+    ->paginate($perPage, ['*'], 'supported_page');
+
+
+
+        return view('donatur.profile-donatur', compact('user', 'totalDonasi', 'jumlahDukungan','donations','supportedCampaigns'));
     }
 
     public function store(Request $request)
