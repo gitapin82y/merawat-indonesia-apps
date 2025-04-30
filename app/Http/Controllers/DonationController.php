@@ -42,7 +42,7 @@ class DonationController extends Controller
         $this->apiKey = env('TRIPAY_API_KEY');
         $this->privateKey = env('TRIPAY_PRIVATE_KEY');
         $this->merchantCode = env('TRIPAY_MERCHANT_CODE');
-        $this->apiUrl = env('TRIPAY_API_URL', 'https://tripay.co.id/api-sandbox/');
+        $this->apiUrl = env('TRIPAY_API_URL', 'https://tripay.co.id/api/');
         $this->notificationService = $notificationService;
     }
 
