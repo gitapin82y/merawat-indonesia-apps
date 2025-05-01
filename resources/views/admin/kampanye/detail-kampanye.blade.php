@@ -27,6 +27,12 @@
     }
 
     @media (max-width: 480px) {
+        .section-deadline{
+            padding-bottom: 10px;
+        }
+        .position-deadline{
+        margin-right: 3px;
+        }
         .footer {
             font-size: 12px !important;
         }
@@ -80,8 +86,8 @@
                         @endif
                     </h2>
                 </div>
-                <div class="col d-flex justify-content-end p-0">
-                    <strong class="m-0 p-0">
+                <div class="col d-flex justify-content-end p-0 section-deadline">
+                    <strong class="position-deadline">
                         @if($campaign->deadline)
                             @if($campaign->remainingDays < 0)
                                 0
