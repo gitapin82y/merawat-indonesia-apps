@@ -567,59 +567,88 @@ public function __construct(NotificationService $notificationService)
     }
 
     // Update metode changeStatus
-public function changeStatus(Campaign $campaign, Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'status' => 'required|in:menunggu,disetujui,ditolak'
-    ]);
+    public function changeStatus(Campaign $campaign, Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|in:disetujui,ditolak,validasi,aktif,berakhir'
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json(['error' => $validator->errors()], 400);
-    }
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
 
-    // Simpan status lama untuk pengecekan
-    $oldStatus = $campaign->status;
-    
-    // Update status kampanye
-    $campaign->update(['status' => $request->status]);
-    
-    // Load relasi admin jika belum dimuat
-    if (!$campaign->relationLoaded('admin')) {
-        $campaign->load('admin');
-    }
-    
-    // Kirim email notifikasi jika status berubah ke disetujui atau ditolak dan admin ada
-    if (($request->status === 'disetujui' || $request->status === 'ditolak') && 
-        $oldStatus !== $request->status && 
-        $campaign->admin) {
+        // Simpan status lama untuk pengecekan
+        $oldStatus = $campaign->status;
         
+        DB::beginTransaction();
         try {
-            // Kirim email ke admin kampanye
-            Mail::to($campaign->admin->email)->send(new CampaignStatusMail($campaign, $request->status));
+            // Khusus untuk approval, ubah status menjadi 'aktif'
+            $newStatus = $request->status;
+            if ($request->status === 'disetujui') {
+                $newStatus = 'aktif';
+            }
             
-            // Buat notifikasi sistem untuk admin
-            $status = $request->status === 'disetujui' ? 'disetujui' : 'ditolak';
-            $this->notificationService->createNotification(
-                $campaign->admin,
-                'Kampanye ' . ucfirst($status),
-                'Kampanye "' . $campaign->title . '" telah ' . $status . '.',
-                'campaign_status_update',
-                ['campaign_id' => $campaign->id, 'status' => $request->status]
-            );
+            // Update status kampanye
+            $campaign->update(['status' => $newStatus]);
             
-            // Log untuk debugging
-            Log::info('Email notifikasi status kampanye berhasil dikirim ke ' . $campaign->admin->email);
+            // Load relasi admin jika belum dimuat
+            if (!$campaign->relationLoaded('admin')) {
+                $campaign->load(['admin', 'category']);
+            }
+            
+            // Kirim email notifikasi jika status berubah
+            if ($oldStatus !== $newStatus && $campaign->admin) {
+                try {
+                    // Kirim email ke admin kampanye menggunakan CampaignStatusUpdateMail bukan CampaignStatusMail
+                    Mail::to($campaign->admin->email)->send(new CampaignStatusUpdateMail($campaign, $request->status));
+                    
+                    // Buat notifikasi sistem untuk admin
+                    $statusMessage = '';
+                    if ($request->status === 'disetujui') {
+                        $statusMessage = 'disetujui dan aktif';
+                    } elseif ($request->status === 'ditolak') {
+                        $statusMessage = 'ditolak';
+                    } elseif ($request->status === 'validasi') {
+                        $statusMessage = 'sedang divalidasi';
+                    } elseif ($request->status === 'berakhir') {
+                        $statusMessage = 'berakhir';
+                    } else {
+                        $statusMessage = $newStatus;
+                    }
+                    
+                    $this->notificationService->createNotification(
+                        $campaign->admin->user, // Make sure this is correct - admin->user not just admin
+                        'Status Kampanye Berubah',
+                        'Kampanye "' . $campaign->title . '" telah ' . $statusMessage . '.',
+                        'campaign_status_update',
+                        ['campaign_id' => $campaign->id, 'status' => $newStatus]
+                    );
+                    
+                    // Log untuk debugging
+                    Log::info('Email notifikasi status kampanye berhasil dikirim ke ' . $campaign->admin->email);
+                } catch (\Exception $e) {
+                    // Log error
+                    Log::error('Gagal mengirim email notifikasi status kampanye: ' . $e->getMessage());
+                    // Continue process even if email fails
+                }
+            }
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Status kampanye berhasil diubah menjadi ' . ($statusMessage ?? $newStatus),
+                'new_status' => $newStatus
+            ]);
         } catch (\Exception $e) {
-            // Log error
-            Log::error('Gagal mengirim email notifikasi status kampanye: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Error changing campaign status: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status: ' . $e->getMessage()
+            ], 500);
         }
     }
-
-    return response()->json([
-        'message' => 'Status kampanye berhasil diubah',
-        'new_status' => $campaign->status
-    ]);
-}
 
     public function toggleSave(Request $request)
     {

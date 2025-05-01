@@ -64,9 +64,9 @@ function changeStatus(campaignId, status) {
                 }
             });
             
-            // Send AJAX request
+            // Send AJAX request - Use the correct URL format matching the route definition
             $.ajax({
-                url: `/super-admin/kampanye/${campaignId}/change-status`,
+                url: `/kampanye/${campaignId}/change-status`,
                 type: 'POST',
                 data: {
                     status: status,
@@ -115,7 +115,7 @@ $(function () {
                 data: 'action', 
                 name: 'action', 
                 orderable: false, 
-                searchable: false,
+                searchable: false
             },
         ],
         language: {
