@@ -26,11 +26,18 @@
         box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
     }
 
+    .position-deadline{
+        margin-top: -4px;
+        margin-right: 3px;
+    }
+
+
     @media (max-width: 480px) {
         .section-deadline{
-            padding-bottom: 10px;
+            padding-bottom: 20px;
         }
         .position-deadline{
+            margin-top: 0px;
         margin-right: 3px;
         }
         .footer {

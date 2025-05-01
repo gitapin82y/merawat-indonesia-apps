@@ -40,9 +40,10 @@
 
     @media (max-width: 480px) {
         .section-deadline{
-            padding-bottom: 10px;
+            padding-bottom: 20px;
         }
         .position-deadline{
+            margin-top: 0px;
         margin-right: 3px;
         }
         .footer {
