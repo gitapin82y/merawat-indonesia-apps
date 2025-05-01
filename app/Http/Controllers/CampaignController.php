@@ -567,8 +567,17 @@ public function __construct(NotificationService $notificationService)
     }
 
     // Update metode changeStatus
-    public function changeStatus(Campaign $campaign, Request $request)
+    public function changeStatus(Request $request, $campaignId)
     {
+        $campaign = Campaign::find($campaignId);
+    
+        // Check if campaign exists
+        if (!$campaign) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kampanye tidak ditemukan'
+            ], 404);
+        }
         $validator = Validator::make($request->all(), [
             'status' => 'required|in:disetujui,ditolak,validasi,aktif,berakhir'
         ]);
