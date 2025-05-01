@@ -365,6 +365,7 @@ public function __construct(NotificationService $notificationService)
 
     public function show(Request $request, $slug)
     {
+        session()->forget('referral_code');
         $perPage = 4; // Set the number of items per page
         
         $campaign = Campaign::where('slug', $slug)->first();
@@ -428,7 +429,11 @@ public function __construct(NotificationService $notificationService)
             }
         }
         
-        return view('admin.kampanye.detail-kampanye', [
+        $viewName = (Auth::check() && Auth::user()->role === 'super_admin')
+        ? 'admin.kampanye.detail-kampanye'
+        : 'donatur.detail-kampanye';
+
+        return view($viewName, [
             'campaign' => $campaign,
             'kabarTerbaru' => $kabarTerbaru,
             'donations' => $donations,
