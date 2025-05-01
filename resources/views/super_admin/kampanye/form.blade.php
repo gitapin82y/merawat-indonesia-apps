@@ -3,8 +3,8 @@
 @section('title', 'Manajemen Kampanye')
 
 @push('after-style')
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/autonumeric"></script>
 <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
 <style>
@@ -173,7 +173,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelThumbnailButton">Batal</button>
                 <button type="button" id="cropThumbnailButton" class="btn btn-primary">Simpan</button>
             </div>
         </div>
@@ -183,9 +183,6 @@
 
 @push('after-script')
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
     // Debug helper
     function logStatus(message) {
@@ -255,6 +252,23 @@
         };
         reader.readAsDataURL(file);
     });
+
+    document.getElementById('cancelThumbnailButton').addEventListener('click', function() {
+    logStatus("Cancel thumbnail button clicked");
+    if (thumbnailModal) {
+        thumbnailModal.hide();
+        logStatus("Thumbnail modal hidden");
+    }
+});
+
+// Event handler untuk tombol silang pada modal thumbnail
+document.querySelector('#cropThumbnailModal .btn-close').addEventListener('click', function() {
+    logStatus("Close thumbnail button clicked");
+    if (thumbnailModal) {
+        thumbnailModal.hide();
+        logStatus("Thumbnail modal hidden");
+    }
+});
     
     // Crop Thumbnail Button Click
     document.getElementById('cropThumbnailButton').addEventListener('click', function() {
