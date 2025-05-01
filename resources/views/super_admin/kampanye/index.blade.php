@@ -20,7 +20,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered yajra-datatable" width="100%" cellspacing="0">
+                <table class="table table-bordered yajra-datatable" width="100%" cellspacing="0" id="campaign-table">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -42,6 +42,64 @@
 
 @push('after-script')
 <script>
+function changeStatus(campaignId, status) {
+    let statusText = status === 'disetujui' ? 'menyetujui' : 'menolak';
+    
+    Swal.fire({
+        title: 'Konfirmasi Perubahan Status',
+        text: `Apakah Anda yakin ingin ${statusText} pengajuan kampanye ini?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, ' + statusText,
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading spinner
+            Swal.fire({
+                title: 'Memproses...',
+                html: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Send AJAX request
+            $.ajax({
+                url: `/kampanye/${campaignId}/change-status`,
+                type: 'POST',
+                data: {
+                    status: status,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#campaign-table').DataTable().ajax.reload(null, false);
+                    });
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: errorMessage
+                    });
+                }
+            });
+        }
+    });
+}
+
 $(function () {
     var table = $('.yajra-datatable').DataTable({
         processing: true,
@@ -57,7 +115,26 @@ $(function () {
                 data: 'action', 
                 name: 'action', 
                 orderable: false, 
-                searchable: false
+                searchable: false,
+                render: function(data, type, row) {
+                    let actionBtn = '<div class="btn-group" role="group">';
+                    
+                    // Add approval/rejection buttons for campaigns in validation status
+                    if(row.status_raw === 'validasi') {
+                        actionBtn += `
+                            <button onclick="changeStatus('${row.id}', 'disetujui')" class="btn btn-success btn-sm action-btn" title="Approve"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="changeStatus('${row.id}', 'ditolak')" class="btn btn-warning text-white btn-sm action-btn" title="Reject"><i class="fa-solid fa-times"></i></button>`;
+                    }
+                    
+                    // Add standard buttons
+                    actionBtn += `
+                        <a href="/kampanye/${row.slug}" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
+                        <a href="/kampanye/${row.id}/edit" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
+                        <button onclick="deleteCampaign('${row.id}')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                    </div>`;
+                    
+                    return actionBtn;
+                }
             },
         ],
         language: {

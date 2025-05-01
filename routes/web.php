@@ -179,6 +179,7 @@ Route::post('/commission/update', [CommissionController::class, 'updateCommissio
     Route::resource('banner', BannerController::class);
 
     // Add to your routes/web.php
+    Route::post('kampanye/{campaign}/change-status', [CampaignController::class, 'changeStatus']);
     Route::post('admin/{admin}/change-status', [AdminController::class, 'changeStatus'])->name('admin.change-status');
 
     Route::get('/pencairan-fundraising/{id}/approve', [FundraisingWithdrawalController::class, 'approve'])->name('pencairan-fundraising.approve');

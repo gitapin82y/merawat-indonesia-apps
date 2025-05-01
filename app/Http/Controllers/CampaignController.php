@@ -38,9 +38,10 @@ public function __construct(NotificationService $notificationService)
         if($user->role !== 'super_admin'){
             return redirect('galang-dana');
         }
+        
         Carbon::setLocale('id');
         if ($request->ajax()) {
-            $query = Campaign::with(['admin','category'])->get();
+            $query = Campaign::with(['admin','category'])->orderBy('created_at', 'desc')->get();
             
             return DataTables::of($query)
                 ->addIndexColumn()
