@@ -148,7 +148,7 @@
                 <div class="col-3  text-center">
                     <div class="d-flex align-items-center justify-content-center">
                         <img src="{{asset('assets/img/icon/pencairan-dana.svg')}}" alt="" class="me-2" style="height: 20px;">
-                        <p class="count m-0 d-flex align-items-center">{{ $campaign->kabarPencairan->count() }}</p>
+                        <p class="count m-0 d-flex align-items-center">{{ $campaign->kabarPencairan->where('status','disetujui')->count() }}</p>
                     </div>
 
                     <small>Pencairan Dana</small>

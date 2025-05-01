@@ -139,6 +139,15 @@ public function __construct(NotificationService $notificationService)
                 return redirect()->back()
                 ->with('success', 'Kampanye berhasil ditambahkan');
             }else{
+                Mail::to($campaign->admin->email)->send(new CampaignStatusMail($campaign, 'validasi'));
+                $this->notificationService->createNotification(
+                    $campaign->admin,
+                    'Kampanye Sedang Divalidasi',
+                    'Kampanye "' . $campaign->title . '" telah ' . $status . '.',
+                    'campaign_status_update',
+                    ['campaign_id' => $campaign->id, 'status' => $request->status]
+                );
+                
                 return redirect()->back()
                 ->with('success', 'Kampanye berhasil diajukan');
             }
