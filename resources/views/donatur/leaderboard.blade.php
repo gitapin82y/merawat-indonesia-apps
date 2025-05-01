@@ -280,7 +280,7 @@
                   <img src="{{asset('assets/img/icon/pencairan-dana.svg')}}" alt="Donatur" />
                   {{ $donatur['total_donation_formatted'] }}
                 </h3>
-                <p class="donation-text">Total Donasi</p>
+                <p class="donation-text mb-0">Total Donasi</p>
               </div>
             </a>
             @empty
@@ -326,7 +326,7 @@
                   <span class="user-rank">Top {{ $loop->index + 1 }} Leaderboard</span>
                 </div>
               </div>
-              <div class="donation-amount">
+              <div class="donation-amount mb-0">
                 <h3>
                   <img src="{{asset('assets/img/icon/total-donatur.svg')}}" alt="Donatur" />
                   {{ $admin['total_donatur'] }}

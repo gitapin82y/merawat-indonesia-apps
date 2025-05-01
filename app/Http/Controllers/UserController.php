@@ -286,23 +286,25 @@ class UserController extends Controller
             });
 
         // Leaderboard Admin Penggalang Dana (Berdasarkan Total Donatur)
-        $adminLeaderboard = Admin::with(['user', 'campaigns'])
-            ->withCount(['campaigns as total_donatur' => function($query) {
-                $query->withCount(['donations' => function($subQuery) {
-                    $subQuery->where('status', 'sukses');
-                }]);
-            }])
-            ->orderByDesc('total_donatur')
-            ->limit(10)
-            ->get()
-            ->map(function($admin) {
-                return [
-                    'name' => $admin->name,
-                    'avatar' => $admin->avatar_url,
-                    'total_donatur' => $admin->total_donatur,
-                    'total_campaigns' => $admin->campaigns->count()
-                ];
+        $adminLeaderboard = Admin::with(['user', 'campaigns.donations' => function($query) {
+            $query->where('status', 'sukses');
+        }])
+        ->get()
+        ->map(function($admin) {
+            $totalDonaturSukses = $admin->campaigns->sum(function($campaign) {
+                return $campaign->donations->count();
             });
+            
+            return [
+                'name' => $admin->name,
+                'avatar' => $admin->avatar_url,
+                'total_donatur' => $totalDonaturSukses,
+                'total_campaigns' => $admin->campaigns->count()
+            ];
+        })
+        ->sortByDesc('total_donatur')
+        ->take(10)
+        ->values();
 
         return view('donatur.leaderboard', [
             'donaturLeaderboard' => $donaturLeaderboard,
