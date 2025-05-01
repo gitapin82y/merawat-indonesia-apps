@@ -364,7 +364,7 @@ class DonationController extends Controller
                     'quantity' => 1
                 ]
             ],
-            'callback_url' => url('/api/tripay/callback'),
+            'callback_url' => 'https://merawatindonesia.com/api/tripay/callback',
             'return_url' => route('donations.status', ['id' => $donation->id]),
             'expired_time' => (time() + (24 * 60 * 60)), // 24 jam
             'signature' => hash_hmac('sha256', $this->merchantCode . $merchantRef . $amount, $this->privateKey)
