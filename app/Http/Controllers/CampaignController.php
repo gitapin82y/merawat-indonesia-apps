@@ -437,8 +437,12 @@ public function __construct(NotificationService $notificationService)
                 }
             }
         }
+        
+        $viewName = (Auth::check() && Auth::user()->role === 'yayasan' && $campaign->admin_id == Auth::user()->admin->id)
+        ? 'admin.kampanye.detail-kampanye'
+        : 'donatur.detail-kampanye';
 
-        return view('donatur.detail-kampanye', [
+        return view($viewName, [
             'campaign' => $campaign,
             'kabarTerbaru' => $kabarTerbaru,
             'donations' => $donations,

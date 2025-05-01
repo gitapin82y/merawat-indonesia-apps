@@ -30,7 +30,6 @@ use App\Http\Controllers\TripayPaymentMethodController;
 Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
 
 
-Route::get('admin/kampanye/{slug}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
 Route::post('admin', [AdminController::class, 'store'])->name('admin.store');
 
 Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
@@ -56,6 +55,8 @@ Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
 
     Route::resource('kabar-pencairan', KabarPencairanController::class);
 });
+
+Route::get('admin/kampanye/{slug}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
 
 Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
 
