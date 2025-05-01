@@ -61,7 +61,7 @@ Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
 Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
 Route::get('admin/kampanye/{slug}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
 
-Route::post('kampanye/{campaign}/change-status', [CampaignController::class, 'changeStatus'])->name('kampanye.change-status');
+Route::post('kampanye/{campaignId}/change-status', [CampaignController::class, 'changeStatus'])->name('kampanye.change-status');
 
 
 
