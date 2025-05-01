@@ -17,6 +17,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CampaignStatusMail;
+use App\Mail\CampaignStatusUpdateMail;
+use App\Mail\NewCampaignNotificationMail;
 use App\Services\NotificationService;
 
 
@@ -43,13 +45,21 @@ public function __construct(NotificationService $notificationService)
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('action', function($row) {
-                    $actionBtn = '
-                        <div class="btn-group" role="group">
+                    $actionBtn = '<div class="btn-group" role="group">';
+                    
+                    // Add approval/rejection buttons for campaigns in validation status
+                    if($row->status === 'validasi') {
+                        $actionBtn .= '
+                            <button onclick="changeStatus('.$row->id.', \'disetujui\')" class="btn btn-success btn-sm action-btn" title="Approve"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="changeStatus('.$row->id.', \'ditolak\')" class="btn btn-warning text-white btn-sm action-btn" title="Reject"><i class="fa-solid fa-times"></i></button>';
+                    }
+                    
+                    $actionBtn .= '
                         <a href="/kampanye/'.$row->slug.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
-                            <a href="'.route('kampanye.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
-                            <button onclick="deleteCampaign('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    ';
+                        <a href="'.route('kampanye.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
+                        <button onclick="deleteCampaign('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                    </div>';
+                    
                     return $actionBtn;
                 })
                 ->addColumn('category', function($row) {
@@ -136,17 +146,43 @@ public function __construct(NotificationService $notificationService)
             DB::commit();
         if (Auth::check()) {
             if(Auth::user()->role == 'super_admin'){
-                return redirect()->back()
-                ->with('success', 'Kampanye berhasil ditambahkan');
+                try {
+                    if ($campaign->admin) {
+                        Mail::to($campaign->admin->email)->send(new CampaignStatusUpdateMail($campaign, 'validasi'));
+                        
+                        // Create system notification for admin
+                        $this->notificationService->createNotification(
+                            $campaign->admin->user,
+                            'Kampanye Berhasil Dibuat',
+                            'Kampanye "' . $campaign->title . '" telah berhasil dibuat dan sedang menunggu validasi.',
+                            'campaign_status_update',
+                            ['campaign_id' => $campaign->id, 'status' => 'validasi']
+                        );
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Gagal mengirim notifikasi kampanye baru: ' . $e->getMessage());
+                }
             }else{
-                Mail::to($campaign->admin->email)->send(new CampaignStatusMail($campaign, 'validasi'));
-                $this->notificationService->createNotification(
-                    $campaign->admin,
-                    'Kampanye Sedang Divalidasi',
-                    'Kampanye "' . $campaign->title . '" telah ' . $status . '.',
-                    'campaign_status_update',
-                    ['campaign_id' => $campaign->id, 'status' => $request->status]
-                );
+                try {
+                    Mail::to('merawatindonesia2@gmail.com')->send(new NewCampaignNotificationMail($campaign));
+                    
+                    // Send notification to campaign admin
+                    if ($campaign->admin) {
+                        Mail::to($campaign->admin->email)->send(new CampaignStatusUpdateMail($campaign, 'validasi'));
+                        
+                        // Create system notification for admin
+                        $this->notificationService->createNotification(
+                            $campaign->admin->user,
+                            'Kampanye Sedang Divalidasi',
+                            'Kampanye "' . $campaign->title . '" telah diajukan dan sedang menunggu validasi.',
+                            'campaign_status_update',
+                            ['campaign_id' => $campaign->id, 'status' => 'validasi']
+                        );
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Gagal mengirim notifikasi pengajuan kampanye: ' . $e->getMessage());
+                }
+
                 
                 return redirect()->back()
                 ->with('success', 'Kampanye berhasil diajukan');
@@ -276,6 +312,41 @@ public function __construct(NotificationService $notificationService)
                 $kampanyeData['document_rab'] = $request->file('document_rab')->store('campaign_documents', 'public');
             } 
             $kampanye->update($kampanyeData);
+
+              // Check if status changed and send notifications
+              if (isset($kampanyeData['status']) && $kampanyeData['status'] !== $oldStatus) {
+                // Reload campaign with relationships
+                $kampanye->load(['admin', 'category']);
+                
+                try {
+                    // Send email to campaign admin
+                    if ($kampanye->admin) {
+                        Mail::to($kampanye->admin->email)->send(new CampaignStatusUpdateMail($kampanye, $kampanyeData['status']));
+                        
+                        // Create system notification
+                        $statusMessage = '';
+            if ($kampanyeData['status'] === 'disetujui') {
+                $statusMessage = 'disetujui';
+            } elseif ($kampanyeData['status'] === 'ditolak') {
+                $statusMessage = 'ditolak';
+            } elseif ($kampanyeData['status'] === 'validasi') {
+                $statusMessage = 'sedang divalidasi';
+            } else {
+                $statusMessage = $kampanyeData['status'];
+            }
+            
+            $this->notificationService->createNotification(
+                $kampanye->admin->user,
+                'Status Kampanye Berubah',
+                'Kampanye "' . $kampanye->title . '" telah ' . $statusMessage . '.',
+                'campaign_status_update',
+                ['campaign_id' => $kampanye->id, 'status' => $kampanyeData['status']]
+            );
+        }
+    } catch (\Exception $e) {
+        Log::error('Gagal mengirim notifikasi perubahan status kampanye: ' . $e->getMessage());
+    }
+}
 
             DB::commit();
             if ($role === 'super_admin') {
