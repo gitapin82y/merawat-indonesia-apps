@@ -47,9 +47,6 @@ Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
 });
 
 
-Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
-
-
 
 Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
     Route::get('/buat-kampanye', function(){
@@ -234,3 +231,5 @@ Route::post('/reset-password', [AuthController::class, 'updatePassword'])->name(
 // Social Login Routes
 Route::get('/auth/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('social.login');
 Route::get('/auth/{provider}/callback', [SocialiteController::class, 'handleProviderCallback'])->name('social.callback');
+
+Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
