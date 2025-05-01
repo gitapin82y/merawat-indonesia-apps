@@ -429,7 +429,7 @@ public function __construct(NotificationService $notificationService)
             }
         }
         
-        $viewName = (Auth::check() && Auth::user()->role === 'super_admin')
+        $viewName = (Auth::check() && Auth::user()->role === 'yayasan')
         ? 'admin.kampanye.detail-kampanye'
         : 'donatur.detail-kampanye';
 
