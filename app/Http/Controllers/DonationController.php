@@ -299,6 +299,15 @@ class DonationController extends Controller
     protected function getPaymentChannels()
     {
         try {
+                // Debug API Key
+        $fullApiKey = $this->apiKey; // Simpan API key lengkap untuk debugging
+        Log::info('API Key Full Value: ' . $fullApiKey); // Log nilai lengkap untuk debugging
+        Log::info('API Key Length: ' . strlen($fullApiKey)); // Periksa panjang API key
+        
+        if (empty($fullApiKey)) {
+            Log::error('API Key is empty!');
+            return [];
+        }
             // Pastikan URL berakhir dengan slash
             $apiUrl = rtrim($this->apiUrl, '/') . '/';
             $endpoint = 'merchant/payment-channel';
