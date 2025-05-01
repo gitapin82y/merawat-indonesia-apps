@@ -284,84 +284,84 @@ public function __construct(NotificationService $notificationService)
         }
     }
 
-    // public function donaturKampanye(Request $request, Campaign $kampanye, $slug)
-    // {
-    //     session()->forget('referral_code');
+    public function donaturKampanye(Request $request, $slug)
+    {
+        session()->forget('referral_code');
         
-    //     $perPage = 4; // Set the number of items per page
+        $perPage = 4; // Set the number of items per page
         
-    //     $campaign = Campaign::where('slug', $slug)->first();
+        $campaign = Campaign::where('slug', $slug)->first();
         
-    //     // Get paginated data for each tab
-    //     $kabarTerbaru = $campaign->kabarTerbaru()->paginate($perPage, ['*'], 'kabar_page');
+        // Get paginated data for each tab
+        $kabarTerbaru = $campaign->kabarTerbaru()->paginate($perPage, ['*'], 'kabar_page');
         
-    //     $donations = $campaign->donations()
-    //         ->where('status', 'sukses')
-    //         ->orderBy('created_at', 'desc')
-    //         ->paginate($perPage, ['*'], 'donatur_page');
+        $donations = $campaign->donations()
+            ->where('status', 'sukses')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'donatur_page');
         
-    //     $kabarPencairan = $campaign->kabarPencairan()
-    //         ->where('status', 'disetujui')
-    //         ->paginate($perPage, ['*'], 'pencairan_page');
+        $kabarPencairan = $campaign->kabarPencairan()
+            ->where('status', 'disetujui')
+            ->paginate($perPage, ['*'], 'pencairan_page');
         
-    //     $comments = Donation::where('campaign_id', $campaign->id)
-    //         ->where('status', 'sukses')
-    //         ->whereNotNull('doa')
-    //         ->orderBy('created_at', 'desc')
-    //         ->paginate($perPage, ['*'], 'comments_page');
+        $comments = Donation::where('campaign_id', $campaign->id)
+            ->where('status', 'sukses')
+            ->whereNotNull('doa')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'comments_page');
         
-    //     $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();
-    //     $totalKampanye = Campaign::where('status', 'aktif')->count();
+        $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();
+        $totalKampanye = Campaign::where('status', 'aktif')->count();
         
-    //     // Get guest identifier from cookie
-    //     $guestIdentifier = $request->cookie('guest_identifier');
+        // Get guest identifier from cookie
+        $guestIdentifier = $request->cookie('guest_identifier');
         
-    //     // Handle AJAX requests for each tab
-    //     if ($request->ajax()) {
-    //         if ($request->has('load_tab')) {
-    //             switch ($request->load_tab) {
-    //                 case 'kabar-terbaru':
-    //                     return response()->json([
-    //                         'html' => view('partials.kabar-terbaru', compact('kabarTerbaru'))->render(),
-    //                         'hasMorePages' => $kabarTerbaru->hasMorePages(),
-    //                         'nextPageUrl' => $kabarTerbaru->nextPageUrl() . '&load_tab=kabar-terbaru',
-    //                     ]);
+        // Handle AJAX requests for each tab
+        if ($request->ajax()) {
+            if ($request->has('load_tab')) {
+                switch ($request->load_tab) {
+                    case 'kabar-terbaru':
+                        return response()->json([
+                            'html' => view('partials.kabar-terbaru', compact('kabarTerbaru'))->render(),
+                            'hasMorePages' => $kabarTerbaru->hasMorePages(),
+                            'nextPageUrl' => $kabarTerbaru->nextPageUrl() . '&load_tab=kabar-terbaru',
+                        ]);
                     
-    //                 case 'donatur':
-    //                     return response()->json([
-    //                         'html' => view('partials.donatur', compact('donations'))->render(),
-    //                         'hasMorePages' => $donations->hasMorePages(),
-    //                         'nextPageUrl' => $donations->nextPageUrl() . '&load_tab=donatur',
-    //                     ]);
+                    case 'donatur':
+                        return response()->json([
+                            'html' => view('partials.donatur', compact('donations'))->render(),
+                            'hasMorePages' => $donations->hasMorePages(),
+                            'nextPageUrl' => $donations->nextPageUrl() . '&load_tab=donatur',
+                        ]);
                     
-    //                 case 'kabar-pencairan':
-    //                     return response()->json([
-    //                         'html' => view('partials.kabar-pencairan', compact('kabarPencairan'))->render(),
-    //                         'hasMorePages' => $kabarPencairan->hasMorePages(),
-    //                         'nextPageUrl' => $kabarPencairan->nextPageUrl() . '&load_tab=kabar-pencairan',
-    //                     ]);
+                    case 'kabar-pencairan':
+                        return response()->json([
+                            'html' => view('partials.kabar-pencairan', compact('kabarPencairan'))->render(),
+                            'hasMorePages' => $kabarPencairan->hasMorePages(),
+                            'nextPageUrl' => $kabarPencairan->nextPageUrl() . '&load_tab=kabar-pencairan',
+                        ]);
                     
-    //                 case 'comments':
-    //                     return response()->json([
-    //                         'html' => view('partials.comments', compact('comments', 'guestIdentifier'))->render(),
-    //                         'hasMorePages' => $comments->hasMorePages(),
-    //                         'nextPageUrl' => $comments->nextPageUrl() . '&load_tab=comments',
-    //                     ]);
-    //             }
-    //         }
-    //     }
+                    case 'comments':
+                        return response()->json([
+                            'html' => view('partials.comments', compact('comments', 'guestIdentifier'))->render(),
+                            'hasMorePages' => $comments->hasMorePages(),
+                            'nextPageUrl' => $comments->nextPageUrl() . '&load_tab=comments',
+                        ]);
+                }
+            }
+        }
         
-    //     return view('donatur.detail-kampanye', [
-    //         'campaign' => $campaign,
-    //         'kabarTerbaru' => $kabarTerbaru,
-    //         'donations' => $donations,
-    //         'kabarPencairan' => $kabarPencairan,
-    //         'comments' => $comments,
-    //         'guestIdentifier' => $guestIdentifier,
-    //         'totalDonaturs' => $totalDonaturs,
-    //         'totalKampanye' => $totalKampanye,
-    //     ]);
-    // }
+        return view('donatur.detail-kampanye', [
+            'campaign' => $campaign,
+            'kabarTerbaru' => $kabarTerbaru,
+            'donations' => $donations,
+            'kabarPencairan' => $kabarPencairan,
+            'comments' => $comments,
+            'guestIdentifier' => $guestIdentifier,
+            'totalDonaturs' => $totalDonaturs,
+            'totalKampanye' => $totalKampanye,
+        ]);
+    }
 
     public function show(Request $request, $slug)
     {
