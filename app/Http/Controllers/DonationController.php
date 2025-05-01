@@ -303,9 +303,16 @@ class DonationController extends Controller
             $apiUrl = rtrim($this->apiUrl, '/') . '/';
             $endpoint = 'merchant/payment-channel';
             
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey
-            ])->get($apiUrl . $endpoint);
+            $client = new \GuzzleHttp\Client();
+            $response = $client->request('GET', $apiUrl . $endpoint, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Accept' => 'application/json',
+                ]
+            ]);
+
+            $body = $response->getBody()->getContents();
+            $data = json_decode($body, true);
 
             // Log full URL dan response
             Log::info('Tripay Request URL: ' . $apiUrl . $endpoint);
