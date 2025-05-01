@@ -33,6 +33,17 @@ Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCa
 Route::get('admin/kampanye/{slug}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
 Route::post('admin', [AdminController::class, 'store'])->name('admin.store');
 
+Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
+    Route::get('/ajukan/buat-kampanye', function(){
+        return view('admin.kampanye.buat-kampanye');
+    });
+    Route::get('/kampanye/{slug}/edit-kampanye', [CampaignController::class, 'editKampanye']);
+
+    Route::get('/kampanye/{slug}/kabar-terbaru', [KabarTerbaruController::class, 'kabarTerbaru']);
+    Route::get('/kampanye/{slug}/kabar-pencairan', [KabarPencairanController::class, 'kabarPencairan']);
+    Route::get('/kampanye/{slug}/buat-kabar', [KabarTerbaruController::class, 'buatKabarTerbaru']);
+    Route::get('/kampanye/{slug}/pencairan-dana', [KabarPencairanController::class, 'buatKabarPencairan']);
+});
 Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
     Route::get('admin/edit-profile', function(){
         return view('admin.edit-profile');
@@ -49,17 +60,6 @@ Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
 Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
 
 
-Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
-    Route::get('/buat-kampanye', function(){
-        return view('admin.kampanye.buat-kampanye');
-    });
-    Route::get('/kampanye/{slug}/edit-kampanye', [CampaignController::class, 'editKampanye']);
-
-    Route::get('/kampanye/{slug}/kabar-terbaru', [KabarTerbaruController::class, 'kabarTerbaru']);
-    Route::get('/kampanye/{slug}/kabar-pencairan', [KabarPencairanController::class, 'kabarPencairan']);
-    Route::get('/kampanye/{slug}/buat-kabar', [KabarTerbaruController::class, 'buatKabarTerbaru']);
-    Route::get('/kampanye/{slug}/pencairan-dana', [KabarPencairanController::class, 'buatKabarPencairan']);
-});
 
 
 Route::middleware(['checkAuth'])->group(function () {
