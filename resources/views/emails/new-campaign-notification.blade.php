@@ -106,7 +106,7 @@
             
             <div class="buttons">
                 <a href="{{ url('/kampanye/' . $campaign->slug) }}" class="button view">Lihat Kampanye</a>
-                <a href="{{ url('/admin/kampanye') }}" class="button approve">Kelola Kampanye</a>
+                <a href="{{ url('/kampanye') }}" class="button approve">Kelola Kampanye</a>
             </div>
             
         </div>
