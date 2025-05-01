@@ -299,6 +299,8 @@ class DonationController extends Controller
     protected function getPaymentChannels()
     {
         try {
+            Log::info('API URL from config: ' . ($this->apiUrl ?? 'NULL'));
+        Log::info('API Key from config: ' . (empty($this->apiKey) ? 'EMPTY' : substr($this->apiKey, 0, 5) . '...'));
             // Pastikan URL berakhir dengan slash
             $apiUrl = rtrim($this->apiUrl, '/') . '/';
             $endpoint = 'merchant/payment-channel';
