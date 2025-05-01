@@ -124,7 +124,7 @@
             <p>Saat ini, total donasi untuk kampanye ini adalah <strong>Rp {{ number_format($donation->campaign->jumlah_donasi) }}</strong> dari target <strong>Rp {{ number_format($donation->campaign->jumlah_target_donasi) }}</strong>.</p>
             
             <div style="text-align: center;">
-                <a href="{{ route('admin.campaign.detail', $donation->campaign->title) }}" class="button">Lihat Detail Kampanye</a>
+                <a href="{{ route('admin.campaign.detail', $donation->campaign->slug) }}" class="button">Lihat Detail Kampanye</a>
             </div>
         </div>
         <div class="footer">

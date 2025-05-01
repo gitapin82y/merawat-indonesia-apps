@@ -20,6 +20,13 @@
       font-weight: bold;
   }
 
+  @media (max-width: 400px) {
+    .circle-number {
+      height: 30px;
+    }
+}
+
+
   .accordion-item {
       border-radius: 12px;
       margin-bottom: 10px;
@@ -52,7 +59,7 @@
                                 <small class="text-second">{{$pencairan->status}}</small>
                             </div>
                             <div>
-                                <div class="text-muted small mb-1">{{ $pencairan->created_at->format('d F Y') }}</div>
+                                <div class="text-muted small fw-normal mb-1">{{ $pencairan->created_at->format('d F Y') }}</div>
                                 <div class="fw-bold text-danger">{{ $pencairan->title }}</div>
                             </div>
                         </div>
