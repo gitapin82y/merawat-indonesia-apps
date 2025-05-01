@@ -86,7 +86,7 @@ function deleteCampaign(id) {
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: '/super-admin/kampanye/' + id,
+                url: '/kampanye/' + id,
                 type: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'
