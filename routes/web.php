@@ -43,22 +43,24 @@ Route::middleware(['checkRole:yayasan'])->prefix('admin')->group(function () {
     Route::get('/kampanye/{slug}/buat-kabar', [KabarTerbaruController::class, 'buatKabarTerbaru']);
     Route::get('/kampanye/{slug}/pencairan-dana', [KabarPencairanController::class, 'buatKabarPencairan']);
 });
+
+Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
+Route::get('admin/kampanye/{slug}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
+
 Route::middleware(['checkRole:super_admin,yayasan'])->group(function () {
     Route::get('admin/edit-profile', function(){
         return view('admin.edit-profile');
     });
     Route::resource('admin', AdminController::class)->except(['store']);
 
-    Route::resource('kampanye', CampaignController::class);
+    Route::resource('kampanye', CampaignController::class)->except(['show']);
 
     Route::resource('kabar-terbaru', KabarTerbaruController::class);
 
     Route::resource('kabar-pencairan', KabarPencairanController::class);
 });
 
-Route::get('admin/kampanye/{slug}', [CampaignController::class, 'show'])->name('admin.campaign.detail');
 
-Route::get('kampanye/{slug}', [CampaignController::class, 'donaturKampanye'])->name('campaign.detail');
 
 
 
