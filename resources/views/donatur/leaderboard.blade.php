@@ -326,12 +326,12 @@
                   <span class="user-rank">Top {{ $loop->index + 1 }} Leaderboard</span>
                 </div>
               </div>
-              <div class="donation-amount mb-0">
+              <div class="donation-amount">
                 <h3>
                   <img src="{{asset('assets/img/icon/total-donatur.svg')}}" alt="Donatur" />
                   {{ $admin['total_donatur'] }}
                 </h3>
-                <p class="donation-text">Total Donatur</p>
+                <p class="donation-text mb-0">Total Donatur</p>
               </div>
             </a>
             @empty
