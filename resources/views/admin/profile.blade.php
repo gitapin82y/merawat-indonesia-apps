@@ -230,7 +230,7 @@
                         <p class="count m-0 d-flex align-items-center">{{ $totalKampanye }}</p>
                     </div>
 
-                    <small>Pencairan Dana</small>
+                    <small>Total Kampanye</small>
                 </div>
                 <div class="col-3  text-center">
                     <div class="d-flex align-items-center justify-content-center">
