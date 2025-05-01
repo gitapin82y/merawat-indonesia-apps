@@ -390,7 +390,10 @@ class DonationController extends Controller
         Log::info('Tripay Callback received: ' . $request->getContent());
         
         // Ambil data callback dari Tripay
-        $callbackSignature = $request->header('X-Callback-Signature');
+        $callbackSignature = $request->header('X-Callback-Signature') ?? 
+        $request->header('x-callback-signature') ??
+        $request->server('HTTP_X_CALLBACK_SIGNATURE');
+        // $callbackSignature = $request->header('X-Callback-Signature');
         $json = $request->getContent();
         
         // Verifikasi signature untuk keamanan
@@ -417,7 +420,20 @@ class DonationController extends Controller
         
         // Cari donasi berdasarkan reference
         $donation = Donation::where('snap_token', $data['reference'])->first();
+        if (!$donation && isset($data['merchant_ref'])) {
+            $donation = Donation::where('reference', $data['merchant_ref'])->first();
+            Log::info('Mencoba menemukan donasi dengan merchant_ref: ' . $data['merchant_ref']);
+        }
         
+        // Coba juga cari dengan substring DON-{id} jika format merchant_ref adalah 'DON-123-timestamp'
+        if (!$donation && isset($data['merchant_ref']) && strpos($data['merchant_ref'], 'DON-') === 0) {
+            $parts = explode('-', $data['merchant_ref']);
+            if (count($parts) > 1) {
+                $donationId = $parts[1];
+                $donation = Donation::find($donationId);
+                Log::info('Mencoba menemukan donasi dengan ID: ' . $donationId);
+            }
+        }
         if (!$donation) {
             Log::warning('Donation not found for reference: ' . $data['reference']);
             return response()->json([

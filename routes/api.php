@@ -17,3 +17,7 @@ use App\Http\Controllers\DonationController;
 
 // Tambahkan route callback Tripay di sini
 Route::post('/tripay/callback', [DonationController::class, 'callback'])->name('tripay.callback');
+
+Route::get('/api-test', function() {
+    return response()->json(['status' => 'API routes loaded']);
+});
