@@ -252,7 +252,7 @@ public function __construct(NotificationService $notificationService)
         $kampanye = Campaign::findOrFail($id);
         $user = auth()->user(); // Ambil user yang sedang login
         $role = $user->role; // Misalnya role ada di dalam field 'role'
-
+        $oldStatus = $campaign->status;
         $rules = [
             'admin_id' => 'required|exists:admins,id',
             'category_id' => 'required|exists:categories,id',
@@ -326,7 +326,7 @@ public function __construct(NotificationService $notificationService)
                         
                         // Create system notification
                         $statusMessage = '';
-            if ($kampanyeData['status'] === 'disetujui') {
+            if ($kampanyeData['status'] === 'aktif') {
                 $statusMessage = 'disetujui';
             } elseif ($kampanyeData['status'] === 'ditolak') {
                 $statusMessage = 'ditolak';
