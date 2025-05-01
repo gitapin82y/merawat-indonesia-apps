@@ -252,7 +252,7 @@ public function __construct(NotificationService $notificationService)
         $kampanye = Campaign::findOrFail($id);
         $user = auth()->user(); // Ambil user yang sedang login
         $role = $user->role; // Misalnya role ada di dalam field 'role'
-        $oldStatus = $campaign->status;
+        $oldStatus = $kampanye->status;
         $rules = [
             'admin_id' => 'required|exists:admins,id',
             'category_id' => 'required|exists:categories,id',
