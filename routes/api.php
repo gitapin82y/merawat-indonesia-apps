@@ -5,8 +5,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DonationController;
 
 // routes/api.php
-// PENTING: Hapus slash di awal untuk menghindari prefix ganda
-Route::post('tripay/callback', [DonationController::class, 'callback'])->name('tripay.callback');
+// Pastikan ini sesuai dengan URL callback yang Anda daftarkan di Tripay
+Route::middleware('api')->group(function () {
+    Route::post('/tripay/callback', [DonationController::class, 'callback'])
+        ->name('tripay.callback')
+        ->withoutMiddleware('web');  // Hapus middleware web yang mungkin mengandung CSRF
+});
+
 Route::get('/api-test', function() {
     return response()->json(['status' => 'API routes loaded']);
 });
