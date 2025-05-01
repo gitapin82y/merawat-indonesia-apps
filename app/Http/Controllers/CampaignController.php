@@ -286,6 +286,7 @@ public function __construct(NotificationService $notificationService)
 
     public function donaturKampanye(Request $request, $slug)
     {
+        dd($slug);
         session()->forget('referral_code');
         
         $perPage = 4; // Set the number of items per page
