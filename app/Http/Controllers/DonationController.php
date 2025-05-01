@@ -673,8 +673,6 @@ class DonationController extends Controller
     
                     $this->clearDonationSessions();
                     
-                    Log::info('Donation marked as success via callback: ' . $donation->id);
-
                 } else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND'])) {
                     $status = 'EXPIRED';
                 
