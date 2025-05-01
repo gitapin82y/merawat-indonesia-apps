@@ -66,7 +66,7 @@ function changeStatus(campaignId, status) {
             
             // Send AJAX request
             $.ajax({
-                url: `/kampanye/${campaignId}/change-status`,
+                url: `/super-admin/kampanye/${campaignId}/change-status`,
                 type: 'POST',
                 data: {
                     status: status,
