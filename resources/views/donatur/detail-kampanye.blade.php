@@ -103,7 +103,7 @@
                     </h2>
                 </div>
                 <div class="col d-flex justify-content-end p-0">
-                    <strong style="margin-top: -4px; margin-right:3px;">
+                    <strong class="m-0 p-0">
                         @if($campaign->deadline)
                             @if($campaign->remainingDays < 0)
                                 0
