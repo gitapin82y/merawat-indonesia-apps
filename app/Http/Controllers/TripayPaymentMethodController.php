@@ -14,8 +14,8 @@ class TripayPaymentMethodController extends Controller
 
     public function __construct()
     {
-        $this->apiKey = env('TRIPAY_API_KEY');
-        $this->apiUrl = env('TRIPAY_API_URL', 'https://tripay.co.id/api/');
+        $this->apiKey = config('services.tripay.api_key');
+        $this->apiUrl = config('services.tripay.api_url');
     }
 
     public function index()

@@ -39,10 +39,10 @@ class DonationController extends Controller
     public function __construct(NotificationService $notificationService)
     {
         // Konfigurasi Tripay
-        $this->apiKey = env('TRIPAY_API_KEY');
-        $this->privateKey = env('TRIPAY_PRIVATE_KEY');
-        $this->merchantCode = env('TRIPAY_MERCHANT_CODE');
-        $this->apiUrl = env('TRIPAY_API_URL', 'https://tripay.co.id/api/');
+        $this->apiKey = config('services.tripay.api_key');
+    $this->privateKey = config('services.tripay.private_key');
+    $this->merchantCode = config('services.tripay.merchant_code');
+    $this->apiUrl = config('services.tripay.api_url');
         $this->notificationService = $notificationService;
     }
 
@@ -299,29 +299,13 @@ class DonationController extends Controller
     protected function getPaymentChannels()
     {
         try {
-                // Debug API Key
-        $fullApiKey = $this->apiKey; // Simpan API key lengkap untuk debugging
-        Log::info('API Key Full Value: ' . $fullApiKey); // Log nilai lengkap untuk debugging
-        Log::info('API Key Length: ' . strlen($fullApiKey)); // Periksa panjang API key
-        
-        if (empty($fullApiKey)) {
-            Log::error('API Key is empty!');
-            return [];
-        }
             // Pastikan URL berakhir dengan slash
             $apiUrl = rtrim($this->apiUrl, '/') . '/';
             $endpoint = 'merchant/payment-channel';
             
-            $client = new \GuzzleHttp\Client();
-            $response = $client->request('GET', $apiUrl . $endpoint, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->apiKey,
-                    'Accept' => 'application/json',
-                ]
-            ]);
-
-            $body = $response->getBody()->getContents();
-            $data = json_decode($body, true);
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey
+            ])->get($apiUrl . $endpoint);
 
             // Log full URL dan response
             Log::info('Tripay Request URL: ' . $apiUrl . $endpoint);
