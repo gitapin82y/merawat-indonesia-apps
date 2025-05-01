@@ -116,25 +116,6 @@ $(function () {
                 name: 'action', 
                 orderable: false, 
                 searchable: false,
-                render: function(data, type, row) {
-                    let actionBtn = '<div class="btn-group" role="group">';
-                    
-                    // Add approval/rejection buttons for campaigns in validation status
-                    if(row.status_raw === 'validasi') {
-                        actionBtn += `
-                            <button onclick="changeStatus('${row.id}', 'disetujui')" class="btn btn-success btn-sm action-btn" title="Approve"><i class="fa-solid fa-check"></i></button>
-                            <button onclick="changeStatus('${row.id}', 'ditolak')" class="btn btn-warning text-white btn-sm action-btn" title="Reject"><i class="fa-solid fa-times"></i></button>`;
-                    }
-                    
-                    // Add standard buttons
-                    actionBtn += `
-                        <a href="/kampanye/${row.slug}" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
-                        <a href="/kampanye/${row.id}/edit" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
-                        <button onclick="deleteCampaign('${row.id}')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
-                    </div>`;
-                    
-                    return actionBtn;
-                }
             },
         ],
         language: {
