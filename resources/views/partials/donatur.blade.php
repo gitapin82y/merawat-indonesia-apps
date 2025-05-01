@@ -6,7 +6,7 @@
             <small>{{ $donation->created_at->diffForHumans() }}</small>
         </div>
         <div class="col-5 align-self-center text-end p-0">
-            <span class="text-color large">Rp {{ number_format($donation->amount, 0, ',', '.') }}</span>
+            <span class="text-color large sizeDonatur">Rp {{ number_format($donation->amount, 0, ',', '.') }}</span>
         </div>
     </div>
 </div>

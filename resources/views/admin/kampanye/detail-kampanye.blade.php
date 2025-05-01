@@ -33,6 +33,9 @@
 
 
     @media (max-width: 480px) {
+        .sizeDonatur{
+            font-size: 18px;
+        }
     
         .position-deadline{
             margin-top: 0px;
@@ -45,6 +48,10 @@
         .btn {
             font-size: 12px !important;
         }
+        .circle-number {
+        width: 30px;
+        height: 30px;
+    }
     }
     .like-count{
         color:#FF4747;
