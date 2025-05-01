@@ -452,10 +452,12 @@ public function __construct(NotificationService $notificationService)
         ]);
     }
 
-    public function destroy(Campaign $kampanye)
+    public function destroy($id)
     {
         DB::beginTransaction();
         try {
+            $kampanye = Campaign::findOrFail($id);
+
             // Hapus file avatar dan thumbnail jika ada
             if ($kampanye->document_rab) {
                 Storage::disk('public')->delete($kampanye->document_rab);
