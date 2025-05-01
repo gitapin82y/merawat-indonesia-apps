@@ -39,9 +39,7 @@
 
 
     @media (max-width: 480px) {
-        .section-deadline{
-            padding-bottom: 20px;
-        }
+ 
         .position-deadline{
             margin-top: 0px;
         margin-right: 3px;
@@ -103,9 +101,9 @@
 
             <small>Donasi Terkumpul</small>
 
-            <div class="col-12 row mx-0 align-items-end">
+            <div class="col-12 row mx-0 align-items-end mb-2">
                 <div class="col-9 p-0 d-flex">
-                    <h2 class="text-color">
+                    <h2 class="text-color mb-0">
                         Rp {{ number_format($campaign->jumlah_donasi, 0, ',', '.') }} 
                         <span class="small">Kebutuhan</span> 
                         @if($campaign->jumlah_target_donasi)
