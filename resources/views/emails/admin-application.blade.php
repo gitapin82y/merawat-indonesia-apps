@@ -98,12 +98,6 @@
                     <strong>Telepon:</strong> {{ $admin->phone }}
                 </div>
                 <div class="admin-detail">
-                    <strong>Nama Pimpinan:</strong> {{ $admin->leader_name }}
-                </div>
-                <div class="admin-detail">
-                    <strong>Alamat:</strong> {{ $admin->address }}
-                </div>
-                <div class="admin-detail">
                     <strong>Tanggal Pendaftaran:</strong> {{ $admin->created_at->format('d F Y H:i') }}
                 </div>
                 <div class="admin-detail">
