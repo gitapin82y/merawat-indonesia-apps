@@ -386,92 +386,119 @@ class DonationController extends Controller
             ];
         }
     }
+    
     public function callback(Request $request)
-    {
-        Log::info('Tripay Callback received', [
-            'ip' => $request->ip(),
-            'forwarded_ip' => $request->header('X-Forwarded-For'),
-            'method' => $request->method(),
-            'all_headers' => $request->headers->all(),
-            'content' => $request->getContent()
+{
+    Log::info('Tripay Callback received', [
+        'ip' => $request->ip(),
+        'method' => $request->method(),
+        'headers' => $request->headers->all(),
+    ]);
+    
+    // Get callback signature from header
+    $callbackSignature = $request->server('HTTP_X_CALLBACK_SIGNATURE');
+    $json = $request->getContent();
+    
+    // Calculate signature
+    $signature = hash_hmac('sha256', $json, $this->privateKey);
+    
+    // Log signature details
+    Log::info('Signature validation', [
+        'received_signature' => $callbackSignature,
+        'calculated_signature' => $signature,
+        'json_content' => $json,
+    ]);
+    
+    // Verify signature
+    if ($signature !== (string) $callbackSignature) {
+        Log::warning('Invalid signature from Tripay');
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid signature',
+        ], 400);
+    }
+    
+    // Check callback event type
+    if ('payment_status' !== (string) $request->server('HTTP_X_CALLBACK_EVENT')) {
+        Log::warning('Unrecognized callback event', [
+            'event' => $request->server('HTTP_X_CALLBACK_EVENT')
         ]);
-        
-        // Ambil data callback dari Tripay
-        $callbackSignature = $request->header('X-Callback-Signature') ?? 
-            $request->header('x-callback-signature') ??
-            $request->server('HTTP_X_CALLBACK_SIGNATURE');
-            
-        $json = $request->getContent();
-        
-        Log::info('Callback signature received: ' . $callbackSignature);
-        Log::info('JSON content: ' . $json);
-        
-        // Verifikasi signature untuk keamanan
-        $signature = hash_hmac('sha256', $json, $this->privateKey);
-        
-        if ($signature !== $callbackSignature) {
-            Log::warning('Invalid Tripay callback signature');
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid signature'
-            ], 400);
-        }
-        
-        $data = json_decode($json, true);
-        
-        // Validasi data
-        if (!isset($data['reference'])) {
-            Log::warning('No reference found in Tripay callback');
-            return response()->json([
-                'success' => false,
-                'message' => 'No reference found'
-            ], 400);
-        }
-        
-        // Cari donasi berdasarkan reference
-        $donation = Donation::where('snap_token', $data['reference'])->first();
-        if (!$donation && isset($data['merchant_ref'])) {
-            $donation = Donation::where('reference', $data['merchant_ref'])->first();
-            Log::info('Mencoba menemukan donasi dengan merchant_ref: ' . $data['merchant_ref']);
-        }
-        
-        // Coba juga cari dengan substring DON-{id} jika format merchant_ref adalah 'DON-123-timestamp'
-        if (!$donation && isset($data['merchant_ref']) && strpos($data['merchant_ref'], 'DON-') === 0) {
-            $parts = explode('-', $data['merchant_ref']);
+        return response()->json([
+            'success' => false,
+            'message' => 'Unrecognized callback event, no action was taken',
+        ], 400);
+    }
+    
+    // Parse JSON data
+    $data = json_decode($json);
+    if (JSON_ERROR_NONE !== json_last_error()) {
+        Log::error('Invalid JSON from Tripay', [
+            'error' => json_last_error_msg(),
+            'json' => $json
+        ]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid data sent by tripay',
+        ], 400);
+    }
+    
+    // Extract data
+    $merchantRef = $data->merchant_ref;
+    $tripayReference = $data->reference;
+    $status = strtoupper((string) $data->status);
+    
+    // Begin transaction
+    DB::beginTransaction();
+    
+    try {
+        // Find donation by merchant_ref (DON-ID-timestamp)
+        $donationId = null;
+        if (strpos($merchantRef, 'DON-') === 0) {
+            $parts = explode('-', $merchantRef);
             if (count($parts) > 1) {
                 $donationId = $parts[1];
-                $donation = Donation::find($donationId);
-                Log::info('Mencoba menemukan donasi dengan ID: ' . $donationId);
             }
         }
-        if (!$donation) {
-            Log::warning('Donation not found for reference: ' . $data['reference']);
+        
+        if (!$donationId) {
+            Log::error('Invalid merchant_ref format', ['merchant_ref' => $merchantRef]);
             return response()->json([
                 'success' => false,
-                'message' => 'Donation not found'
+                'message' => 'Invalid merchant reference format',
+            ], 400);
+        }
+        
+        // Find donation
+        $donation = Donation::where('id', $donationId)
+            ->where('snap_token', $tripayReference)
+            ->where('status', 'pending')
+            ->first();
+            
+        if (!$donation) {
+            Log::warning('Donation not found or already processed', [
+                'donation_id' => $donationId,
+                'reference' => $tripayReference
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'No donation found or already processed: ' . $donationId,
             ], 404);
         }
         
-        Log::info('Processing Tripay callback for donation ID: ' . $donation->id . ', status: ' . $data['status']);
-        
-        // Begin transaction
-        DB::beginTransaction();
-        
-        try {
-            // Update status berdasarkan callback
-            if ($data['status'] == 'PAID' && $donation->status !== 'sukses') {
-                // Update donation status
+        // Process based on status
+        switch ($status) {
+            case 'PAID':
                 $donation->status = 'sukses';
-                $donation->updated_at = now();
                 $donation->save();
-
+                
+                // Update campaign statistics
                 $campaign = Campaign::find($donation->campaign_id);
                 $campaign->jumlah_donasi += $donation->amount;
                 $campaign->current_donation += $donation->amount;
                 $campaign->total_donatur += 1;
                 $campaign->save();
-
-                 // Update donation source statistics
+                
+                // Update donation source if exists
                 if ($donation->donation_source_id) {
                     $source = DonationSource::find($donation->donation_source_id);
                     if ($source) {
@@ -480,86 +507,90 @@ class DonationController extends Controller
                         $source->save();
                     }
                 }
-
-                $this->trackServerSideConversion($donation);
-
                 
+                // Process fundraising commission if exists
                 if ($donation->referral_code) {
-                    $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
-                    
-                    if ($fundraising) {
-                        $commissionSetting = Commission::first();
-                        $commissionPercent = $commissionSetting->amount ?? 0;
-                        
-                        // Calculate commission based on percentage from database
-                        $commission = ($donation->amount * $commissionPercent) / 100;
-                        
-                        // Update fundraising data
-                        $fundraising->total_donatur += 1;
-                        $fundraising->jumlah_donasi += $donation->amount;
-                        $fundraising->commission += $commission;
-                        
-                        // Update donations array
-                        $donations = json_decode($fundraising->donations, true) ?: [];
-                        $donations[] = [
-                            'donation_id' => $donation->id,
-                            'amount' => $donation->amount,
-                            'commission' => $commission,
-                            'user_name' => $donation->user ? $donation->user->name : null,
-                            'user_email' => $donation->user ? $donation->user->email : null,
-                            'created_at' => now()->format('Y-m-d H:i:s')
-                        ];
-                        $fundraising->donations = json_encode($donations);
-                        
-                        $fundraising->save();
-                    }
+                    $this->processFundraisingCommission($donation);
                 }
-
-                try {
-                    Mail::to($donation->email)->send(new DonationSuccessMail($donation));
-                    Log::info('Donation success email sent to donor: ' . $donation->email);
-                } catch (\Exception $e) {
-                    Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
-                }
-
-                try {
-                    $campaign = Campaign::with('admin')->find($donation->campaign_id);
-                    if ($campaign && $campaign->admin && $campaign->admin->email) {
-                        Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
-                        Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
-                    } else {
-                        Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Failed to send campaign donation email to admin: ' . $e->getMessage());
-                }
-
+                
+                // Send notifications
+                $this->sendDonationNotifications($donation);
+                
+                // Track conversion
+                $this->trackServerSideConversion($donation);
+                
                 $this->clearDonationSessions();
                 
-                Log::info('Donation marked as success via callback: ' . $donation->id);
-            } else if (in_array($data['status'], ['EXPIRED', 'FAILED', 'REFUND']) && $donation->status !== 'gagal') {
-                // Jika gagal atau kadaluarsa
+                Log::info('Donation marked as success via callback', ['donation_id' => $donation->id]);
+                break;
+                
+            case 'EXPIRED':
+            case 'FAILED':
                 $donation->status = 'gagal';
                 $donation->save();
-                Log::info('Donation marked as failed via callback: ' . $donation->id);
-            }
-            
-            // Commit transaction
-            DB::commit();
-        } catch (\Exception $e) {
-            // Rollback in case of error
-            DB::rollBack();
-            Log::error('Error processing Tripay callback: ' . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Error processing callback: ' . $e->getMessage()
-            ], 500);
+                Log::info('Donation marked as failed via callback', ['donation_id' => $donation->id]);
+                break;
+                
+            default:
+                Log::warning('Unrecognized payment status', ['status' => $status]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unrecognized payment status',
+                ], 400);
         }
         
-        // Selalu kembalikan sukses untuk callback Tripay
+        // Commit transaction
+        DB::commit();
+        
         return response()->json(['success' => true]);
+        
+    } catch (\Exception $e) {
+        // Rollback transaction
+        DB::rollBack();
+        Log::error('Error processing Tripay callback', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Error processing callback',
+        ], 500);
     }
+}
+
+// Helper method to process fundraising commission
+private function processFundraisingCommission($donation)
+{
+    $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
+    
+    if ($fundraising) {
+        $commissionSetting = Commission::first();
+        $commissionPercent = $commissionSetting->amount ?? 0;
+        
+        // Calculate commission
+        $commission = ($donation->amount * $commissionPercent) / 100;
+        
+        // Update fundraising data
+        $fundraising->total_donatur += 1;
+        $fundraising->jumlah_donasi += $donation->amount;
+        $fundraising->commission += $commission;
+        
+        // Update donations array
+        $donations = json_decode($fundraising->donations, true) ?: [];
+        $donations[] = [
+            'donation_id' => $donation->id,
+            'amount' => $donation->amount,
+            'commission' => $commission,
+            'user_name' => $donation->user ? $donation->user->name : null,
+            'user_email' => $donation->user ? $donation->user->email : null,
+            'created_at' => now()->format('Y-m-d H:i:s')
+        ];
+        $fundraising->donations = json_encode($donations);
+        
+        $fundraising->save();
+    }
+}
 
     public function status(Request $request, $id)
 {
