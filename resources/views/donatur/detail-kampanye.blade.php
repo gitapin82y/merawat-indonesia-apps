@@ -416,6 +416,7 @@
 @endsection
 
 @push('after-script')
+@php $adsense = \App\Models\Adsense::first(); @endphp
 <script>
     // Facebook Pixel - ViewContent
     @if($adsense && $adsense->facebook_pixel)

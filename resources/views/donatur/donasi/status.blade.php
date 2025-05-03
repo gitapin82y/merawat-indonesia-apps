@@ -285,7 +285,7 @@
 @endsection
 
 @push('after-script')
-
+@php $adsense = \App\Models\Adsense::first(); @endphp
 <script>
     // Only track conversion if payment is successful
     @if(isset($donation) && $donation->status === 'sukses')

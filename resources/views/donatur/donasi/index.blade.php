@@ -137,6 +137,7 @@
 @endsection
 
 @push('after-script')
+@php $adsense = \App\Models\Adsense::first(); @endphp
 <script>
     // Facebook Pixel - AddToCart
     @if($adsense && $adsense->facebook_pixel)
