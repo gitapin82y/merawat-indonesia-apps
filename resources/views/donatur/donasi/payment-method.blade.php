@@ -181,6 +181,46 @@
 
 @push('after-script')
 <script>
+    // Facebook Pixel - AddToCart
+    @if($adsense && $adsense->facebook_pixel)
+    fbq('track', 'AddToCart', {
+        content_name: '{{ $campaign->title ?? "Donation" }}',
+        content_category: '{{ $campaign->category->name ?? "Campaign" }}',
+        content_ids: ['{{ $campaign->id ?? "" }}'],
+        content_type: 'product',
+        value: 0, // Belum ada nilai di form
+        currency: 'IDR'
+    });
+    @endif
+
+    // Google Ads - add_to_cart event
+    @if($adsense && $adsense->google_ads_id)
+    gtag('event', 'add_to_cart', {
+        'send_to': '{{ $adsense->google_ads_id }}',
+        'value': 0, // Belum ada nilai di form
+        'currency': 'IDR',
+        'items': [{
+            'id': '{{ $campaign->id ?? "" }}',
+            'name': '{{ $campaign->title ?? "Donation" }}',
+            'category': '{{ $campaign->category->name ?? "Campaign" }}',
+            'quantity': 1,
+            'price': 0 // Belum ada nilai di form
+        }]
+    });
+    @endif
+
+    // TikTok Pixel - AddToCart
+    @if($adsense && $adsense->tiktok_pixel)
+    ttq.track('AddToCart', {
+        content_type: 'product',
+        content_id: '{{ $campaign->id ?? "" }}',
+        content_name: '{{ $campaign->title ?? "Donation" }}',
+        value: 0, // Belum ada nilai di form
+        currency: 'IDR'
+    });
+    @endif
+</script>
+<script>
 $(document).ready(function() {
     // Gateway payment method selection
     $('#gateway-content .payment-method-card').click(function() {

@@ -138,6 +138,46 @@
 
 @push('after-script')
 <script>
+    // Facebook Pixel - AddToCart
+    @if($adsense && $adsense->facebook_pixel)
+    fbq('track', 'AddToCart', {
+        content_name: '{{ $campaign->title ?? "Donation" }}',
+        content_category: '{{ $campaign->category->name ?? "Campaign" }}',
+        content_ids: ['{{ $campaign->id ?? "" }}'],
+        content_type: 'product',
+        value: {{ $donation->amount ?? 0 }},
+        currency: 'IDR'
+    });
+    @endif
+
+    // Google Ads - add_to_cart event
+    @if($adsense && $adsense->google_ads_id)
+    gtag('event', 'add_to_cart', {
+        'send_to': '{{ $adsense->google_ads_id }}',
+        'value': {{ $donation->amount ?? 0 }},
+        'currency': 'IDR',
+        'items': [{
+            'id': '{{ $campaign->id ?? "" }}',
+            'name': '{{ $campaign->title ?? "Donation" }}',
+            'category': '{{ $campaign->category->name ?? "Campaign" }}',
+            'quantity': 1,
+            'price': {{ $donation->amount ?? 0 }}
+        }]
+    });
+    @endif
+
+    // TikTok Pixel - AddToCart
+    @if($adsense && $adsense->tiktok_pixel)
+    ttq.track('AddToCart', {
+        content_type: 'product',
+        content_id: '{{ $campaign->id ?? "" }}',
+        content_name: '{{ $campaign->title ?? "Donation" }}',
+        value: {{ $donation->amount ?? 0 }},
+        currency: 'IDR'
+    });
+    @endif
+</script>
+<script>
     $(document).ready(function() {
         // Format input angka dengan separator ribuan
         $("#customAmount").on('input', function() {

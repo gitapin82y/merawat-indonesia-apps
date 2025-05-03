@@ -388,15 +388,23 @@ class DonationController extends Controller
     }
     public function callback(Request $request)
     {
-        // Log request untuk debugging
-        Log::info('Tripay Callback received: ' . $request->getContent());
+        Log::info('Tripay Callback received', [
+            'ip' => $request->ip(),
+            'forwarded_ip' => $request->header('X-Forwarded-For'),
+            'method' => $request->method(),
+            'all_headers' => $request->headers->all(),
+            'content' => $request->getContent()
+        ]);
         
         // Ambil data callback dari Tripay
         $callbackSignature = $request->header('X-Callback-Signature') ?? 
-        $request->header('x-callback-signature') ??
-        $request->server('HTTP_X_CALLBACK_SIGNATURE');
-        // $callbackSignature = $request->header('X-Callback-Signature');
+            $request->header('x-callback-signature') ??
+            $request->server('HTTP_X_CALLBACK_SIGNATURE');
+            
         $json = $request->getContent();
+        
+        Log::info('Callback signature received: ' . $callbackSignature);
+        Log::info('JSON content: ' . $json);
         
         // Verifikasi signature untuk keamanan
         $signature = hash_hmac('sha256', $json, $this->privateKey);

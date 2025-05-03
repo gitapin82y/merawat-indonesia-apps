@@ -286,58 +286,56 @@
 
 @push('after-script')
 
-@if($donation->status == 'sukses')
-
 <script>
+    // Only track conversion if payment is successful
+    @if(isset($donation) && $donation->status === 'sukses')
+    
     // Hapus localStorage UTM parameters jika ada
     localStorage.removeItem('utm_source');
     localStorage.removeItem('utm_medium');
     localStorage.removeItem('utm_campaign');
     localStorage.removeItem('referral_code');
+
+    // Facebook Pixel - Purchase
+    @if($adsense && $adsense->facebook_pixel)
+    fbq('track', 'Purchase', {
+        content_name: '{{ $campaign->title ?? "Donation" }}',
+        content_category: '{{ $campaign->category->name ?? "Campaign" }}',
+        content_ids: ['{{ $campaign->id ?? "" }}'],
+        content_type: 'product',
+        value: {{ $donation->amount ?? 0 }},
+        currency: 'IDR',
+        transaction_id: '{{ $donation->transaction_id ?? "" }}'
+    });
+    @endif
+
+    // Google Ads - purchase event
+    @if($adsense && $adsense->google_ads_id && $adsense->google_ads_label)
+    gtag('event', 'conversion', {
+        'send_to': '{{ $adsense->google_ads_id }}/{{ $adsense->google_ads_label }}',
+        'value': {{ $donation->amount ?? 0 }},
+        'currency': 'IDR',
+        'transaction_id': '{{ $donation->transaction_id ?? "" }}'
+    });
+    @endif
+
+    // TikTok Pixel - CompletePayment
+    @if($adsense && $adsense->tiktok_pixel)
+    ttq.track('CompletePayment', {
+        content_type: 'product',
+        content_id: '{{ $campaign->id ?? "" }}',
+        content_name: '{{ $campaign->title ?? "Donation" }}',
+        value: {{ $donation->amount ?? 0 }},
+        currency: 'IDR',
+        quantity: 1,
+        transaction_id: '{{ $donation->transaction_id ?? "" }}'
+    });
+    @endif
+    
+    @endif
 </script>
 
-<!-- Track conversion -->
-@php $adsense = \App\Models\Adsense::first(); @endphp
-
-@if($adsense)
-    @if($adsense->facebook_pixel)
-    <script>
-        fbq('track', 'Purchase', {
-            value: {{ $donation->amount }},
-            currency: 'IDR',
-            content_ids: ['{{ $donation->id }}'],
-            content_type: 'donation'
-        });
-    </script>
-    @endif
-    
-    @if($adsense->google_ads_id && $adsense->google_ads_label)
-    <script>
-        gtag('event', 'conversion', {
-            'send_to': '{{ $adsense->google_ads_id }}/{{ $adsense->google_ads_label }}',
-            'value': {{ $donation->amount }},
-            'currency': 'IDR',
-            'transaction_id': '{{ $donation->id }}'
-        });
-    </script>
-    @endif
-    
-    @if($adsense->tiktok_pixel)
-    <script>
-        ttq.track('CompletePayment', {
-            content_id: '{{ $donation->id }}',
-            content_type: 'donation',
-            quantity: 1,
-            price: {{ $donation->amount }},
-            value: {{ $donation->amount }},
-            currency: 'IDR',
-        });
-    </script>
-    @endif
-@endif
-@endif
-<script>
-    
+<script> 
 $(document).ready(function() {
     // Live clock function
     function updateClock() {

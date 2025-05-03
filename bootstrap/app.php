@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CheckAuth;
+use App\Http\Middleware\TripayIpMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,6 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'checkRole' => \App\Http\Middleware\CheckRole::class,
             'checkAuth' => \App\Http\Middleware\CheckAuth::class,
+            'checkAuth' => \App\Http\Middleware\CheckAuth::class,
+            'tripay.ip' => \App\Http\Middleware\TripayIpMiddleware::class
+        ]);
+        $middleware->validateCsrfTokens(except: [
+            'api/tripay/callback'
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

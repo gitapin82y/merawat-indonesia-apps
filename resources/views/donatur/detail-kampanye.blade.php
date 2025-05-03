@@ -417,6 +417,38 @@
 
 @push('after-script')
 <script>
+    // Facebook Pixel - ViewContent
+    @if($adsense && $adsense->facebook_pixel)
+    fbq('track', 'ViewContent', {
+        content_name: '{{ $campaign->title ?? "Campaign Detail" }}',
+        content_category: '{{ $campaign->category->name ?? "Campaign" }}',
+        content_ids: ['{{ $campaign->id ?? "" }}'],
+        content_type: 'product',
+    });
+    @endif
+
+    // Google Ads - view_item event
+    @if($adsense && $adsense->google_ads_id)
+    gtag('event', 'view_item', {
+        'send_to': '{{ $adsense->google_ads_id }}',
+        'items': [{
+            'id': '{{ $campaign->id ?? "" }}',
+            'name': '{{ $campaign->title ?? "Campaign Detail" }}',
+            'category': '{{ $campaign->category->name ?? "Campaign" }}'
+        }]
+    });
+    @endif
+
+    // TikTok Pixel - ViewContent
+    @if($adsense && $adsense->tiktok_pixel)
+    ttq.track('ViewContent', {
+        content_type: 'product',
+        content_id: '{{ $campaign->id ?? "" }}',
+        content_name: '{{ $campaign->title ?? "Campaign Detail" }}'
+    });
+    @endif
+</script>
+<script>
     $(document).ready(function() {
         $('.like-button').on('click', function(e) {
         e.preventDefault();
