@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CheckAuth;
 use App\Http\Middleware\TripayIpMiddleware;
+use App\Http\Middleware\TrustProxies;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,11 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->append(TrustProxies::class);
         $middleware->alias([
             'checkRole' => \App\Http\Middleware\CheckRole::class,
             'checkAuth' => \App\Http\Middleware\CheckAuth::class,
             'checkAuth' => \App\Http\Middleware\CheckAuth::class,
-            'tripay.ip' => \App\Http\Middleware\TripayIpMiddleware::class
+            'tripay.ip' => \App\Http\Middleware\TripayIpMiddleware::class,
         ]);
         $middleware->validateCsrfTokens(except: [
             'https://merawatindonesia.com/api/tripay/callback'

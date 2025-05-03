@@ -31,3 +31,13 @@ Route::post('/tripay-debug', function (Request $request) {
     
     return response()->json(['success' => true, 'message' => 'Debug route hit successfully']);
 });
+Route::get('/test-ip-all', function (Request $request) {
+    return response()->json([
+        'request_ip' => $request->ip(),
+        'server_addr' => $_SERVER['SERVER_ADDR'] ?? null,
+        'remote_addr' => $_SERVER['REMOTE_ADDR'] ?? null,
+        'x_forwarded_for' => $request->header('X-Forwarded-For'),
+        'x_real_ip' => $request->header('X-Real-IP'),
+        'all_headers' => $request->headers->all(),
+    ]);
+});
