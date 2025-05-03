@@ -6,10 +6,7 @@ use App\Http\Controllers\DonationController;
 use App\Http\Middleware\TripayIpMiddleware;
 
 // Tripay callback route with IP middleware
-Route::post('/tripay/callback', [DonationController::class, 'callback'])
-    ->name('tripay.callback')
-    ->middleware('tripay.ip');
-
+Route::post('/tripay/callback', [DonationController::class, 'callback']);
 // Route for testing
 Route::get('/test-tripay', function () {
     return response()->json([
