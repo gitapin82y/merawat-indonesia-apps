@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DonationController;
 use App\Http\Middleware\TripayIpMiddleware;
 
-// Tripay callback route with IP middleware
+// Tripay callback on api.php
 Route::post('/tripay/callback', [DonationController::class, 'callback'])
     ->name('tripay.callback');
 

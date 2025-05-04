@@ -25,8 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'tripay.ip' => \App\Http\Middleware\TripayIpMiddleware::class,
         ]);
         $middleware->validateCsrfTokens(except: [
-            'https://merawatindonesia.com/api/tripay/callback'
-        ]);
+            'api/tripay/callback'
+        ]);        
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
