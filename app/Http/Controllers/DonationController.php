@@ -947,7 +947,7 @@ public function index(Request $request)
             $query->whereBetween('created_at', [$startDate, $endDate]);
         }
         
-        return DataTables::of($query)
+        return DataTables::of($query->latest())
             ->addIndexColumn()
             ->addColumn('campaign_title', function ($row) {
                 return $row->campaign ? $row->campaign->title : '-';
