@@ -643,7 +643,7 @@ private function processSuccessfulPayment($donation)
     } catch (\Exception $e) {
         Log::error('Failed to send campaign donation email to admin: ' . $e->getMessage());
     }
-    
+
     try {
         $this->trackServerSideConversion($donation);
         $this->clearDonationSessions();
@@ -659,6 +659,11 @@ private function processSuccessfulPayment($donation)
 
 public function status(Request $request, $id)
 {
+    
+    $donation = Donation::with(['campaign', 'manualPaymentMethod'])->where('id', $id)->firstOrFail();
+    $campaign = $donation->campaign;
+    $paymentDetail = null;
+
     if ($request->has('status_token')) {
         $tokenValid = $this->checkStatusToken($id, $request->status_token);
         // Jika token tidak valid, lewati pemrosesan status
@@ -669,10 +674,6 @@ public function status(Request $request, $id)
         }
     }
 
-    
-    $donation = Donation::with(['campaign', 'manualPaymentMethod'])->where('id', $id)->firstOrFail();
-    $campaign = $donation->campaign;
-    $paymentDetail = null;
     
     // Jika pembayaran gateway dan status masih pending, cek status di Tripay
     if ($donation->payment_type == 'payment_gateway' && $donation->snap_token && $donation->status == 'pending') {
