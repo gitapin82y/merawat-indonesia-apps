@@ -6,8 +6,9 @@ use App\Models\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class NotificationMail extends Mailable
+class NotificationMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

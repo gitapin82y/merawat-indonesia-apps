@@ -5,8 +5,9 @@ use App\Models\Admin;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class AdminStatusMail extends Mailable
+class AdminStatusMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

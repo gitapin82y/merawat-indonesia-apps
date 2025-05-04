@@ -6,8 +6,9 @@ use App\Models\CampaignWithdrawal;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class CampaignWithdrawalMail extends Mailable
+class CampaignWithdrawalMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
