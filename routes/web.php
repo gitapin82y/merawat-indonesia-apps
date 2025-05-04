@@ -152,8 +152,7 @@ Route::post('/donations/process-manual-payment', [DonationController::class, 'pr
 Route::resource('campaign-withdrawals', CampaignWithdrawalController::class);
 
 // routes/web.php
-Route::post('/api/tripay/callback', [DonationController::class, 'callback'])
-    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+Route::post('/api/tripay/callback', [DonationController::class, 'callback']);
 
 // ->middleware(['auth', 'superadmin'])
 Route::post('kampanye/toggle-save', [CampaignController::class, 'toggleSave'])->name('campaign.toggle-save');
