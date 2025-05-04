@@ -81,7 +81,7 @@ class DonationController extends Controller
                     }
                 } else {
                     // Jika tidak login, kirim email langsung
-                    Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
+                    Mail::to($donation->email)->send(new DonationSuccessMail($donation));
                 }
             }
             
@@ -777,7 +777,7 @@ public function pollPendingTransactions()
         ->where('payment_type', 'payment_gateway')
         ->where('created_at', '>', now()->subHours(24))
         ->orderBy('created_at', 'desc')
-        ->limit(100)
+        ->limit(50)
         ->get();
         
         Log::info('Running payment polling', ['total_pending' => $pendingDonations->count()]);
@@ -1254,7 +1254,7 @@ public function ceklis(Request $request)
                 }
 
                 try {
-                    Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
+                    Mail::to($donation->email)->send(new DonationSuccessMail($donation));
                     Log::info('Donation success email sent to donor: ' . $donation->email);
                 } catch (\Exception $e) {
                     Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
@@ -1263,7 +1263,7 @@ public function ceklis(Request $request)
                 try {
                     $campaign = Campaign::with('admin')->find($donation->campaign_id);
                     if ($campaign && $campaign->admin && $campaign->admin->email) {
-                        Mail::to($campaign->admin->email)->queue(new CampaignDonationMail($donation));
+                        Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
                         Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
                     } else {
                         Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
