@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Cache;
 
 class DonationController extends Controller
 {
@@ -346,6 +347,8 @@ class DonationController extends Controller
 
     protected function createTransaction($donation, $campaign)
     {
+        $statusToken = $this->createStatusToken($donation->id);
+        
         $merchantRef = 'DON-' . $donation->id . '-' . time();
         $amount = (int)$donation->amount;
         $donaturName = $donation->is_anonymous ? 'Sahabat Baik' : $donation->name;
@@ -638,8 +641,16 @@ private function processSuccessfulPayment($donation)
 
 public function status(Request $request, $id)
 {
-    // Log untuk debugging
-    Log::info('Status page accessed', ['donation_id' => $id, 'request_params' => $request->all()]);
+    if ($request->has('status_token')) {
+        $tokenValid = $this->checkStatusToken($id, $request->status_token);
+        // Jika token tidak valid, lewati pemrosesan status
+        if (!$tokenValid) {
+            // Langsung tampilkan halaman status tanpa checking payment gateway
+            $donation = Donation::with(['campaign', 'manualPaymentMethod'])->find($id);
+            return view('donatur.donasi.status', compact('donation', 'campaign', 'paymentDetail'));
+        }
+    }
+
     
     $donation = Donation::with(['campaign', 'manualPaymentMethod'])->where('id', $id)->firstOrFail();
     $campaign = $donation->campaign;
@@ -1179,6 +1190,7 @@ public function ceklis(Request $request)
                 $campaign->jumlah_donasi += $donation->amount;
                 $campaign->current_donation += $donation->amount;
                 $campaign->total_donatur += 1;
+                
                 $campaign->save();
 
                  // Update donation source statistics
