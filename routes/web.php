@@ -26,7 +26,7 @@ use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\TripayPaymentMethodController;
 
 
-
+Route::get('/cron/check-pending-donations', [DonationController::class, 'pollPendingTransactions']);
 Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
 
 

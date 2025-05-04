@@ -106,7 +106,7 @@ class KabarPencairanController extends Controller
             );
             
             // Kirim email ke admin
-            Mail::to("merawatindonesia2@gmail.com")->send(new CampaignWithdrawalMail($campaignWithdrawal));
+            Mail::to("merawatindonesia2@gmail.com")->queue(new CampaignWithdrawalMail($campaignWithdrawal));
 
             DB::commit();
             return redirect()->back()

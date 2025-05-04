@@ -80,7 +80,7 @@ class DonationController extends Controller
                     }
                 } else {
                     // Jika tidak login, kirim email langsung
-                    Mail::to($donation->email)->send(new DonationSuccessMail($donation));
+                    Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
                 }
             }
             
@@ -365,7 +365,7 @@ class DonationController extends Controller
                 ]
             ],
             'callback_url' => 'https://merawatindonesia.com/api/tripay/callback',
-            'return_url' => route('donations.status', ['id' => $donation->id]),
+            'return_url' => route('donations.status', ['id' => $donation->id, 'status_token' => $statusToken]),
             'expired_time' => (time() + (24 * 60 * 60)), // 24 jam
             'signature' => hash_hmac('sha256', $this->merchantCode . $merchantRef . $amount, $this->privateKey)
         ];
@@ -592,22 +592,70 @@ private function processFundraisingCommission($donation)
     }
 }
 
-    public function status(Request $request, $id)
+private function processSuccessfulPayment($donation)
 {
+    // Update status donasi
+    $donation->status = 'sukses';
+    $donation->updated_at = now();
+    $donation->save();
+    
+    // Update campaign statistics
+    $campaign = Campaign::find($donation->campaign_id);
+    if ($campaign) {
+        $campaign->increment('jumlah_donasi', $donation->amount);
+        $campaign->increment('current_donation', $donation->amount);
+        $campaign->increment('total_donatur', 1);
+    }
+    
+    // Update donation source if exists
+    if ($donation->donation_source_id) {
+        $source = DonationSource::find($donation->donation_source_id);
+        if ($source) {
+            $source->increment('total_donations', 1);
+            $source->increment('total_amount', $donation->amount);
+        }
+    }
+    
+    // Process fundraising commission if exists
+    if ($donation->referral_code) {
+        $this->processFundraisingCommission($donation);
+    }
+    
+    // Kirim notifikasi dan track konversi
+    try {
+        $this->sendDonationNotifications($donation);
+        $this->trackServerSideConversion($donation);
+        $this->clearDonationSessions();
+    } catch (\Exception $e) {
+        Log::error('Error when sending notifications or tracking conversion', [
+            'donation_id' => $donation->id,
+            'error' => $e->getMessage()
+        ]);
+    }
+    
+    return true;
+}
+
+public function status(Request $request, $id)
+{
+    // Log untuk debugging
+    Log::info('Status page accessed', ['donation_id' => $id, 'request_params' => $request->all()]);
+    
     $donation = Donation::with(['campaign', 'manualPaymentMethod'])->where('id', $id)->firstOrFail();
     $campaign = $donation->campaign;
     $paymentDetail = null;
     
-    // Jika pembayaran gateway dan memiliki snap_token, cek status di Tripay
-    if ($donation->payment_type == 'payment_gateway' && $donation->snap_token) {
+    // Jika pembayaran gateway dan status masih pending, cek status di Tripay
+    if ($donation->payment_type == 'payment_gateway' && $donation->snap_token && $donation->status == 'pending') {
         // Pastikan URL berakhir dengan slash
         $apiUrl = rtrim($this->apiUrl, '/') . '/';
         $endpoint = 'transaction/detail';
         
-        $reference = $donation->snap_token; // Gunakan snap_token dari donasi
+        $reference = $donation->snap_token;
         $signature = hash_hmac('sha256', $this->merchantCode . $reference, $this->privateKey);
         
         try {
+            // Panggil API Tripay untuk cek status
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey
             ])->get($apiUrl . $endpoint, [
@@ -616,11 +664,12 @@ private function processFundraisingCommission($donation)
             ]);
             
             $responseData = $response->json();
+            Log::info('Tripay status check response', ['donation_id' => $id, 'response' => $responseData]);
             
             if (isset($responseData['success']) && $responseData['success'] === true && isset($responseData['data'])) {
                 $transaction = $responseData['data'];
                 
-                // Simpan detail pembayaran untuk ditampilkan di view
+                // Set payment detail untuk tampilan
                 $paymentDetail = [
                     'merchant_ref' => $transaction['merchant_ref'] ?? '',
                     'reference' => $transaction['reference'] ?? '',
@@ -629,103 +678,47 @@ private function processFundraisingCommission($donation)
                     'checkout_url' => $transaction['checkout_url'] ?? null
                 ];
                 
-                // Update status donasi jika perlu
-                $transaction = $responseData['data'];
-
-                $status = 'PENDING';
-                
-                
-                if ($transaction['status'] === 'PAID') {
-                    $status = 'PAID';
-
-                    $donation->status = 'sukses';
-                    $donation->updated_at = now();
-                    $donation->save();
-    
-                    $campaign = Campaign::find($donation->campaign_id);
-                    $campaign->jumlah_donasi += $donation->amount;
-                    $campaign->current_donation += $donation->amount;
-                    $campaign->total_donatur += 1;
-                    $campaign->save();
-
-                    if ($donation->donation_source_id) {
-                        $source = DonationSource::find($donation->donation_source_id);
-                        if ($source) {
-                            $source->total_donations += 1;
-                            $source->total_amount += $donation->amount;
-                            $source->save();
-                        }
-                    }
-    
-                    $this->trackServerSideConversion($donation);
-    
-                    
-                    if ($donation->referral_code) {
-                        $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
+                // Proses pembayaran sukses dengan transaction dan lock
+                if ($transaction['status'] === 'PAID' && $donation->status !== 'sukses') {
+                    DB::beginTransaction();
+                    try {
+                        // Lock record donasi
+                        $freshDonation = Donation::lockForUpdate()->find($donation->id);
                         
-                        if ($fundraising) {
-                            $commissionSetting = Commission::first();
-                            $commissionPercent = $commissionSetting->amount ?? 0;
-                            
-                            // Calculate commission based on percentage from database
-                            $commission = ($donation->amount * $commissionPercent) / 100;
-                            
-                            // Update fundraising data
-                            $fundraising->total_donatur += 1;
-                            $fundraising->jumlah_donasi += $donation->amount;
-                            $fundraising->commission += $commission;
-                            
-                            // Update donations array
-                            $donations = json_decode($fundraising->donations, true) ?: [];
-                            $donations[] = [
-                                'donation_id' => $donation->id,
-                                'amount' => $donation->amount,
-                                'commission' => $commission,
-                                'user_name' => $donation->user ? $donation->user->name : null,
-                                'user_email' => $donation->user ? $donation->user->email : null,
-                                'created_at' => now()->format('Y-m-d H:i:s')
-                            ];
-                            $fundraising->donations = json_encode($donations);
-                            
-                            $fundraising->save();
-                        }
-                    }
-    
-                    try {
-                        Mail::to($donation->email)->send(new DonationSuccessMail($donation));
-                        Log::info('Donation success email sent to donor: ' . $donation->email);
-                    } catch (\Exception $e) {
-                        Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
-                    }
-    
-                    try {
-                        $campaign = Campaign::with('admin')->find($donation->campaign_id);
-                        if ($campaign && $campaign->admin && $campaign->admin->email) {
-                            Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
-                            Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
+                        // Double check status setelah lock
+                        if ($freshDonation && $freshDonation->status !== 'sukses') {
+                            $this->processSuccessfulPayment($freshDonation);
+                            Log::info('Payment successfully processed via status page', ['donation_id' => $donation->id]);
                         } else {
-                            Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
+                            Log::info('Payment already processed, skipping', ['donation_id' => $donation->id]);
                         }
+                        
+                        DB::commit();
                     } catch (\Exception $e) {
-                        Log::error('Failed to send campaign donation email to admin: ' . $e->getMessage());
+                        DB::rollBack();
+                        Log::error('Error processing payment in status page', [
+                            'donation_id' => $donation->id,
+                            'error' => $e->getMessage()
+                        ]);
                     }
-    
-                    $this->clearDonationSessions();
+                } 
+                // Proses pembayaran gagal
+                else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND']) && $donation->status !== 'gagal') {
+                    $donation->status = 'gagal';
+                    $donation->save();
                     
-                } else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND'])) {
-                    $status = 'EXPIRED';
-                
-                    if ($donation) {
-                        $donation->status = 'gagal';
-                        $donation->save();
-                    }
+                    Log::info('Payment marked as failed via status page', ['donation_id' => $donation->id]);
                 }
-            } 
+            }
         } catch (\Exception $e) {
-            Log::error('Error checking transaction status: ' . $e->getMessage());
+            Log::error('Error checking transaction status', [
+                'donation_id' => $donation->id,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 
+    // Untuk pembayaran manual
     if ($donation->payment_type == 'manual' && $donation->manual_payment_method_id) {
         $manualMethod = $donation->manualPaymentMethod;
         
@@ -740,7 +733,117 @@ private function processFundraisingCommission($donation)
         }
     }
     
+    // Ambil data donasi lagi untuk mendapatkan status terbaru
+    $donation = Donation::with(['campaign', 'manualPaymentMethod'])->find($id);
+    
     return view('donatur.donasi.status', compact('donation', 'campaign', 'paymentDetail'));
+}
+
+public function pollPendingTransactions()
+{
+    try {
+        // Ambil semua donasi pending dalam waktu 48 jam terakhir
+        $pendingDonations = Donation::where('status', 'pending')
+            ->where('payment_type', 'payment_gateway')
+            ->where('created_at', '>', now()->subHours(48))
+            ->get();
+        
+        Log::info('Running payment polling', ['total_pending' => $pendingDonations->count()]);
+        
+        $counter = 0;
+        
+        foreach ($pendingDonations as $donation) {
+            try {
+                // Cek status di Tripay
+                $apiUrl = rtrim($this->apiUrl, '/') . '/';
+                $endpoint = 'transaction/detail';
+                
+                $reference = $donation->snap_token;
+                $signature = hash_hmac('sha256', $this->merchantCode . $reference, $this->privateKey);
+                
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $this->apiKey
+                ])->get($apiUrl . $endpoint, [
+                    'reference' => $reference,
+                    'signature' => $signature
+                ]);
+                
+                $responseData = $response->json();
+                
+                if (isset($responseData['success']) && $responseData['success'] === true && isset($responseData['data'])) {
+                    $transaction = $responseData['data'];
+                    
+                    if ($transaction['status'] === 'PAID' && $donation->status !== 'sukses') {
+                        // Gunakan transaction dan lock untuk mencegah race condition
+                        DB::beginTransaction();
+                        
+                        // Lock donasi untuk mencegah race condition
+                        $freshDonation = Donation::lockForUpdate()->find($donation->id);
+                        
+                        if ($freshDonation && $freshDonation->status !== 'sukses') {
+                            $this->processSuccessfulPayment($freshDonation);
+                            $counter++;
+                            
+                            Log::info('Donation updated by polling', ['donation_id' => $donation->id]);
+                        }
+                        
+                        DB::commit();
+                    } else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND']) && $donation->status !== 'gagal') {
+                        $donation->status = 'gagal';
+                        $donation->save();
+                        
+                        Log::info('Donation marked as failed by polling', ['donation_id' => $donation->id]);
+                    }
+                }
+            } catch (\Exception $e) {
+                if (isset($dbTransaction)) {
+                    DB::rollBack();
+                }
+                
+                Log::error('Error polling transaction', [
+                    'donation_id' => $donation->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => "Successfully updated $counter donations"
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error in poll pending transactions', ['error' => $e->getMessage()]);
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Error processing pending donations: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+
+private function createStatusToken($donationId)
+{
+    // Buat token unik
+    $token = md5($donationId . time() . Str::random(10));
+    
+    // Simpan token di cache selama 30 menit
+    Cache::put('donation_token_' . $donationId, $token, now()->addMinutes(30));
+    
+    return $token;
+}
+
+private function checkStatusToken($donationId, $token)
+{
+    $savedToken = Cache::get('donation_token_' . $donationId);
+    
+    if ($savedToken && $savedToken === $token) {
+        // Token valid, hapus dari cache untuk mencegah penggunaan kembali
+        Cache::forget('donation_token_' . $donationId);
+        return true;
+    }
+    
+    return false;
 }
 
 public function checkStatus($reference)
@@ -1118,7 +1221,7 @@ public function ceklis(Request $request)
                 }
 
                 try {
-                    Mail::to($donation->email)->send(new DonationSuccessMail($donation));
+                    Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
                     Log::info('Donation success email sent to donor: ' . $donation->email);
                 } catch (\Exception $e) {
                     Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
@@ -1127,7 +1230,7 @@ public function ceklis(Request $request)
                 try {
                     $campaign = Campaign::with('admin')->find($donation->campaign_id);
                     if ($campaign && $campaign->admin && $campaign->admin->email) {
-                        Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
+                        Mail::to($campaign->admin->email)->queue(new CampaignDonationMail($donation));
                         Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
                     } else {
                         Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
