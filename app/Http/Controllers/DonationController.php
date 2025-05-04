@@ -744,9 +744,11 @@ public function pollPendingTransactions()
     try {
         // Ambil semua donasi pending dalam waktu 48 jam terakhir
         $pendingDonations = Donation::where('status', 'pending')
-            ->where('payment_type', 'payment_gateway')
-            ->where('created_at', '>', now()->subHours(48))
-            ->get();
+        ->where('payment_type', 'payment_gateway')
+        ->where('created_at', '>', now()->subHours(24))
+        ->orderBy('created_at', 'desc')
+        ->limit(100)
+        ->get();
         
         Log::info('Running payment polling', ['total_pending' => $pendingDonations->count()]);
         
