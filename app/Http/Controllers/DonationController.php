@@ -626,7 +626,25 @@ private function processSuccessfulPayment($donation)
     
     // Kirim notifikasi dan track konversi
     try {
-        $this->sendDonationNotifications($donation);
+        Mail::to($donation->email)->send(new DonationSuccessMail($donation));
+        Log::info('Donation success email sent to donor: ' . $donation->email);
+    } catch (\Exception $e) {
+        Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
+    }
+
+    try {
+        $campaign = Campaign::with('admin')->find($donation->campaign_id);
+        if ($campaign && $campaign->admin && $campaign->admin->email) {
+            Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
+            Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
+        } else {
+            Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
+        }
+    } catch (\Exception $e) {
+        Log::error('Failed to send campaign donation email to admin: ' . $e->getMessage());
+    }
+    
+    try {
         $this->trackServerSideConversion($donation);
         $this->clearDonationSessions();
     } catch (\Exception $e) {
