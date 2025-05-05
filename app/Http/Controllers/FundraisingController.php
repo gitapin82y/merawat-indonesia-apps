@@ -165,7 +165,7 @@ class FundraisingController extends Controller
         // Cari fundraising dengan komisi terbesar untuk dijadikan sebagai fundraising_id
         $primaryFundraising = $fundraisings->sortByDesc('commission')->first();
         
-        $admin = User::where('role', 'super_admin')->first();
+        $admin = User::where('email', 'merawatindonesia2@gmail.com')->first();
 
         // Buat entri pencairan dana
         $withdrawal = FundraisingWithdrawal::create([

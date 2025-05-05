@@ -32,7 +32,7 @@ class AuthController extends Controller
          $user = User::where('email', $request->email)->first();
          
          if (!$user) {
-             return back()->with('error', 'Email tidak ditemukan di database kami.');
+             return back()->with('error', 'Email tidak ditemukan.');
          }
  
          // Cek jika user adalah social login dan tidak punya password

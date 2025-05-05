@@ -283,13 +283,20 @@ class DonationController extends Controller
             $donation->payment_proof = $path;
         }
 
+        $manual_method = 'manual';
+
+        if($request->selected_payment_method){
+            $method = ManualPaymentMethod::find($request->selected_payment_method);
+            $manual_method = $method->name;
+        }
+
         $originalAmount = $donation->amount;
         $uniqueCode = $donation->unique_code;
         $donation->amount = $originalAmount + $uniqueCode;
         
         // Update metode pembayaran donasi
         $donation->payment_type = $request->payment_type;
-        $donation->payment_method = 'manual';
+        $donation->payment_method = $manual_method;
         $donation->manual_payment_method_id = $request->selected_payment_method;
         $donation->save();
 
@@ -760,6 +767,26 @@ public function status(Request $request, $id)
                 'manual_instructions' => $manualMethod->instructions,
                 'payment_proof' => $donation->payment_proof ? asset('storage/' . $donation->payment_proof) : null
             ];
+        }
+
+        $user = User::where('email', 'merawatindonesia2@gmail.com')->first();
+        if ($user) {
+            $notificationData = [
+                'donation_id' => $donation->id,
+                'amount' => $donation->amount,
+                'campaign_title' => $donation->campaign->title
+            ];
+            
+            $notif = $this->notificationService->createNotification(
+                $user,
+                'Request Verifikasi Payment Manual', 
+                'Memerlukan persetujuan donasi dengan jumlah Rp ' . number_format($donation->amount) . ' untuk "' . $donation->campaign->title . '".',
+                'request_verifikasi',
+                $notificationData
+            );
+            
+            // Kirim email
+            $this->notificationService->sendEmail($notif);
         }
     }
     

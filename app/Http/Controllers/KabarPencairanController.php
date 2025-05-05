@@ -85,13 +85,13 @@ class KabarPencairanController extends Controller
             $admin = Auth::user()->admin;
             
             // Ambil data super admin
-            $superAdmin = User::where('role', 'super_admin')->first();
+            $user = User::where('email', 'merawatindonesia2@gmail.com')->first();
             
             // Format angka untuk tampilan
             $formattedAmount = number_format($request->amount, 0, ',', '.');
        
             $this->notificationService->createNotification(
-                $superAdmin,
+                $user,
                 'Permintaan Pencairan Dana Kampanye Baru',
                 'Admin yayasan '. $admin->name .' mengajukan pencairan dana kampanye "'. $campaign->title .'" sebesar Rp '. $formattedAmount,
                 'campaign_withdrawal_request',

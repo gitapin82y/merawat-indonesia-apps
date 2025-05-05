@@ -177,15 +177,14 @@ class FundraisingWithdrawalController extends Controller
                 'status' => 'menunggu',
             ]);
             
-            // Kirim email notifikasi ke admin
-            $admin = User::where('role', 'super_admin')->first();
+            $user = User::where('email', 'merawatindonesia2@gmail.com')->first();
             
             // Jika spesifik ke satu email
             Mail::to('merawatindonesia2@gmail.com')->send(new FundraisingWithdrawalMail($withdrawal));
             
             // Create system notification for admin
             $this->notificationService->createNotification(
-                $admin,
+                $user,
                 'Permintaan Pencairan Fundraising Baru',
                 'Permintaan pencairan dana fundraising baru dari ' . $user->name . ' sebesar Rp ' . number_format($request->amount, 0, ',', '.'),
                 'fundraising_withdraw',
