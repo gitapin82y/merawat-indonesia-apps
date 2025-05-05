@@ -6,12 +6,12 @@
 
 @section('meta_tags')
     <!-- Campaign-specific Meta Tags -->
-    <meta name="description" content="{!! \Illuminate\Support\Str::limit(strip_tags($campaign->description), 300, '...') !!}">
+    <meta name="description" content="{{ \Illuminate\Support\Str::limit(preg_replace('/&[^;]+;/', ' ', strip_tags($campaign->description)), 160) }}">
     <meta name="keywords" content="{{ $campaign->category->name ?? 'donasi online' }}, {{ $campaign->title }}, merawat indonesia, galang dana, donasi">
     
     <!-- Open Graph Meta Tags for Social Media -->
     <meta property="og:title" content="{{ $campaign->title }} | Merawat Indonesia">
-    <meta property="og:description" content="{!! \Illuminate\Support\Str::limit(strip_tags($campaign->description), 300, '...') !!}">
+    <meta property="og:description" content="{{ \Illuminate\Support\Str::limit(preg_replace('/&[^;]+;/', ' ', strip_tags($campaign->description)), 200) }}">
     <meta property="og:image" content="{{ asset('storage/' . $campaign->photo) }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="website">
@@ -20,7 +20,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ $campaign->title }} | Merawat Indonesia">
-    <meta name="twitter:description" content="{!! \Illuminate\Support\Str::limit(strip_tags($campaign->description), 300, '...') !!}">
+    <meta name="twitter:description" content="{{ \Illuminate\Support\Str::limit(preg_replace('/&[^;]+;/', ' ', strip_tags($campaign->description)), 200) }}">
     <meta name="twitter:image" content="{{ asset('storage/' . $campaign->photo) }}">
     
     <!-- Structured Data - Campaign Donation -->
@@ -29,7 +29,7 @@
         "@context": "https://schema.org",
         "@type": "DonateAction",
         "name": "{{ $campaign->title }}",
-        "description": "{!! \Illuminate\Support\Str::limit(strip_tags($campaign->description), 300, '...') !!}",
+        "description": "{{ \Illuminate\Support\Str::limit(preg_replace('/&[^;]+;/', ' ', strip_tags($campaign->description)), 160) }}",
         "image": "{{ asset('storage/' . $campaign->photo) }}",
         "url": "{{ url()->current() }}",
         "provider": {
