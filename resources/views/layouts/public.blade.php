@@ -6,24 +6,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="Merawat Indonesia - Platform donasi online terpercaya untuk berbagi kebaikan. Donasi mudah, aman dan transparan untuk membantu sesama di seluruh Indonesia.">
-  <meta name="keywords" content="website donasi, donasi online, merawat indonesia, platform donasi, galang dana, sedekah online, zakat, bantuan sosial">
-  <meta name="author" content="Merawat Indonesia">
+    <!-- Check if page has custom meta tags, otherwise use default -->
+    @hasSection('meta_tags')
+      @yield('meta_tags')
+    @else
+    <!-- Default SEO Meta Tags -->
+    <meta name="description" content="Merawat Indonesia - Platform donasi online terpercaya untuk berbagi kebaikan. Donasi mudah, aman dan transparan untuk membantu sesama di seluruh Indonesia.">
+    <meta name="keywords" content="website donasi, donasi online, merawat indonesia, platform donasi, galang dana, sedekah online, zakat, bantuan sosial">
+    <meta name="author" content="Merawat Indonesia">
 
-  <!-- Open Graph Meta Tags for Social Media -->
-  <meta property="og:title" content="@yield('title') | Merawat Indonesia - Platform Donasi Online Terpercaya">
-  <meta property="og:description" content="Platform donasi online terpercaya untuk berbagi kebaikan. Donasi mudah, aman dan transparan.">
-  <meta property="og:image" content="{{asset('assets/img/merawat-indonesia-logo.png')}}">
-  <meta property="og:url" content="{{ url()->current() }}">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Merawat Indonesia">
+    <!-- Open Graph Meta Tags for Social Media -->
+    <meta property="og:title" content="@yield('title') | Merawat Indonesia - Platform Donasi Online Terpercaya">
+    <meta property="og:description" content="Platform donasi online terpercaya untuk berbagi kebaikan. Donasi mudah, aman dan transparan.">
+    <meta property="og:image" content="{{asset('assets/img/merawat-indonesia-logo.png')}}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Merawat Indonesia">
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="@yield('title') | Merawat Indonesia - Platform Donasi Online">
-  <meta name="twitter:description" content="Platform donasi online terpercaya untuk berbagi kebaikan. Donasi mudah, aman dan transparan.">
-  <meta name="twitter:image" content="{{asset('assets/img/merawat-indonesia-logo.png')}}">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title') | Merawat Indonesia - Platform Donasi Online">
+    <meta name="twitter:description" content="Platform donasi online terpercaya untuk berbagi kebaikan. Donasi mudah, aman dan transparan.">
+    <meta name="twitter:image" content="{{asset('assets/img/merawat-indonesia-logo.png')}}">
+    @endif
 
   <!-- Canonical URL -->
   <link rel="canonical" href="{{ url()->current() }}">
@@ -33,7 +38,11 @@
   <link rel="apple-touch-icon" href="{{asset('assets/img/merawat-indonesia-logo.png')}}">
   
   <!-- Title with keywords -->
+  @hasSection('custom_title')
+  <title>@yield('custom_title')</title>
+@else
   <title>@yield('title') | Merawat Indonesia - Platform Donasi Online Terpercaya</title>
+@endif
 
   @include('includes.public.style')
   @stack('after-style')
