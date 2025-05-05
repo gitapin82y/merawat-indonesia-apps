@@ -29,7 +29,7 @@
       .addEventListener("click", function (e) {
         e.preventDefault();
         const komisi = $(this).data('komisi');
-        if(komisi <= 100000){
+        if(komisi < 1000){
 
             Swal.fire({
                     icon: 'info',
