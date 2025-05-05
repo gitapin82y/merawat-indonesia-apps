@@ -24,6 +24,7 @@ use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CheckAuth;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\TripayPaymentMethodController;
+use Illuminate\Http\Request; 
 
 
 Route::get('/cron/check-pending-donations', [DonationController::class, 'pollPendingTransactions']);
