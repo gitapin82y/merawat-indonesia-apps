@@ -39,6 +39,15 @@
   @stack('after-style')
 
   <meta name="google-site-verification" content="Lts88k_szKxf4BQU1G628Ictl-b9O-3ya6TNX3fAli8" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CBW47VK1EJ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CBW47VK1EJ');
+</script>
 
    <!-- Adsense & Tracking Pixels -->
 @php $adsense = \App\Models\Adsense::first(); @endphp

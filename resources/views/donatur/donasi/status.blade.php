@@ -296,6 +296,21 @@
     localStorage.removeItem('utm_campaign');
     localStorage.removeItem('referral_code');
 
+    gtag('event', 'purchase', {
+      transaction_id: '{{ $donation->id }}',
+      value: {{ $donation->amount ?? 0 }},
+      currency: 'IDR',
+      tax: 0,
+      shipping: 0,
+      items: [{
+        item_id: '{{ $campaign->id ?? "" }}',
+        item_name: '{{ $campaign->title ?? "Donation" }}',
+        item_category: '{{ $campaign->category->name ?? "Campaign" }}',
+        price: {{ $donation->amount ?? 0 }},
+        quantity: 1
+      }]
+    });
+
     // Facebook Pixel - Purchase
     @if($adsense && $adsense->facebook_pixel)
     fbq('track', 'Purchase', {

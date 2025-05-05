@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\UpdateCampaignStatusCommand::class,
+        \App\Console\Commands\GenerateSitemap::class,
     ];
 
     /**
@@ -27,6 +28,7 @@ class Kernel extends ConsoleKernel
         // Jalankan perintah update status kampanye setiap jam
         // Ini memastikan kampanye dengan deadline 0 hari segera diupdate ketika jam tersisa mencapai 0
         $schedule->command('campaigns:update-status')->hourly();
+        $schedule->command('sitemap:generate')->daily();
     }
 
     /**
