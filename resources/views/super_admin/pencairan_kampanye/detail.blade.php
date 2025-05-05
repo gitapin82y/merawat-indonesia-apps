@@ -85,12 +85,6 @@
                             <div class="col-sm-4 font-weight-bold">Tanggal Pengajuan:</div>
                             <div class="col-sm-8">{{ $pencairanKampanye->created_at->format('d M Y H:i') }}</div>
                         </div>
-                        @if($pencairanKampanye->status == 'disetujui')
-                        <div class="row mb-2">
-                            <div class="col-sm-4 font-weight-bold">Tanggal Disetujui:</div>
-                            <div class="col-sm-8">{{ $pencairanKampanye->approved_at ? $pencairanKampanye->approved_at->format('d M Y H:i') : '-' }}</div>
-                        </div>
-                        @endif
                     </div>
 
                     <!-- Dokumen RAB -->

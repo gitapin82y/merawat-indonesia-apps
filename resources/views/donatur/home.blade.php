@@ -20,11 +20,11 @@
     <div class="hero">
         <img src="{{asset('assets/img/main-banner1.png')}}" class="mt-0 pt-0" width="100%" alt="">
         <div class="caption">
-            <h2>Unduh Aplikasi Donasi Sekarang!</h2>
-            <p>Nikmati kemudahan berondasi langsung dari perangkat Anda, Download sekarang!</p>
+            <h1>Sinergi Bersama Merawat Indonesia</h1>
+            <p>Nikmati kemudahan donasi di merawat indonesia langsung dari perangkat Anda, Download sekarang!</p>
             <div class="d-flex">
-                <a href="#" class="button w-50 mx-1 text-center"><i class="fa-brands fa-google-play"></i> Google Play</a>
-                <a href="#" class="button w-50 mx-1 text-center"><i class="fa-brands fa-app-store"></i> App Store</a>
+                <a href="#belum-tersedia" class="button w-50 mx-1 text-center"><i class="fa-brands fa-google-play"></i> Google Play</a>
+                <a href="#belum-tersedia" class="button w-50 mx-1 text-center"><i class="fa-brands fa-app-store"></i> App Store</a>
             </div>
         </div>
     </div>
