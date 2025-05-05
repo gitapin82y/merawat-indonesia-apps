@@ -21,7 +21,7 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Nama</th>
+                            <th>Kampanye</th>
                             <th>Nama Bank</th>
                             <th>Nomor Rekening</th>
                             <th>Total</th>
@@ -49,7 +49,7 @@ $(function () {
         columns: [
             {data: 'DT_RowIndex', name: 'DT_RowIndex'},
             {data: 'name', name: 'name'},
-            {data: 'payment_method', name: 'email'},
+            {data: 'payment_method', name: 'payment_method'},
             {data: 'account_number', name: 'account_number'},
             {data: 'amount', name: 'amount'},
             {data: 'created_at', name: 'created_at'},

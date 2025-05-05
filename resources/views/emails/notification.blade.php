@@ -1,4 +1,3 @@
-// resources/views/emails/notification.blade.php
 <!DOCTYPE html>
 <html>
 <head>

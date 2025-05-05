@@ -35,7 +35,10 @@ class CampaignWithdrawalController extends Controller
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('name', function ($row) {
-                    return $row->admin->name;
+                    return $row->campaign->name;
+                })    
+                ->addColumn('payment_method', function ($row) {
+                    return $row->payment_method. " a/n ".$request->account_name;
                 })    
                 ->addColumn('amount', function($row) {
                     return 'Rp ' . number_format($row->amount, 0, ',', '.');
