@@ -330,7 +330,7 @@
     </div>
     <div class="col-7 align-self-center">
         <h2>Jadilah Fundraising Kampanye Ini</h2>
-        <p class="pb-2">Sebarkan kebaikan melalui kampanye ini dan dapatkan komisi sebesar 10% per-transaksi donatur yang anda ajak.</p>
+        <p class="pb-2">Sebarkan kebaikan melalui kampanye ini dan dapatkan komisi sebesar {{$commission}}% per-transaksi donatur yang anda ajak.</p>
         @auth
             <button id="joinFundraising" data-slug="{{ $campaign->slug }}" class="button">Gabung Sekarang</button>
         @else

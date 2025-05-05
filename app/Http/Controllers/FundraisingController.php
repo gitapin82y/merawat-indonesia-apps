@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Fundraising;
 use App\Models\Campaign;
 use App\Models\Donation;
+use App\Models\Commission;
 use App\Models\FundraisingWithdrawal;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -45,8 +46,7 @@ class FundraisingController extends Controller
                     return $row->user->email;
                 })
                 ->addColumn('commission', function($row) {
-                    $jumlahKomisi = $row->jumlah_donasi * ($row->commission / 100); // Menghitung jumlah komisi
-                    return $row->commission . '% | Rp ' . number_format($jumlahKomisi, 0, ',', '.');
+                    return 'Komisi Saat ini : '.$row->commission . ' | Jumlah Donasi : Rp ' . number_format($row->jumlah_donasi, 0, ',', '.');
                 })                
                 ->addColumn('total_donatur', function($row) {
                     return '<span class="badge bg-primary text-white">'.$row->total_donatur.'</span>';
@@ -84,8 +84,10 @@ class FundraisingController extends Controller
             ->with('campaign')
             ->get();
         
+        $commission = Commission::first();
+        $commission = $commission->amount;
         $totalCommission = $fundraisings->sum('commission');
-        return view('donatur.fundraishing.index', compact('fundraisings', 'totalCommission'));
+        return view('donatur.fundraishing.index', compact('fundraisings', 'totalCommission','commission'));
     }
 
     public function join($slug)

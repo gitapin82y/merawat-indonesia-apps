@@ -11,10 +11,10 @@
     @include('includes.public.navbar-back', ['title' => 'Fundraishing'])
 
     @if($fundraisings->isEmpty())
-    @include('donatur.fundraishing.not-available')
+    @include('donatur.fundraishing.not-available',['commission'=>$commission])
 
     @else
-    @include('donatur.fundraishing.available',['fundraisings'=>$fundraisings,'totalCommission'=> $totalCommission])
+    @include('donatur.fundraishing.available',['fundraisings'=>$fundraisings,'totalCommission'=> $totalCommission,'commission'=>$commission])
 
     @endif
  

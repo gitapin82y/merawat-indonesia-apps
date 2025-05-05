@@ -20,6 +20,7 @@ use App\Mail\CampaignStatusMail;
 use App\Mail\CampaignStatusUpdateMail;
 use App\Mail\NewCampaignNotificationMail;
 use App\Services\NotificationService;
+use App\Models\Commission;
 
 
 class CampaignController extends Controller
@@ -431,6 +432,8 @@ public function __construct(NotificationService $notificationService)
                 }
             }
         }
+
+        $commission = Commission::first();
         
         return view('donatur.detail-kampanye', [
             'campaign' => $campaign,
@@ -441,6 +444,7 @@ public function __construct(NotificationService $notificationService)
             'guestIdentifier' => $guestIdentifier,
             'totalDonaturs' => $totalDonaturs,
             'totalKampanye' => $totalKampanye,
+            'commission' => $commission->amount,
         ]);
     }
 

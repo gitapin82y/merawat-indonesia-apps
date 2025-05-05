@@ -88,7 +88,7 @@
           <h6 class="step-title mb-1">Pendapatan Komisi</h6>
           <p class="m-0 text-muted">
             Setiap donatur yang klik link Anda melalui platform apa pun,
-            Anda akan mendapatkan komisi sebesar 10% per transaksi.
+            Anda akan mendapatkan komisi sebesar {{$commission}}% per transaksi.
           </p>
         </div>
       </div>

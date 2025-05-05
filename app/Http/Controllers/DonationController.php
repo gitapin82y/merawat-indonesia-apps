@@ -850,7 +850,6 @@ public function pollPendingTransactions()
                     } else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND']) && $donation->status !== 'gagal') {
                         $donation->status = 'gagal';
                         $donation->save();
-                        
                         Log::info('Donation marked as failed by polling', ['donation_id' => $donation->id]);
                     }
                 }

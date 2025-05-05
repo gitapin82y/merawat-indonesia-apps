@@ -151,13 +151,18 @@
                 <h5 class="mb-0">Berhasil Mengajak {{ $fundraising->total_donatur }} Donatur</h5>
             </div>
             <div class="detail-body">
-                @if(isset($fundraising->donations) && is_array($fundraising->donations) && count($fundraising->donations) > 0)
-                    @foreach($fundraising->donations as $donation)
+                @if($fundraising->donations && is_string($fundraising->donations))
+                @php 
+                    $donationsArray = json_decode($fundraising->donations, true);
+                @endphp
+                
+                @if(is_array($donationsArray) && count($donationsArray) > 0)
+                    @foreach($donationsArray as $donation)
                         <div class="donatur-card">
                             <div class="donatur-info">
-                                <div class="donatur-name">{{ $donation['name'] ?? 'Anonim' }}</div>
+                                <div class="donatur-name">{{ $donation['user_name'] ?? 'Anonim' }}</div>
                                 <div class="donatur-date">
-                                    {{ \Carbon\Carbon::parse($donation['date'] ?? now())->diffForHumans() }}
+                                    {{ \Carbon\Carbon::parse($donation['created_at'] ?? now())->diffForHumans() }}
                                 </div>
                             </div>
                             <div class="donatur-amount">
@@ -170,6 +175,11 @@
                         <p>Belum ada donatur</p>
                     </div>
                 @endif
+            @else
+                <div class="text-center py-4">
+                    <p>Belum ada donatur</p>
+                </div>
+            @endif
                 
                 <div class="divider"></div>
                 
