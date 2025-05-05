@@ -20,6 +20,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ManualPaymentMethodController;
+use App\Http\Controllers\LegalController;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CheckAuth;
 use App\Http\Controllers\SocialiteController;
@@ -29,7 +30,10 @@ use Illuminate\Http\Request;
 
 Route::get('/cron/check-pending-donations', [DonationController::class, 'pollPendingTransactions']);
 Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
-
+Route::get('/privacy-policy', [LegalController::class, 'privacyPolicy'])->name('privacy.policy');
+Route::get('/terms-of-service', [LegalController::class, 'termsOfService'])->name('terms.service');
+Route::get('/data-deletion', [LegalController::class, 'dataDeletion'])->name('data.deletion');
+Route::post('/data-deletion-request', [LegalController::class, 'processDeletionRequest'])->name('data.deletion.request');
 
 Route::post('admin', [AdminController::class, 'store'])->name('admin.store');
 
