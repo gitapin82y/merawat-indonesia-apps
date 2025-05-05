@@ -214,7 +214,7 @@
 
             let submit = false;
             
-            if (!amount || parseInt(amount) <= 10000) {
+            if (!amount || parseInt(amount) < 10000) {
                 e.preventDefault();
                 Swal.fire({
                     icon: 'info',
