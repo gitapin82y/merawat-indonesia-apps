@@ -142,7 +142,7 @@ class FundraisingWithdrawalController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'amount' => 'required|numeric|min:100000',
+            'amount' => 'required|numeric|min:1000',
             'payment_method' => 'required|string',
             'account_name' => 'required|string|max:255',
             'account_number' => 'required|string|max:50',
