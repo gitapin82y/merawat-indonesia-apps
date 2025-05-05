@@ -83,7 +83,7 @@
         <!-- Campaign Section -->
         <div class="row kampanye my-3">
             <div class="justify-content-between d-flex mb-2">
-                <h2>{{ $campaign->title }}</h2>
+                <h1>{{ $campaign->title }}</h1>
             </div>
 
             <div class="col-12 row mx-0 align-items-end mb-2">

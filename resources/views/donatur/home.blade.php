@@ -26,6 +26,11 @@
                 <a href="#belum-tersedia" class="button w-50 mx-1 text-center"><i class="fa-brands fa-google-play"></i> Google Play</a>
                 <a href="#belum-tersedia" class="button w-50 mx-1 text-center"><i class="fa-brands fa-app-store"></i> App Store</a>
             </div>
+            @if(Auth::check() && Auth::user()->role == 'super_admin')
+            <div class="d-flex">
+                <a href="{{url('/super-admin')}}" class="button w-100 mx-1 text-center"><i class="fa-solid fa-chart-line"></i> Akses Dashboard</a>
+            </div>
+            @endif
         </div>
     </div>
 

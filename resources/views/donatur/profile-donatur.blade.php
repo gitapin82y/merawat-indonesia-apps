@@ -132,7 +132,7 @@
 
             <!-- Profile & Banner Section -->
             <div class="content-box text-center">
-              <p class="mb-2 text-center mt-4 fs-5 fw-bold text-second">{{$user->name}}</p>
+              <h1 class="mb-2 text-center mt-4 fs-5 fw-bold text-second">{{$user->name}}</h1>
               <p class="text-muted mx-3 mt-2">
                 {{$user->bio ?? 'Bio belum tersedia'}}
               </p>

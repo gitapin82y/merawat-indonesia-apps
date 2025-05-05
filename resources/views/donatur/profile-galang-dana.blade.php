@@ -158,7 +158,7 @@
        <div class="content-box text-center">
 
         <div class="d-flex flex-column align-items-center">
-            <p class="mb-2 text-center mt-4 fs-5 fw-bold text-second">  {{$admin->name}} </p>
+            <h1 class="mb-2 text-center mt-4 fs-5 fw-bold text-second">  {{$admin->name}} </h1>
             @if($admin->status === 'disetujui')
             <div class="d-flex align-items-center bg-opacity rounded-pill px-3 py-1">
                 <img src="{{asset('assets/img/icon/verify.svg')}}" alt="Akun Terverifikasi" class="me-2"

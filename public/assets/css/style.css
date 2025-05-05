@@ -28,7 +28,12 @@
   }
   
   /* Gaya untuk Judul (h1 hingga h6) */
-  h1,
+  h1{
+    font-family: var(--font-family-title);
+    font-size: 20px;
+    font-weight: var(--font-weight-bold);
+    color: var(--title-color);
+  }
   h2 {
     font-family: var(--font-family-title);
     font-size: var(--font-size-title);
