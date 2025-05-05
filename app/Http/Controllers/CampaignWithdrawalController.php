@@ -38,7 +38,7 @@ class CampaignWithdrawalController extends Controller
                     return $row->campaign->name;
                 })    
                 ->addColumn('payment_method', function ($row) {
-                    return $row->payment_method. " a/n ".$request->account_name;
+                    return $row->payment_method. " a/n ".$row->account_name;
                 })    
                 ->addColumn('amount', function($row) {
                     return 'Rp ' . number_format($row->amount, 0, ',', '.');
