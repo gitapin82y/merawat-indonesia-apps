@@ -131,7 +131,7 @@ class FundraisingController extends Controller
     {
         // Validasi input
     $validator = Validator::make($request->all(), [
-        'amount' => 'required|numeric|min:100000',
+        'amount' => 'required|numeric|min:1000',
         'payment_method' => 'required|string',
         'account_name' => 'required|string|max:255',
         'account_number' => 'required|string|max:50',
@@ -156,7 +156,7 @@ class FundraisingController extends Controller
             return redirect()->back()->with('error', 'Jumlah yang diminta melebihi jumlah komisi yang tersedia.');
         }
         
-        if ($totalCommission < 100000) {
+        if ($totalCommission < 1000) {
             return redirect()->back()->with('error', 'Minimal pencairan dana adalah Rp 100.000');
         }
 
