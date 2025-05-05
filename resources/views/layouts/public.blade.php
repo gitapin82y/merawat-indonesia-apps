@@ -6,11 +6,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Merawat Indonesia - Platform donasi online terpercaya untuk berbagi kebaikan. Donasi mudah, aman dan transparan untuk membantu sesama di seluruh Indonesia.">
+  <meta name="keywords" content="website donasi, donasi online, merawat indonesia, platform donasi, galang dana, sedekah online, zakat, bantuan sosial">
+  <meta name="author" content="Merawat Indonesia">
+
+  <!-- Open Graph Meta Tags for Social Media -->
+  <meta property="og:title" content="@yield('title') | Merawat Indonesia - Platform Donasi Online Terpercaya">
+  <meta property="og:description" content="Platform donasi online terpercaya untuk berbagi kebaikan. Donasi mudah, aman dan transparan.">
+  <meta property="og:image" content="{{asset('assets/img/merawat-indonesia-logo.png')}}">
+  <meta property="og:url" content="{{ url()->current() }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Merawat Indonesia">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="@yield('title') | Merawat Indonesia - Platform Donasi Online">
+  <meta name="twitter:description" content="Platform donasi online terpercaya untuk berbagi kebaikan. Donasi mudah, aman dan transparan.">
+  <meta name="twitter:image" content="{{asset('assets/img/merawat-indonesia-logo.png')}}">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="{{ url()->current() }}">
+  
+  <!-- Favicon -->
   <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="{{asset('assets/img/merawat-indonesia-logo.png')}}" />
-  <title>@yield('title')</title>
+  <link rel="apple-touch-icon" href="{{asset('assets/img/merawat-indonesia-logo.png')}}">
+  
+  <!-- Title with keywords -->
+  <title>@yield('title') | Merawat Indonesia - Platform Donasi Online Terpercaya</title>
 
   @include('includes.public.style')
   @stack('after-style')
+
+  <meta name="google-site-verification" content="Lts88k_szKxf4BQU1G628Ictl-b9O-3ya6TNX3fAli8" />
 
    <!-- Adsense & Tracking Pixels -->
 @php $adsense = \App\Models\Adsense::first(); @endphp
