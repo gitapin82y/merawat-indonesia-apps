@@ -13,15 +13,17 @@ class FundraisingStatusMail extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public $withdrawal;
+    public $emailData;
 
     /**
      * Create a new message instance.
      *
      * @param FundraisingWithdrawal $withdrawal
      */
-    public function __construct(FundraisingWithdrawal $withdrawal)
+    public function __construct(FundraisingWithdrawal $withdrawal, array $emailData = [])
     {
         $this->withdrawal = $withdrawal;
+        $this->emailData = $emailData;
     }
 
     /**
@@ -35,24 +37,25 @@ class FundraisingStatusMail extends Mailable implements ShouldQueue
         
         if ($this->withdrawal->status == 'disetujui') {
             $subject = 'Pencairan Dana Fundraising Disetujui';
-            return $this->subject($subject)
-                    ->view('emails.fundraising-withdrawal-approved')
-                    ->with([
-                        'withdrawal' => $this->withdrawal,
-                    ]);
+            $view = 'emails.fundraising-withdrawal-approved';
         } else if ($this->withdrawal->status == 'ditolak') {
             $subject = 'Pencairan Dana Fundraising Ditolak';
-            return $this->subject($subject)
-                    ->view('emails.fundraising-withdrawal-rejected')
-                    ->with([
-                        'withdrawal' => $this->withdrawal,
-                    ]);
+            $view = 'emails.fundraising-withdrawal-rejected';
+        } else {
+            $view = 'emails.fundraising-withdrawal-status';
         }
         
-        return $this->subject($subject)
-                ->view('emails.fundraising-withdrawal-status')
-                ->with([
-                    'withdrawal' => $this->withdrawal,
-                ]);
+        $mail = $this->subject($subject)
+                     ->view($view)
+                     ->with([
+                         'withdrawal' => $this->withdrawal,
+                     ]);
+        
+        // Add any additional data to the email
+        if (!empty($this->emailData)) {
+            $mail->with($this->emailData);
+        }
+                
+        return $mail;
     }
 }

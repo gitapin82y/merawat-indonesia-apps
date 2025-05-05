@@ -142,7 +142,7 @@ class FundraisingWithdrawalController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'amount' => 'required|numeric|min:1000',
+            'amount' => 'required|numeric|min:100000',
             'payment_method' => 'required|string',
             'account_name' => 'required|string|max:255',
             'account_number' => 'required|string|max:50',
@@ -251,6 +251,9 @@ class FundraisingWithdrawalController extends Controller
             return redirect()->back()
                 ->with('error', 'Bukti pencairan dana diperlukan untuk menyetujui pencairan dana.')
                 ->withInput();
+        }else if ($request->status == 'disetujui' && $fundraisingWithdrawal->bukti_pencairan) {
+            // Jika sudah ada bukti pencairan sebelumnya
+            $buktiPath = $fundraisingWithdrawal->bukti_pencairan;
         }
         
         // If rejected, save the reason
@@ -300,10 +303,43 @@ class FundraisingWithdrawalController extends Controller
             if ($request->status == 'disetujui') {
                 $title = 'Permintaan Pencairan Dana Disetujui';
                 $message = "Permintaan pencairan dana sebesar Rp {$amount} telah disetujui. Dana akan ditransfer ke rekening Anda dalam waktu 1x24 jam.";
-                
-                if ($fundraisingWithdrawal->bukti_pencairan) {
-                    $additionalData['bukti_pencairan'] = $fundraisingWithdrawal->bukti_pencairan;
+
+                $buktiPath = $fundraisingWithdrawal->bukti_pencairan;
+
+                if ($buktiPath) {
+                    $additionalData['bukti_pencairan'] = $buktiPath;
+            
+                    // Kirim notifikasi dengan gambar
+                    $this->notificationService->createNotification(
+                        $user,
+                        $title,
+                        $message,
+                        'fundraising_withdraw_update',
+                        $additionalData,
+                        $buktiPath // Tambahkan path gambar
+                    );
+                    
+                    // Kirim email dengan gambar bukti pencairan
+                    $emailData = [
+                        'withdrawal' => $fundraisingWithdrawal,
+                        'bukti_pencairan_url' => asset('storage/' . $buktiPath)
+                    ];
+
+                    Mail::to($user->email)->send(new FundraisingStatusMail($fundraisingWithdrawal, $emailData));
+                } else {
+                    // Kirim notifikasi tanpa gambar
+                    $this->notificationService->createNotification(
+                        $user,
+                        $title,
+                        $message,
+                        'fundraising_withdraw_update',
+                        $additionalData
+                    );
+                    
+                    // Kirim email tanpa gambar
+                    Mail::to($user->email)->send(new FundraisingStatusMail($fundraisingWithdrawal));
                 }
+
             } elseif ($request->status == 'ditolak') {
                 $title = 'Permintaan Pencairan Dana Ditolak';
                 $message = "Permintaan pencairan dana sebesar Rp {$amount} ditolak.";
@@ -314,19 +350,18 @@ class FundraisingWithdrawalController extends Controller
                 } else {
                     $message .= " Silakan hubungi admin untuk informasi lebih lanjut.";
                 }
+
+                $this->notificationService->createNotification(
+                    $user,
+                    $title,
+                    $message,
+                    'fundraising_withdraw_update',
+                    $additionalData
+                );
+                
+                // Kirim email tanpa gambar
+                Mail::to($user->email)->send(new FundraisingStatusMail($fundraisingWithdrawal));
             }
-            
-            // Send email notification to user
-            Mail::to($user->email)->send(new FundraisingStatusMail($fundraisingWithdrawal));
-            
-            // Create system notification for user
-            $this->notificationService->createNotification(
-                $user,
-                $title,
-                $message,
-                'fundraising_withdraw_update',
-                $additionalData
-            );
         }
 
         // Handle different response types based on request

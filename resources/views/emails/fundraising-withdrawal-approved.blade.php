@@ -93,6 +93,13 @@
                     <strong>Status:</strong> <span style="color: #28a745; font-weight: bold;">DISETUJUI</span>
                 </div>
             </div>
+
+            @if(isset($bukti_pencairan_url))
+            <div class="bukti-transfer">
+                <h3>Bukti Transfer</h3>
+                <img src="{{ $bukti_pencairan_url }}" alt="Bukti Transfer" style="max-width: 100%;">
+            </div>
+            @endif
             
             <p>Dana akan ditransfer ke rekening yang Anda berikan dalam waktu 1x24 jam kerja.</p>
             <p>Jika Anda memiliki pertanyaan, silakan hubungi tim dukungan kami.</p>
