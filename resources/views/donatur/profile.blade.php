@@ -28,11 +28,6 @@
             box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .social-icon img {
-            width: auto;
-            height: 60px;
-            object-fit: contain;
-        }
 
         .btn-responsive {
             font-size: 14px;

@@ -52,7 +52,7 @@
 
     .social-icon img {
         width: auto;
-        height: 60px;
+        height: 40px;
         object-fit: contain;
     }
 
@@ -94,11 +94,6 @@
             height: 12px;
             margin-right: 6px;
         }
-
-        .social-icon img {
-            height: 40px;
-        }
-
         .profile-img {
             width: 120px;
             height: 120px;

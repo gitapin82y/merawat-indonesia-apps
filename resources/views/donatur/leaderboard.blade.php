@@ -247,7 +247,7 @@
           </div>
   
           <!-- Donatur Leaderboard Content -->
-          <div class="leaderboard-content" id="donatur-content" style="padding-bottom: 500px;">
+          <div class="leaderboard-content" id="donatur-content" style="padding-bottom: 100px;">
             <h2 class="leaderboard-title">Top 10 Donasi Terbanyak</h2>
             <p class="leaderboard-subtitle">
               Diambil berdasarkan jumlah transaksi donasi terbanyak

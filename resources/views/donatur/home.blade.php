@@ -10,6 +10,7 @@
     border-radius: 50% !important;
     object-fit: cover;
   }
+
 </style>
 @endpush
 
@@ -172,6 +173,7 @@
     @endif
   
     </div>
+ 
 
     </div>
 
@@ -180,72 +182,6 @@
 @endsection
 
 @push('after-script')
-{{-- <script>
-    var swiper = new Swiper(".mySwiper", {
-      spaceBetween: 20,
-      navigation: {
-        nextEl: ".swiper-button-next",
-        prevEl: ".swiper-button-prev",
-      },
-      pagination: {
-        el: ".swiper-pagination",
-        clickable: true,
-      },
-      autoplay: {
-      delay: 3000,
-      disableOnInteraction: false,
-    },
-    loop: true, 
-    slidesPerView: 1.8,
-      breakpoints: {
-        1024: {
-          slidesPerView: 2.5,
-        },
-      }
-    });
-
-    var swiper = new Swiper(".sliderBanner", {
-      spaceBetween: 20,
-      navigation: {
-        nextEl: ".swiper-button-next",
-        prevEl: ".swiper-button-prev",
-      },
-      pagination: {
-        el: ".swiper-pagination",
-        clickable: true,
-      },
-      autoplay: {
-      delay: 3000,
-      disableOnInteraction: false,
-    },
-    loop: true, 
-    slidesPerView: 1,
-    });
-
-    var swiper = new Swiper(".donaturSwiper", {
-      navigation: {
-        nextEl: ".swiper-button-next",
-        prevEl: ".swiper-button-prev",
-      },
-      pagination: {
-        el: ".swiper-pagination",
-        clickable: true,
-      },
-      autoplay: {
-      delay: 3000,
-      disableOnInteraction: false,
-    },
-    loop: true, 
-    slidesPerView: 5.5,
-      breakpoints: {
-        1024: {
-          slidesPerView: 7.5,
-        },
-      }
-    });
-
-  </script> --}}
-
 <script>
     $(document).ready(function() {
         // Saat tombol "Lihat Lebih Banyak" diklik

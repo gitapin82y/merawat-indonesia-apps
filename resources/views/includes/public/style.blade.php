@@ -14,6 +14,11 @@
     .donaturSwiper .swiper-slide {
     margin-right: 15px; /* Adjust this value for spacing */
   }
+  .social-icon img {
+        width: auto;
+        height: 40px;
+        object-fit: contain;
+    }
     .image-campaign-card{
         width: 100%;
         aspect-ratio: 2 / 1.1; /* atau 4 / 3, tergantung proporsi gambar yang diinginkan */

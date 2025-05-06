@@ -78,15 +78,20 @@
 
                 <div class="form-floating mb-3">
                   <select name="payment_method" class="form-select @error('payment_method') is-invalid @enderror" id="payment_method">
-                        <option value="">Nama Bank</option>
-                        <option value="bca">Bank BCA</option>
-                        <option value="mandiri">Bank Mandiri</option>
-                        <option value="bni">Bank BNI</option>
-                        <option value="bri">Bank BRI</option>
-                    </select>
-                    <label for="payment_method">Akun Bank</label>
-                    @error('payment_method')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
+                      <option value="">Nama Bank</option>
+                      <option value="bca">Bank BCA</option>
+                      <option value="mandiri">Bank Mandiri</option>
+                      <option value="bni">Bank BNI</option>
+                      <option value="bri">Bank BRI</option>
+                      <option value="cimb">Bank CIMB Niaga</option>
+                      <option value="btn">Bank BTN</option>
+                      <option value="danamon">Bank Danamon</option>
+                      <option value="permata">Bank Permata</option>
+                      <option value="bsi">Bank Syariah Indonesia</option>
+                  </select>
+                  <label for="payment_method">Akun Bank</label>
+                  @error('payment_method')<div class="invalid-feedback">{{ $message }}</div>@enderror
+              </div>
                 
                 <div class="form-floating mb-3">
                   <input type="text" name="account_name" class="form-control @error('account_name') is-invalid @enderror" id="account_name"

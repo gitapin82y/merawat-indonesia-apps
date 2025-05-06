@@ -315,10 +315,16 @@
                     <option value="bca" {{ old('payment_method') == 'bca' ? 'selected' : '' }}>Bank BCA</option>
                     <option value="bri" {{ old('payment_method') == 'bri' ? 'selected' : '' }}>Bank BRI</option>
                     <option value="mandiri" {{ old('payment_method') == 'mandiri' ? 'selected' : '' }}>Bank Mandiri</option>
-                  </select>
-                  @error('payment_method')
+                    <option value="bni" {{ old('payment_method') == 'bni' ? 'selected' : '' }}>Bank BNI</option>
+                    <option value="cimb" {{ old('payment_method') == 'cimb' ? 'selected' : '' }}>Bank CIMB Niaga</option>
+                    <option value="btn" {{ old('payment_method') == 'btn' ? 'selected' : '' }}>Bank BTN</option>
+                    <option value="danamon" {{ old('payment_method') == 'danamon' ? 'selected' : '' }}>Bank Danamon</option>
+                    <option value="permata" {{ old('payment_method') == 'permata' ? 'selected' : '' }}>Bank Permata</option>
+                    <option value="bsi" {{ old('payment_method') == 'bsi' ? 'selected' : '' }}>Bank Syariah Indonesia</option>
+                </select>
+                @error('payment_method')
                     <small class="text-danger">{{ $message }}</small>
-                  @enderror
+                @enderror
   
                   <input
                   type="text" name="account_name"
