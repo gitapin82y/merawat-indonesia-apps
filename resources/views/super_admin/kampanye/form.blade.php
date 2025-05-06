@@ -72,6 +72,14 @@
                           <label for="title">Judul</label>
                           @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
                       </div>
+
+                      <div class="form-floating mb-3">
+                        <input type="text" name="slug" class="form-control @error('slug') is-invalid @enderror" id="slug"
+                            value="{{ old('slug', $kampanye->slug ?? '') }}" placeholder="Slug URL">
+                        <label for="slug">Slug URL (opsional)</label>
+                        <small class="form-text text-muted">URL khusus untuk kampanye ini. Jika dikosongkan, sistem akan generate otomatis dari judul. Format: my-campaign-name</small>
+                        @error('slug')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
           
                       <div class="form-floating mb-3">
                           <input type="date" name="deadline" class="form-control @error('deadline') is-invalid @enderror" id="deadline"
