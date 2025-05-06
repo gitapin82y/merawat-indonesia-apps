@@ -271,6 +271,8 @@ class FundraisingController extends Controller
             }
         }    
 
+        $commission = Commission::first();
+
         return view('donatur.detail-kampanye', [
             'campaign' => $campaign,
             'kabarTerbaru' => $kabarTerbaru,
@@ -282,6 +284,7 @@ class FundraisingController extends Controller
             'totalKampanye' => $totalKampanye,
             'request' => request(), 
             'fundraising' => $fundraising,
+            'commission' => $commission->amount,
         ]);
     }
 
