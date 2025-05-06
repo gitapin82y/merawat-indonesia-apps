@@ -44,6 +44,8 @@
                         <tr>
                             <th>No</th>
                             <th>Nama</th>
+                            <th>Email</th>
+                            <th>Phone</th>
                             <th>Total Donasi</th>
                             <th>Metode</th>
                             <th>Tanggal</th>
@@ -137,6 +139,8 @@ $(function () {
         columns: [
             {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
             {data: 'name', name: 'name'},
+            {data: 'email', name: 'email'},
+            {data: 'phone', name: 'phone'},
             {data: 'amount', name: 'amount'},
             {data: 'method', name: 'method'},
             {data: 'created_at', name: 'created_at'},

@@ -47,6 +47,8 @@
                             <th>No</th>
                             <th>Kampanye</th>
                             <th>Donatur</th>
+                            <th>Email</th>
+                            <th>Phone</th>
                             <th>Tanggal</th>
                             <th>Total</th>
                         </tr>
@@ -152,6 +154,8 @@ $(function () {
             {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
             {data: 'campaign_title', name: 'campaign.title'},
             {data: 'name', name: 'name'},
+            {data: 'email', name: 'email'},
+            {data: 'phone', name: 'phone'},
             {data: 'created_at', name: 'created_at'},
             {data: 'amount', name: 'amount', render: function(data) {
                 return data ? 'Rp ' + new Intl.NumberFormat('id-ID').format(data) : '-';
