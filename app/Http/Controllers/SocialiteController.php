@@ -78,6 +78,10 @@ class SocialiteController extends Controller
         
         // Login user
         Auth::login($user);
+
+        if ($user->role === 'super_admin') {
+            return redirect('/super-admin')->with('success', 'Login berhasil!');
+        }
         
         // Migrasi likes dari guest ke user
         $guestIdentifier = request()->cookie('guest_identifier');

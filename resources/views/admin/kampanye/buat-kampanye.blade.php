@@ -87,6 +87,13 @@
                 @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="form-floating mb-3">
+                <input type="text" name="slug" class="form-control @error('slug') is-invalid @enderror" id="slug"
+                    value="{{ old('slug', $kampanye->slug ?? '') }}" placeholder="Slug URL (opsional)">
+                <label for="slug">Slug URL (opsional)</label>
+                <small class="form-text text-muted">Jika kosong, slug akan otomatis dibuat dari judul kampanye. Contoh: my-campaign-name</small>
+                @error('slug')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="form-floating mb-3">
                 <input type="text" id="jumlah_target_donasi" name="jumlah_target_donasi" class="form-control @error('jumlah_target_donasi') is-invalid @enderror" value="{{ old('jumlah_target_donasi', $kampanye->jumlah_target_donasi ?? '') }}">
                 <label for="jumlah_target_donasi">Target Donasi</label>
                 @error('jumlah_target_donasi')

@@ -111,6 +111,7 @@ public function __construct(NotificationService $notificationService)
             'deadline' => 'nullable|date',
             'jumlah_target_donasi' => 'nullable|numeric',
             'document_rab' => 'required|mimes:pdf,doc,docx,xls,xlsx|max:5120',
+            'slug' => 'nullable|alpha_dash|max:255|unique:campaigns,slug',
         ]);
     
         if ($validator->fails()) {
@@ -124,6 +125,9 @@ public function __construct(NotificationService $notificationService)
             $campaignData = $request->except(['photo', 'document_rab']);
 
 
+                    // Check if custom slug was provided
+        if (empty($request->slug)) {
+            // Generate slug from title
             $slug = Str::slug($request->title);
             $originalSlug = $slug;
             $count = 1;
@@ -131,8 +135,19 @@ public function __construct(NotificationService $notificationService)
             while (Campaign::where('slug', $slug)->exists()) {
                 $slug = $originalSlug . '-' . $count++;
             }
+        } else {
+            // Use custom slug
+            $slug = Str::slug($request->slug);
+            
+            // Check if slug is already taken
+            if (Campaign::where('slug', $slug)->exists()) {
+                return redirect()->back()
+                    ->withErrors(['slug' => 'Slug tersebut sudah digunakan. Silakan pilih slug lain.'])
+                    ->withInput();
+            }
+        }
 
-            $campaignData['slug'] = $slug;
+        $campaignData['slug'] = $slug;
 
             
             // Handle file uploads
@@ -264,6 +279,7 @@ public function __construct(NotificationService $notificationService)
             'deadline' => 'nullable|date',
             'jumlah_target_donasi' => 'nullable|numeric',
             'document_rab' => 'nullable|mimes:pdf,doc,docx,xls,xlsx|max:5120',
+            'slug' => 'nullable|alpha_dash|max:255|unique:campaigns,slug,' . $id, 
         ];
 
         if ($role === 'super_admin') {
@@ -286,19 +302,34 @@ public function __construct(NotificationService $notificationService)
         try {
             $kampanyeData = $request->except(['photo', 'document_rab']);
 
+           // Handle custom slug
+        if (empty($request->slug)) {
+            // If title changed, regenerate slug
             if ($request->title !== $kampanye->title) {
                 $slug = Str::slug($request->title);
                 $originalSlug = $slug;
                 $count = 1;
                 
-                // Pastikan slug unik
+                // Make sure slug is unique
                 while (Campaign::where('slug', $slug)->where('id', '!=', $kampanye->id)->exists()) {
                     $slug = $originalSlug . '-' . $count++;
                 }
                 
                 $kampanyeData['slug'] = $slug;
             }
-
+        } else {
+            // Use custom slug
+            $slug = Str::slug($request->slug);
+            
+            // Check if slug is already taken by another campaign
+            if (Campaign::where('slug', $slug)->where('id', '!=', $kampanye->id)->exists()) {
+                return redirect()->back()
+                    ->withErrors(['slug' => 'Slug tersebut sudah digunakan. Silakan pilih slug lain.'])
+                    ->withInput();
+            }
+            
+            $kampanyeData['slug'] = $slug;
+        }
             
             if ($request->hasFile('photo')) {
                 if ($kampanye->photo) {

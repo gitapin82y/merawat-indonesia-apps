@@ -102,6 +102,11 @@ class AuthController extends Controller
     // Coba login normal
     if (Auth::attempt($request->only('email', 'password'))) {
         $user = Auth::user();
+
+        if ($user->role === 'super_admin') {
+            return redirect('/super-admin')->with('success', 'Login berhasil!');
+        }
+        
         
         // Get guest identifier from cookie
         $guestIdentifier = $request->cookie('guest_identifier');
