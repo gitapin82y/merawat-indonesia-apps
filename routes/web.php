@@ -37,7 +37,9 @@ Route::get('/privacy-policy', [LegalDocumentController::class, 'showPrivacyPolic
 Route::get('/terms-of-service', [LegalDocumentController::class, 'showTermsOfService'])->name('terms.service');
 Route::get('/data-deletion', [LegalController::class, 'dataDeletion'])->name('data.deletion');
 Route::post('/data-deletion-request', [LegalController::class, 'processDeletionRequest'])->name('data.deletion.request');
-
+Route::get('/test-error/{code}', function ($code) {
+    abort($code);
+});
 
 Route::post('admin', [AdminController::class, 'store'])->name('admin.store');
 
