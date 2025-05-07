@@ -158,6 +158,7 @@ Route::resource('campaign-withdrawals', CampaignWithdrawalController::class);
 
 // routes/web.php
 Route::post('/api/tripay/callback', [DonationController::class, 'callback']);
+Route::post('/upload-image', [CampaignController::class, 'upload'])->name('image.upload');
 
 // ->middleware(['auth', 'superadmin'])
 Route::post('kampanye/toggle-save', [CampaignController::class, 'toggleSave'])->name('campaign.toggle-save');
@@ -187,9 +188,6 @@ Route::post('/commission/update', [CommissionController::class, 'updateCommissio
 
     Route::get('/pencairan-fundraising/{id}/approve', [FundraisingWithdrawalController::class, 'approve'])->name('pencairan-fundraising.approve');
     Route::get('/pencairan-fundraising/{id}/reject', [FundraisingWithdrawalController::class, 'reject'])->name('pencairan-fundraising.reject');
-
-    Route::post('/upload-image', [CampaignController::class, 'upload'])->name('image.upload');
-
     Route::post('categories/{id}', [CategoryController::class, 'update']);
     // rev1
     // Route::post('prioritas-kampanye/{id}', [PrioritasCampaignController::class, 'destroy'])->name('prioritas-kampanye.destroy');
