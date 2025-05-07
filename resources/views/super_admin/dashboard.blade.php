@@ -43,10 +43,20 @@
                 Pembayaran Manual
             </a>
         </div>
-
         <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#manageTripayModal">
                 Pembayaran Tripay
+            </a>
+        </div>
+        <div class="col-12 my-2 col-md-2 col-lg-2">
+            <a class="w-100 btn btn-danger" href="{{ route('legal-documents.index') }}">
+                Dokumen Legal
+            </a>
+        </div>
+        
+        <div class="col-12 my-2 col-md-2 col-lg-2">
+            <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#socialMediaModal">
+                Media Sosial
             </a>
         </div>
 
@@ -188,7 +198,8 @@
     </div>
   </div>
 
-@include('modal_dashboard.adsense')
+  @include('modal_dashboard.adsense')
+@include('modal_dashboard.social_media')
 @include('modal_dashboard.kategori')
 @include('modal_dashboard.form_kategori')
 @include('modal_dashboard.banner')
@@ -1496,4 +1507,110 @@ $(document).on('click', '#cropKategoriButton', function() {
     });
 });
 </script>
+  
+<script>
+    // Perbaikan pada script modal social media
+   $(document).ready(function() {
+     // Setup AJAX headers
+     $.ajaxSetup({
+       headers: {
+         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+       }
+     });
+     
+     // Load social media data when modal is opened
+     $('#socialMediaModal').on('show.bs.modal', function() {
+       $.ajax({
+         url: '/super-admin/site-settings/social-media',
+         method: 'GET',
+         success: function(response) {
+           if (response.status === 'success') {
+             const socialMedia = response.data;
+             
+             // Fill form with existing data
+             $('#facebook_url').val(socialMedia.facebook || '');
+             $('#instagram_url').val(socialMedia.instagram || '');
+             $('#youtube_url').val(socialMedia.youtube || '');
+             $('#tiktok_url').val(socialMedia.tiktok || '');
+           }
+         },
+         error: function() {
+           Swal.fire({
+             icon: 'error',
+             title: 'Error',
+             text: 'Gagal memuat data media sosial.',
+             toast: true,
+             position: 'top-end',
+             showConfirmButton: false,
+             timer: 3000
+           });
+         }
+       });
+     });
+   
+     // Save social media settings dengan handling yang lebih baik
+     $('#saveSocialMediaBtn').on('click', function() {
+       // Reset validation errors
+       $('.form-control').removeClass('is-invalid');
+       $('.invalid-feedback').text('');
+       
+       // Kumpulkan data formulir secara manual
+       const data = {
+         facebook: $('#facebook_url').val(),
+         instagram: $('#instagram_url').val(),
+         youtube: $('#youtube_url').val(),
+         tiktok: $('#tiktok_url').val(),
+       };
+       
+       console.log('Attempting to save social media data:', data);
+   
+       $.ajax({
+         url: '/super-admin/site-settings/social-media',
+         method: 'POST',
+         data: {
+           social_media: data,
+           _token: $('meta[name="csrf-token"]').attr('content')
+         },
+         success: function(response) {
+           console.log('Success response:', response);
+           $('#socialMediaModal').modal('hide');
+           
+           Swal.fire({
+             icon: 'success',
+             title: 'Berhasil',
+             text: response.message || 'Pengaturan media sosial berhasil disimpan',
+             toast: true,
+             position: 'top-end',
+             showConfirmButton: false,
+             timer: 3000
+           });
+         },
+         error: function(xhr) {
+           console.error('Error response:', xhr.responseJSON);
+           
+           if (xhr.status === 422) {
+             const errors = xhr.responseJSON.errors;
+             
+             // Display validation errors
+             Object.keys(errors).forEach(function(key) {
+               const field = key.replace('social_media.', '');
+               $(`#${field}_url`).addClass('is-invalid');
+               $(`#error-${field}`).text(errors[key][0]);
+             });
+           } else {
+             Swal.fire({
+               icon: 'error',
+               title: 'Error',
+               text: xhr.responseJSON?.message || 'Gagal menyimpan pengaturan media sosial.',
+               toast: true,
+               position: 'top-end',
+               showConfirmButton: false,
+               timer: 3000
+             });
+           }
+         }
+       });
+     });
+   });
+     </script>
 @endpush

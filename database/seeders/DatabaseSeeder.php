@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             WithdrawalsTableSeeder::class,
             UserCampaignSaveTableSeeder::class,
             NotificationsTableSeeder::class,
+            LegalDocumentsSeeder::class
         ]);
     }
 }

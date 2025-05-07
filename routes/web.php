@@ -26,14 +26,18 @@ use App\Http\Middleware\CheckAuth;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\TripayPaymentMethodController;
 use Illuminate\Http\Request; 
+use App\Http\Controllers\LegalDocumentController;
+use App\Http\Controllers\SiteSettingsController;
 
 
 Route::get('/cron/check-pending-donations', [DonationController::class, 'pollPendingTransactions']);
 Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
-Route::get('/privacy-policy', [LegalController::class, 'privacyPolicy'])->name('privacy.policy');
-Route::get('/terms-of-service', [LegalController::class, 'termsOfService'])->name('terms.service');
+// Replace current routes with:
+Route::get('/privacy-policy', [LegalDocumentController::class, 'showPrivacyPolicy'])->name('privacy.policy');
+Route::get('/terms-of-service', [LegalDocumentController::class, 'showTermsOfService'])->name('terms.service');
 Route::get('/data-deletion', [LegalController::class, 'dataDeletion'])->name('data.deletion');
 Route::post('/data-deletion-request', [LegalController::class, 'processDeletionRequest'])->name('data.deletion.request');
+
 
 Route::post('admin', [AdminController::class, 'store'])->name('admin.store');
 
@@ -169,6 +173,15 @@ Route::middleware(['checkRole:super_admin'])->prefix('super-admin')->group(funct
     ->name('commission.get');
 Route::post('/commission/update', [CommissionController::class, 'updateCommission'])
     ->name('commission.update');
+
+    // Legal document management routes
+Route::get('/legal-documents', [LegalDocumentController::class, 'index'])->name('legal-documents.index');
+Route::get('/legal-documents/{type}', [LegalDocumentController::class, 'edit'])->name('legal-documents.edit');
+Route::post('/legal-documents/{type}', [LegalDocumentController::class, 'update'])->name('legal-documents.update');
+
+// Site settings and social media routes
+Route::get('/site-settings/social-media', [SiteSettingsController::class, 'getSocialMedia'])->name('site-settings.social-media');
+Route::post('/site-settings/social-media', [SiteSettingsController::class, 'updateSocialMedia'])->name('site-settings.update-social-media');
     
     Route::resource('donasi-kampanye', DonationController::class);
 
