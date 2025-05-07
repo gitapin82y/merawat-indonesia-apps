@@ -286,13 +286,9 @@
                 <h6 class="mb-3 fw-bold fs-7 text-white text-wrap">Tampilkan Kampanye Galang Dana di Halaman
                     Utama Merawat
                     Indonesia</h6>
-
-
-                <button class="btn btn-light text-danger fw-bold px-4 py-1 rounded-pill"
+                <a href="https://wa.me/088805011740" class="btn btn-light text-danger fw-bold px-4 py-1 rounded-pill"
                     style="font-size: 14px;">Hubungi
-                    Kami</button>
-
-
+                    Kami</a>
             </div>
             <img src="{{asset('assets/img/icon/grafik.svg')}}" alt="Grafik Galang Dana" class="img-fluid ms-3"
                 style="max-height: 100px;">
