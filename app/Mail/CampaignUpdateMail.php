@@ -8,6 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class CampaignUpdateMail extends Mailable implements ShouldQueue
 {
@@ -39,7 +40,14 @@ class CampaignUpdateMail extends Mailable implements ShouldQueue
      */
     public function build()
     {
-        return $this->subject('Kabar Terbaru: ' . $this->campaign->title)
-                    ->markdown('emails.campaign_update');
+        try {
+            Log::info('Building email for campaign: ' . $this->campaign->title . ' to ' . $this->donor['email']);
+            return $this->subject('Kabar Terbaru: ' . $this->campaign->title)
+                        ->view('emails.campaign_update'); // Changed from markdown to view
+        } catch (\Exception $e) {
+            Log::error('Error building email: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            throw $e;
+        }
     }
 }

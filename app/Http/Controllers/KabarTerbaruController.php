@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Notification;
 use App\Models\Donation;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -135,25 +136,39 @@ class KabarTerbaruController extends Controller
      */
     private function notifyDonors(KabarTerbaru $kabarTerbaru, Campaign $campaign)
     {
-        // Get all unique donors who have made a donation to this campaign
-        // Only consider successful donations (adjust the status as needed)
-        $donations = Donation::where('campaign_id', $campaign->id)
-                           ->where('status', 'success')
-                           ->get();
-        
-        // Group donors by email to avoid duplicate notifications
-        $uniqueDonors = [];
-        foreach ($donations as $donation) {
-            // Use the email as the key to avoid duplicates
-            $uniqueDonors[$donation->email] = [
-                'name' => $donation->name,
-                'email' => $donation->email
-            ];
-        }
-        
-        // Send notification to each donor
-        foreach ($uniqueDonors as $donor) {
-            $this->sendUpdateEmail($donor, $kabarTerbaru, $campaign);
+        try {
+            // Get all unique donors who have made a donation to this campaign
+            // Only consider successful donations (adjust the status as needed)
+            $donations = Donation::where('campaign_id', $campaign->id)
+                               ->where('status', 'sukses')
+                               ->get();
+            
+            \Log::info('Notifying donors for campaign: ' . $campaign->id . ' - ' . $campaign->title);
+            \Log::info('Found ' . $donations->count() . ' donations with status "success"');
+            
+            // Group donors by email to avoid duplicate notifications
+            $uniqueDonors = [];
+            foreach ($donations as $donation) {
+                // Use the email as the key to avoid duplicates
+                $uniqueDonors[$donation->email] = [
+                    'name' => $donation->name,
+                    'email' => $donation->email
+                ];
+            }
+            
+            \Log::info('Sending notifications to ' . count($uniqueDonors) . ' unique donors');
+            
+            // Send notification to each donor
+            foreach ($uniqueDonors as $donor) {
+                $this->sendUpdateEmail($donor, $kabarTerbaru, $campaign);
+            }
+            
+            \Log::info('Notification process completed');
+        } catch (\Exception $e) {
+            \Log::error('Error in notifyDonors: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            // Don't rethrow the exception - we don't want to fail the entire transaction
+            // just because notifications couldn't be sent
         }
     }
     
@@ -166,8 +181,15 @@ class KabarTerbaruController extends Controller
      */
     private function sendUpdateEmail($donor, $kabarTerbaru, $campaign)
     {
-        Mail::to($donor['email'])
-            ->send(new CampaignUpdateMail($donor, $campaign, $kabarTerbaru));
+        try {
+            \Log::info('Sending email to: ' . $donor['email']);
+            Mail::to($donor['email'])
+                ->send(new CampaignUpdateMail($donor, $campaign, $kabarTerbaru));
+            \Log::info('Email queued successfully for: ' . $donor['email']);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send email to ' . $donor['email'] . ': ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+        }
     }
 
     public function buatKabarTerbaru($slug)
