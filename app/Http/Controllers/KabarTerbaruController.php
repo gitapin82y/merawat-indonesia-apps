@@ -11,8 +11,15 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use App\Mail\CampaignUpdateMail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
+use App\Models\Donation;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+
+
 
 class KabarTerbaruController extends Controller
 {
@@ -107,6 +114,8 @@ class KabarTerbaruController extends Controller
         DB::beginTransaction();
         try {
             $kabarTerbaru = KabarTerbaru::create($request->all());
+            $campaign = Campaign::findOrFail($request->campaign_id);
+            $this->notifyDonors($kabarTerbaru, $campaign);
             DB::commit();
             return redirect('admin/kampanye/' . $kabarTerbaru->campaign->slug . '/kabar-terbaru')
                 ->with('success', 'Kabar Terbaru berhasil ditambahkan');
@@ -115,6 +124,50 @@ class KabarTerbaruController extends Controller
             return redirect()->back()
                 ->with('error', 'Gagal menambahkan kabar terbaru: ' . $e->getMessage());
         }
+    }
+
+        /**
+     * Notify all donors of this campaign about the new update
+     *
+     * @param  \App\Models\KabarTerbaru  $kabarTerbaru
+     * @param  \App\Models\Campaign  $campaign
+     * @return void
+     */
+    private function notifyDonors(KabarTerbaru $kabarTerbaru, Campaign $campaign)
+    {
+        // Get all unique donors who have made a donation to this campaign
+        // Only consider successful donations (adjust the status as needed)
+        $donations = Donation::where('campaign_id', $campaign->id)
+                           ->where('status', 'success')
+                           ->get();
+        
+        // Group donors by email to avoid duplicate notifications
+        $uniqueDonors = [];
+        foreach ($donations as $donation) {
+            // Use the email as the key to avoid duplicates
+            $uniqueDonors[$donation->email] = [
+                'name' => $donation->name,
+                'email' => $donation->email
+            ];
+        }
+        
+        // Send notification to each donor
+        foreach ($uniqueDonors as $donor) {
+            $this->sendUpdateEmail($donor, $kabarTerbaru, $campaign);
+        }
+    }
+    
+    /**
+     * Send an email to a donor about the campaign update
+     *
+     * @param array $donor
+     * @param \App\Models\KabarTerbaru $kabarTerbaru
+     * @param \App\Models\Campaign $campaign
+     */
+    private function sendUpdateEmail($donor, $kabarTerbaru, $campaign)
+    {
+        Mail::to($donor['email'])
+            ->send(new CampaignUpdateMail($donor, $campaign, $kabarTerbaru));
     }
 
     public function buatKabarTerbaru($slug)
