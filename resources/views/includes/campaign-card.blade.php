@@ -8,7 +8,7 @@
             <img src="{{ asset('assets/img/icon/verify.svg') }}" style="margin-top: -3px;" alt="">
         </small>
         <h3>{{ $campaign->title }}</h3>
-        <div class="progress mb-2">
+        <div class="progress mb-2" style="height: 12px;font-size:8px;">
             <div class="progress-bar progress-bar-striped bg-danger" role="progressbar"
                 style="width: {{ min($campaign->progressPercentage, 100) }}%;" 
                 aria-valuenow="{{ min($campaign->progressPercentage, 100) }}" 

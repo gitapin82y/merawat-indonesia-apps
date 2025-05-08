@@ -322,6 +322,10 @@
                             <button type="button" class="btn btn-outline-danger btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#descriptionModal">
                                 <i class="fa-solid fa-book-open"></i> Lihat Lebih Lengkap
                             </button>
+                        @else
+                        <div class="alert alert-danger">
+                            Disclaimer : Merawat Indonesia tidak mewakili dan tidak bertanggung jawab atas segala bentuk informasi pada halaman campaign ini, karena informasi di atas sepenuhnya milik campaigner (penggalang dana).
+                          </div>
                         @endif
                     </div>
                 </div>
@@ -422,6 +426,9 @@
                 </div>
                 <div class="modal-body">
                     {!! $campaign->description !!}
+                    <div class="alert alert-danger">
+                        Disclaimer : Merawat Indonesia tidak mewakili dan tidak bertanggung jawab atas segala bentuk informasi pada halaman campaign ini, karena informasi di atas sepenuhnya milik campaigner (penggalang dana).
+                      </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
