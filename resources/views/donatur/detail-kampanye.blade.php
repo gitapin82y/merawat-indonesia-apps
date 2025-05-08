@@ -253,7 +253,11 @@
             </div>
 
             <div class="row mx-0 col-12">
-                <a href="{{ asset('storage/' . $campaign->document_rab) }}" target="_blank" class="button my-3 w-100 text-center"><i class="fa-solid fa-download"></i> &nbsp;
+                <a href="{{url('kampanye/'.$campaign->slug.'/donasi')}}" class="button col-10"><i class="fa-solid fa-hand-holding-heart"></i> Donasi Sekarang</a>
+            </div>
+
+            <div class="row mx-0 col-12">
+                <a href="{{ asset('storage/' . $campaign->document_rab) }}" target="_blank" class=" my-3 w-100 text-center">
                     Unduh Laporan RAB</a>
             </div>
 
