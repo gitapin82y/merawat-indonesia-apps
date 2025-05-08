@@ -1,6 +1,6 @@
 @extends('layouts.public')
  
-@section('title', 'Merawat Indonesia')
+@section('title', 'Donasi dan Galang Dana')
 
 @push('after-style')
 <style>
