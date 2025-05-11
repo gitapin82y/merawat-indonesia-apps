@@ -14,9 +14,9 @@ class TripayPaymentMethodSeeder extends Seeder
 
     public function __construct()
     {
-        $this->apiKey = env('TRIPAY_API_KEY', '738ktbs6qGsDWCz6y43l97GYETsEblbMNVaSD4QN');
-        $this->privateKey = env('TRIPAY_PRIVATE_KEY', 'DjCiT-tVIsX-9AFLb-WuW0F-o4P4E');
-        $this->apiUrl = env('TRIPAY_API_URL', 'https://tripay.co.id/api/');
+        $this->apiKey = env('TRIPAY_API_KEY', 'DEV-kWVp5CybKc0Gn8qfSsAMhG4I9zJukegvQr6tKjzR');
+        $this->privateKey = env('TRIPAY_PRIVATE_KEY', 'APYxC-u3v8x-jjmAo-wptx6-Cb1Iu');
+        $this->apiUrl = env('TRIPAY_API_URL', 'https://tripay.co.id/api-sandbox/');
     }
 
     /**

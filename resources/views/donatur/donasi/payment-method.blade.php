@@ -184,45 +184,59 @@
 <script>
     // Facebook Pixel - AddToCart
     @if($adsense && $adsense->facebook_pixel)
-    fbq('track', 'AddToCart', {
+    fbq('track', 'AddPaymentInfo', {
         content_name: '{{ $campaign->title ?? "Donation" }}',
         content_category: '{{ $campaign->category->name ?? "Campaign" }}',
         content_ids: ['{{ $campaign->id ?? "" }}'],
         content_type: 'product',
-        value: 0, // Belum ada nilai di form
+        value: {{ $donation->amount ?? 0 }},
         currency: 'IDR'
     });
     @endif
 
     // Google Ads - add_to_cart event
     @if($adsense && $adsense->google_ads_id)
-    gtag('event', 'add_to_cart', {
+    gtag('event', 'add_payment_info', {
         'send_to': '{{ $adsense->google_ads_id }}',
-        'value': 0, // Belum ada nilai di form
+        'value': {{ $donation->amount ?? 0 }},
         'currency': 'IDR',
         'items': [{
             'id': '{{ $campaign->id ?? "" }}',
             'name': '{{ $campaign->title ?? "Donation" }}',
             'category': '{{ $campaign->category->name ?? "Campaign" }}',
             'quantity': 1,
-            'price': 0 // Belum ada nilai di form
+            'price': {{ $donation->amount ?? 0 }}
         }]
     });
     @endif
 
     // TikTok Pixel - AddToCart
     @if($adsense && $adsense->tiktok_pixel)
-    ttq.track('AddToCart', {
+    ttq.track('AddPaymentInfo', {
         content_type: 'product',
         content_id: '{{ $campaign->id ?? "" }}',
         content_name: '{{ $campaign->title ?? "Donation" }}',
-        value: 0, // Belum ada nilai di form
+        value: {{ $donation->amount ?? 0 }},
         currency: 'IDR'
     });
     @endif
 </script>
 <script>
 $(document).ready(function() {
+    $('.payment-method-card').on('click', function() {
+        let paymentMethodName = $(this).find('h6').text();
+        let paymentType = $(this).closest('.tab-pane').attr('id');
+        
+        // Track payment method selection
+        @if($adsense && $adsense->facebook_pixel)
+        fbq('trackCustom', 'PaymentMethodSelected', {
+            payment_method: paymentMethodName,
+            payment_type: paymentType,
+            value: {{ $donation->amount ?? 0 }},
+            currency: 'IDR'
+        });
+        @endif
+    });
     // Gateway payment method selection
     $('#gateway-content .payment-method-card').click(function() {
         $('#gateway-content .payment-method-card').removeClass('selected');

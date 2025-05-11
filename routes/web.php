@@ -163,7 +163,6 @@ Route::post('/donations/process-manual-payment', [DonationController::class, 'pr
 Route::resource('campaign-withdrawals', CampaignWithdrawalController::class);
 
 // routes/web.php
-Route::post('/api/tripay/callback', [DonationController::class, 'callback']);
 Route::post('/upload-image', [CampaignController::class, 'upload'])->name('image.upload');
 
 // ->middleware(['auth', 'superadmin'])
