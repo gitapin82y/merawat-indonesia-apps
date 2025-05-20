@@ -156,7 +156,7 @@ window.paymentConfig = {
                                     @endif
 
                                     <!-- Checkout URL untuk e-wallet (DANA/OVO/ShopeePay) -->
-                                    @if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
+                                    @if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'] && isEwalletPayment($paymentDetail['payment_method'] ?? ''))
                                         <div id="checkout-button-container" class="text-center mt-3 mb-3">
                                             <div class="alert alert-info">
                                                 <p><i class="fa fa-info-circle me-1"></i> Pembayaran menggunakan {{ $paymentDetail['payment_method'] }} memerlukan redirect ke aplikasi atau layanan pihak ketiga</p>
@@ -167,6 +167,18 @@ window.paymentConfig = {
                                             <p class="mt-2 text-muted">Klik tombol di atas untuk melanjutkan pembayaran</p>
                                         </div>
                                     @endif
+
+                                    @php
+                                    function isEwalletPayment($method) {
+                                        $ewalletMethods = ['DANA', 'DANAMONVA', 'OVO', 'SHOPEEPAY', 'LINKAJA', 'GOPAY'];
+                                        foreach ($ewalletMethods as $ewallet) {
+                                            if (stripos($method, $ewallet) !== false) {
+                                                return true;
+                                            }
+                                        }
+                                        return false;
+                                    }
+                                    @endphp
                                     
                                     <div class="text-center mt-3">
                                         <p class="text-muted">Metode: {{ $paymentDetail['payment_method'] }}</p>
