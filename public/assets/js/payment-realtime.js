@@ -39,6 +39,15 @@ class PaymentStatusChecker {
         }
         console.log('Payment status checker stopped');
     }
+
+    isEwalletPayment(method) {
+        if (!method) return false;
+        
+        const ewalletMethods = ['DANA', 'DANAMONVA', 'OVO', 'SHOPEEPAY', 'LINKAJA', 'GOPAY'];
+        method = method.toUpperCase();
+        
+        return ewalletMethods.some(ewallet => method.includes(ewallet));
+    }
     
     async checkStatus() {
         if (this.isChecking) return;
