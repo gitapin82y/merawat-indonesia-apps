@@ -174,7 +174,7 @@ if (isset($paymentDetail['payment_method'])) {
         <div class="alert alert-info">
             <p><i class="fa fa-info-circle me-1"></i> Pembayaran menggunakan {{ $paymentDetail['payment_method'] }} memerlukan redirect ke aplikasi atau layanan pihak ketiga</p>
         </div>
-        <a href="{{ $paymentDetail['checkout_url'] }}" class="btn btn-success btn-lg">
+        <a href="{{ $paymentDetail['checkout_url'] }}" target="_blank" class="btn btn-success btn-lg">
             <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran {{ $paymentDetail['payment_method'] }}
         </a>
         <p class="mt-2 text-muted">Klik tombol di atas untuk melanjutkan pembayaran</p>
