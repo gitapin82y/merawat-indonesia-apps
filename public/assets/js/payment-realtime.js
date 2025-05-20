@@ -66,12 +66,18 @@ class PaymentStatusChecker {
                 
                 // Tambahkan pengecekan checkout_url
                 if (data.data.checkout_url && 
-                    this.isEwalletPayment(data.data.payment_method) && 
-                    !document.getElementById('checkout-button-container')) {
-                    console.log("Checkout URL untuk e-wallet ditemukan, me-refresh halaman");
-                    window.location.reload();
-                    return;
+                this.isEwalletPayment(data.data.payment_method) && 
+                !this.checkoutUrlDisplayed && 
+                !document.getElementById('checkout-button-container')) {
+                this.checkoutUrlDisplayed = true;
+                
+                // Hanya jalankan callback ini jika metode pembayaran adalah e-wallet
+                if (this.isEwalletPayment(data.data.payment_method)) {
+                    this.options.onCheckoutUrlReceived(data.data);
+                } else {
+                    console.log("Checkout URL tersedia tetapi bukan metode e-wallet, tidak menampilkan tombol");
                 }
+            }
                 
                 switch (status) {
                     case 'PAID':
@@ -151,6 +157,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 // Tambahkan callback baru untuk checkout URL
                 onCheckoutUrlReceived: function(data) {
+                    const ewalletMethods = ['DANA', 'DANAMONVA', 'OVO', 'SHOPEEPAY', 'LINKAJA', 'GOPAY'];
+    const isEwallet = ewalletMethods.some(ewallet => 
+        data.payment_method && data.payment_method.toUpperCase().includes(ewallet)
+    );
                     // Cek apakah container sudah ada
                     const existingButton = document.getElementById('checkout-button-container');
                     if (existingButton) {
