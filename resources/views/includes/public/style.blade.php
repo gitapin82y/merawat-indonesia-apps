@@ -106,6 +106,10 @@
     position: relative;
 }
 
+.alert-success{
+    background-color: #198754 !important;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
     .filter-popup .row .col-md-6:last-child {

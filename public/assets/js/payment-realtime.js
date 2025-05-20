@@ -10,12 +10,14 @@ class PaymentStatusChecker {
             onExpired: options.onExpired || (() => {}),
             onFailed: options.onFailed || (() => {}),
             onChecking: options.onChecking || (() => {}),
+            onCheckoutUrlReceived: options.onCheckoutUrlReceived || (() => {}), // Tambahkan callback baru
             ...options
         };
         
         this.attempts = 0;
         this.isChecking = false;
         this.intervalId = null;
+        this.checkoutUrlDisplayed = false; // Tambahkan flag untuk tracking
     }
     
     start() {
@@ -52,6 +54,12 @@ class PaymentStatusChecker {
             
             if (data.success && data.data) {
                 const status = data.data.status;
+                
+                // Tambahkan pengecekan checkout_url
+                if (data.data.checkout_url && !this.checkoutUrlDisplayed) {
+                    this.checkoutUrlDisplayed = true;
+                    this.options.onCheckoutUrlReceived(data.data);
+                }
                 
                 switch (status) {
                     case 'PAID':
@@ -127,6 +135,42 @@ document.addEventListener('DOMContentLoaded', function() {
                                 Waktu pembayaran telah habis.
                             </div>
                         `;
+                    }
+                },
+                // Tambahkan callback baru untuk checkout URL
+                onCheckoutUrlReceived: function(data) {
+                    // Cek apakah container sudah ada
+                    const existingButton = document.getElementById('checkout-button-container');
+                    if (existingButton) {
+                        return; // Jangan buat dua kali
+                    }
+                    
+                    // Buat container untuk tombol checkout
+                    const checkoutButtonContainer = document.createElement('div');
+                    checkoutButtonContainer.id = 'checkout-button-container';
+                    checkoutButtonContainer.className = 'text-center mt-3 mb-3';
+                    
+                    // Buat HTML untuk tombol
+                    checkoutButtonContainer.innerHTML = `
+                        <div class="alert alert-info">
+                            <p><i class="fa fa-info-circle me-1"></i> Pembayaran menggunakan ${data.payment_method} memerlukan redirect ke aplikasi atau layanan pihak ketiga</p>
+                        </div>
+                        <a href="${data.checkout_url}" class="btn btn-success btn-lg">
+                            <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran ${data.payment_method}
+                        </a>
+                        <p class="mt-2 text-muted">Klik tombol di atas untuk melanjutkan pembayaran</p>
+                    `;
+                    
+                    // Tambahkan ke halaman, posisikan setelah payment info card
+                    const paymentInfoCard = document.querySelector('.payment-info-card');
+                    if (paymentInfoCard) {
+                        paymentInfoCard.parentNode.insertBefore(checkoutButtonContainer, paymentInfoCard.nextSibling);
+                    } else {
+                        // Jika payment info card tidak ditemukan, tambahkan ke awal payment information
+                        const paymentInfo = document.querySelector('.alert-warning');
+                        if (paymentInfo) {
+                            paymentInfo.parentNode.insertBefore(checkoutButtonContainer, paymentInfo.nextSibling);
+                        }
                     }
                 }
             }

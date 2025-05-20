@@ -722,6 +722,7 @@ public function status(Request $request, $id)
                     'virtual_account' => $transaction['pay_code'] ?? null,
                     'qr_string' => $transaction['qr_string'] ?? null,
                     'qr_url' => $transaction['qr_url'] ?? null,
+                    'checkout_url' => $transaction['checkout_url'] ?? null,
                     'payment_amount' => $transaction['amount'] ?? $donation->amount,
                     'expired_time' => $transaction['expired_time'] ?? null,
                     'status' => $transaction['status'] ?? 'PENDING'
@@ -1014,7 +1015,8 @@ public function checkStatus($reference)
                         'payment_method' => $transaction['payment_method'],
                         'amount' => $transaction['amount'],
                         'paid_at' => $transaction['paid_at'] ?? null,
-                        'note' => $transaction['note'] ?? null
+                        'note' => $transaction['note'] ?? null,
+                        'checkout_url' => $transaction['checkout_url'] ?? null
                     ]
                 ]);
                 

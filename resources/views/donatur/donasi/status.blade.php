@@ -154,6 +154,15 @@ window.paymentConfig = {
                                             <img src="{{ $paymentDetail['qr_url'] }}" alt="QR Code" class="img-fluid">
                                         </div>
                                     @endif
+
+                                    @if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
+                                        <div class="text-center mt-3 mb-3">
+                                            <a href="{{ $paymentDetail['checkout_url'] }}" class="btn btn-success btn-lg">
+                                                <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran {{ $paymentDetail['payment_method'] }}
+                                            </a>
+                                            <p class="mt-2 text-muted">Klik tombol di atas untuk melanjutkan pembayaran menggunakan {{ $paymentDetail['payment_method'] }}</p>
+                                        </div>
+                                    @endif
                                     
                                     <div class="text-center mt-3">
                                         <p class="text-muted">Metode: {{ $paymentDetail['payment_method'] }}</p>
