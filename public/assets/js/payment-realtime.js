@@ -65,9 +65,12 @@ class PaymentStatusChecker {
                 const status = data.data.status;
                 
                 // Tambahkan pengecekan checkout_url
-                if (data.data.checkout_url && !this.checkoutUrlDisplayed) {
-                    this.checkoutUrlDisplayed = true;
-                    this.options.onCheckoutUrlReceived(data.data);
+                if (data.data.checkout_url && 
+                    this.isEwalletPayment(data.data.payment_method) && 
+                    !document.getElementById('checkout-button-container')) {
+                    console.log("Checkout URL untuk e-wallet ditemukan, me-refresh halaman");
+                    window.location.reload();
+                    return;
                 }
                 
                 switch (status) {
