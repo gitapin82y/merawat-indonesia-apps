@@ -128,8 +128,11 @@ window.paymentConfig = {
                                         <div class="col-12">
                                             <small class="text-muted">Jumlah yang harus dibayar:</small>
                                             <div class="payment-amount-highlight">
-                                                Rp {{ number_format($paymentDetail['payment_amount'] ?? $donation->amount) }}
-                                            </div>
+            Rp {{ number_format($paymentDetail['payment_amount'] ?? $donation->amount) }}
+            <button class="copy-button ms-2" onclick="copyToClipboard('{{ $paymentDetail['payment_amount'] ?? $donation->amount }}', this)" title="Salin nominal">
+                <i class="fa fa-copy"></i>
+            </button>
+        </div>
                                         </div>
                                     </div>
                                     
@@ -612,5 +615,44 @@ $(document).ready(function() {
         });
     });
 });
+</script>
+<script>
+window.copyToClipboard = function(text, button) {
+    // Hapus pemformatan ribuan jika ada
+    if (typeof text === 'string') {
+        text = text.replace(/\D/g, '');
+    }
+    
+    navigator.clipboard.writeText(text).then(function() {
+        // Tampilkan feedback sukses
+        const icon = button.querySelector('i');
+        const originalClass = icon.className;
+        icon.className = 'fa fa-check';
+        icon.style.color = '#28a745';
+        
+        // Tampilkan alert sukses menggunakan SweetAlert2 jika tersedia
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil disalin!',
+                text: `Nominal Rp ${new Intl.NumberFormat('id-ID').format(text)} telah disalin ke clipboard`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        } else {
+            // Gunakan alert biasa jika SweetAlert2 tidak tersedia
+            alert(`Nominal Rp ${new Intl.NumberFormat('id-ID').format(text)} telah disalin ke clipboard`);
+        }
+        
+        setTimeout(function() {
+            icon.className = originalClass;
+            icon.style.color = '';
+        }, 2000);
+    }, function(err) {
+        console.error('Gagal menyalin: ', err);
+    });
+};
 </script>
 @endpush
