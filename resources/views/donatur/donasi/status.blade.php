@@ -155,18 +155,31 @@ window.paymentConfig = {
                                         </div>
                                     @endif
 
-                                    <!-- Checkout URL untuk e-wallet (DANA/OVO/ShopeePay) -->
-                                    @if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
-                                        <div id="checkout-button-container" class="text-center mt-3 mb-3">
-                                            <div class="alert alert-info">
-                                                <p><i class="fa fa-info-circle me-1"></i> Pembayaran menggunakan {{ $paymentDetail['payment_method'] }} memerlukan redirect ke aplikasi atau layanan pihak ketiga</p>
-                                            </div>
-                                            <a href="{{ $paymentDetail['checkout_url'] }}" class="btn btn-success btn-lg">
-                                                <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran {{ $paymentDetail['payment_method'] }}
-                                            </a>
-                                            <p class="mt-2 text-muted">Klik tombol di atas untuk melanjutkan pembayaran</p>
-                                        </div>
-                                    @endif
+                                    @php
+$ewalletMethods = ['DANA', 'DANAMONVA', 'OVO', 'SHOPEEPAY', 'LINKAJA', 'QRIS', 'GOPAY'];
+$isEwallet = false;
+if (isset($paymentDetail['payment_method'])) {
+    $paymentMethod = strtoupper($paymentDetail['payment_method']);
+    foreach ($ewalletMethods as $method) {
+        if (strpos($paymentMethod, $method) !== false) {
+            $isEwallet = true;
+            break;
+        }
+    }
+}
+@endphp
+
+@if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'] && $isEwallet)
+    <div id="checkout-button-container" class="text-center mt-3 mb-3">
+        <div class="alert alert-info">
+            <p><i class="fa fa-info-circle me-1"></i> Pembayaran menggunakan {{ $paymentDetail['payment_method'] }} memerlukan redirect ke aplikasi atau layanan pihak ketiga</p>
+        </div>
+        <a href="{{ $paymentDetail['checkout_url'] }}" class="btn btn-success btn-lg">
+            <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran {{ $paymentDetail['payment_method'] }}
+        </a>
+        <p class="mt-2 text-muted">Klik tombol di atas untuk melanjutkan pembayaran</p>
+    </div>
+@endif
                                     
                                     <div class="text-center mt-3">
                                         <p class="text-muted">Metode: {{ $paymentDetail['payment_method'] }}</p>
