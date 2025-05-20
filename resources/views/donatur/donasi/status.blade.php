@@ -156,7 +156,7 @@ window.paymentConfig = {
                                     @endif
 
                                     @php
-$ewalletMethods = ['DANA', 'DANAMONVA', 'OVO', 'SHOPEEPAY', 'LINKAJA', 'QRIS', 'GOPAY'];
+$ewalletMethods = ['DANA', 'DANAMONVA', 'OVO', 'SHOPEEPAY', 'LINKAJA', 'GOPAY'];
 $isEwallet = false;
 if (isset($paymentDetail['payment_method'])) {
     $paymentMethod = strtoupper($paymentDetail['payment_method']);
