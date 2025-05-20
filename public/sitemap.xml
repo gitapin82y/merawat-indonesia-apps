@@ -1,326 +1,248 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
     <url>
-    <loc>http://localhost</loc>
+    <loc>https://merawatindonesia.com</loc>
     <lastmod>2025-05-04T00:00:00+07:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
             </url>
     <url>
-    <loc>http://localhost/eksplore-kampanye</loc>
+    <loc>https://merawatindonesia.com/eksplore-kampanye</loc>
     <lastmod>2025-05-04T00:00:00+07:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
             </url>
     <url>
-    <loc>http://localhost/galang-dana</loc>
+    <loc>https://merawatindonesia.com/galang-dana</loc>
     <lastmod>2025-05-04T00:00:00+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
             </url>
     <url>
-    <loc>http://localhost/kalkulator-zakat</loc>
+    <loc>https://merawatindonesia.com/kalkulator-zakat</loc>
     <lastmod>2025-05-04T00:00:00+07:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/leaderboard</loc>
+    <loc>https://merawatindonesia.com/leaderboard</loc>
     <lastmod>2025-05-04T00:00:00+07:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
             </url>
     <url>
-    <loc>http://localhost/login</loc>
+    <loc>https://merawatindonesia.com/login</loc>
     <lastmod>2025-05-04T00:00:00+07:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/register</loc>
+    <loc>https://merawatindonesia.com/register</loc>
     <lastmod>2025-05-04T00:00:00+07:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/privacy-policy</loc>
+    <loc>https://merawatindonesia.com/privacy-policy</loc>
     <lastmod>2025-05-04T00:00:00+07:00</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
             </url>
     <url>
-    <loc>http://localhost/terms-of-service</loc>
+    <loc>https://merawatindonesia.com/terms-of-service</loc>
     <lastmod>2025-05-04T00:00:00+07:00</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
             </url>
     <url>
-    <loc>http://localhost/data-deletion</loc>
+    <loc>https://merawatindonesia.com/data-deletion</loc>
     <lastmod>2025-05-04T00:00:00+07:00</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
             </url>
     <url>
-    <loc>http://localhost/kampanye/bangun-sekolah-untuk-anak-pedalaman-papua</loc>
-    <lastmod>2025-04-27T11:32:03+07:00</lastmod>
+    <loc>https://merawatindonesia.com/kampanye/testing-kampanye-bencana</loc>
+    <lastmod>2025-04-29T19:17:12+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
             </url>
     <url>
-    <loc>http://localhost/kampanye/bangun-sekolah-untuk-anak-pedalaman-papua/donasi</loc>
-    <lastmod>2025-04-27T11:32:03+07:00</lastmod>
+    <loc>https://merawatindonesia.com/kampanye/testing-kampanye-bencana/donasi</loc>
+    <lastmod>2025-04-29T19:17:12+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/kampanye/renovasi-masjid-al-ihsan</loc>
-    <lastmod>2025-04-27T14:33:10+07:00</lastmod>
+    <loc>https://merawatindonesia.com/kampanye/campaign-test-ediit</loc>
+    <lastmod>2025-05-05T11:08:51+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
             </url>
     <url>
-    <loc>http://localhost/kampanye/renovasi-masjid-al-ihsan/donasi</loc>
-    <lastmod>2025-04-27T14:33:10+07:00</lastmod>
+    <loc>https://merawatindonesia.com/kampanye/campaign-test-ediit/donasi</loc>
+    <lastmod>2025-05-05T11:08:51+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/kampanye/beasiswa-untuk-anak-yatim</loc>
-    <lastmod>2025-04-20T16:02:56+07:00</lastmod>
+    <loc>https://merawatindonesia.com/kampanye/campaign-pend</loc>
+    <lastmod>2025-04-29T19:22:58+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
             </url>
     <url>
-    <loc>http://localhost/kampanye/beasiswa-untuk-anak-yatim/donasi</loc>
-    <lastmod>2025-04-20T16:02:56+07:00</lastmod>
+    <loc>https://merawatindonesia.com/kampanye/campaign-pend/donasi</loc>
+    <lastmod>2025-04-29T19:22:58+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/kampanye/program-air-bersih-untuk-desa-kekeringan</loc>
-    <lastmod>2025-04-20T10:03:55+07:00</lastmod>
+    <loc>https://merawatindonesia.com/kampanye/tes-mari-bantu-wujudkan-cita-cita-anak-yatim-dengan-menjadi-orangtua-asuh-mereka</loc>
+    <lastmod>2025-05-04T22:31:41+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
             </url>
     <url>
-    <loc>http://localhost/kampanye/program-air-bersih-untuk-desa-kekeringan/donasi</loc>
-    <lastmod>2025-04-20T10:03:55+07:00</lastmod>
+    <loc>https://merawatindonesia.com/kampanye/tes-mari-bantu-wujudkan-cita-cita-anak-yatim-dengan-menjadi-orangtua-asuh-mereka/donasi</loc>
+    <lastmod>2025-05-04T22:31:41+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/eksplore?category=Zakat</loc>
-    <lastmod>2025-04-21T05:36:34+07:00</lastmod>
+    <loc>https://merawatindonesia.com/kampanye/tes-kakek-74th-jual-tahu-hingga-larut-malam-tempuh-10km</loc>
+    <lastmod>2025-05-04T23:10:02+07:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+            </url>
+    <url>
+    <loc>https://merawatindonesia.com/kampanye/tes-kakek-74th-jual-tahu-hingga-larut-malam-tempuh-10km/donasi</loc>
+    <lastmod>2025-05-04T23:10:02+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/eksplore?category=Sosial</loc>
-    <lastmod>2025-04-21T05:36:59+07:00</lastmod>
+    <loc>https://merawatindonesia.com/eksplore?category=Bencana</loc>
+    <lastmod>2025-04-29T06:25:45+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/eksplore?category=Pendidikan</loc>
-    <lastmod>2025-04-21T05:37:23+07:00</lastmod>
+    <loc>https://merawatindonesia.com/eksplore?category=Keagamaan</loc>
+    <lastmod>2025-04-29T06:26:10+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/eksplore?category=Kesehatan</loc>
-    <lastmod>2025-04-21T05:37:47+07:00</lastmod>
+    <loc>https://merawatindonesia.com/eksplore?category=Kesehatan</loc>
+    <lastmod>2025-04-29T06:26:57+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/eksplore?category=Keagamaan</loc>
-    <lastmod>2025-04-21T05:38:11+07:00</lastmod>
+    <loc>https://merawatindonesia.com/eksplore?category=Pendidikan</loc>
+    <lastmod>2025-04-29T06:27:21+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/eksplore?category=Bencana</loc>
-    <lastmod>2025-04-21T05:38:32+07:00</lastmod>
+    <loc>https://merawatindonesia.com/eksplore?category=Sosial</loc>
+    <lastmod>2025-04-29T06:27:37+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 1</loc>
-    <lastmod>2025-04-20T08:05:41+07:00</lastmod>
+    <loc>https://merawatindonesia.com/eksplore?category=Zakat</loc>
+    <lastmod>2025-04-29T06:28:21+07:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+            </url>
+    <url>
+    <loc>https://merawatindonesia.com/donatur/Tuti Hariati</loc>
+    <lastmod>2025-04-29T23:01:37+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 2</loc>
-    <lastmod>2025-04-20T08:05:41+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/merawatindonesia</loc>
+    <lastmod>2025-05-05T10:54:46+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 3</loc>
-    <lastmod>2025-04-20T08:05:42+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/elfan ramadhon</loc>
+    <lastmod>2025-04-30T23:30:56+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 4</loc>
-    <lastmod>2025-04-20T09:04:53+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/wisata pendidikan</loc>
+    <lastmod>2025-05-01T09:26:22+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 5</loc>
-    <lastmod>2025-04-20T09:04:33+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/Iin Rohimin</loc>
+    <lastmod>2025-05-01T10:36:33+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 6</loc>
-    <lastmod>2025-04-20T08:05:44+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/Lalu Galuh Firman Sihabullah</loc>
+    <lastmod>2025-05-01T17:38:53+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 7</loc>
-    <lastmod>2025-04-20T08:05:45+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/Rizqi nur abadi</loc>
+    <lastmod>2025-05-01T19:50:10+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 8</loc>
-    <lastmod>2025-04-20T08:05:46+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/SITI WARDINA RIYANA SAPARUDDIN</loc>
+    <lastmod>2025-05-02T04:09:08+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 9</loc>
-    <lastmod>2025-04-20T08:05:46+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/M Aminuddin Ghufron Ali Musmar</loc>
+    <lastmod>2025-05-02T05:55:17+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 10</loc>
-    <lastmod>2025-04-20T08:05:47+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/Bina Mulia Balikpapan</loc>
+    <lastmod>2025-05-02T09:39:26+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 11</loc>
-    <lastmod>2025-04-20T08:05:48+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/Aldhoo Fairuzz</loc>
+    <lastmod>2025-05-02T18:12:06+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 12</loc>
-    <lastmod>2025-04-20T08:05:48+07:00</lastmod>
+    <loc>https://merawatindonesia.com/donatur/apin uix</loc>
+    <lastmod>2025-05-05T10:20:17+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
             </url>
     <url>
-    <loc>http://localhost/donatur/Donatur 13</loc>
-    <lastmod>2025-04-20T08:05:49+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/donatur/Donatur 14</loc>
-    <lastmod>2025-04-20T08:05:50+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/donatur/Donatur 15</loc>
-    <lastmod>2025-04-20T08:05:50+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/donatur/Social User 1</loc>
-    <lastmod>2025-04-20T08:05:50+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/donatur/Social User 2</loc>
-    <lastmod>2025-04-20T08:05:50+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/donatur/Social User 3</loc>
-    <lastmod>2025-04-20T08:05:50+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/donatur/Social User 4</loc>
-    <lastmod>2025-04-20T08:05:50+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/donatur/Social User 5</loc>
-    <lastmod>2025-04-20T08:05:50+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/donatur/New Yayasan 1</loc>
-    <lastmod>2025-04-20T09:51:37+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/donatur/New Yayasan 3</loc>
-    <lastmod>2025-04-21T06:10:30+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/donatur/tes</loc>
-    <lastmod>2025-05-01T08:51:12+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-            </url>
-    <url>
-    <loc>http://localhost/galang-dana/Yayasan 1</loc>
-    <lastmod>2025-04-20T09:52:04+07:00</lastmod>
+    <loc>https://merawatindonesia.com/galang-dana/Yayasan testing (edit)</loc>
+    <lastmod>2025-05-05T09:43:41+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
             </url>
     <url>
-    <loc>http://localhost/galang-dana/Yayasan 2</loc>
-    <lastmod>2025-04-20T09:52:37+07:00</lastmod>
+    <loc>https://merawatindonesia.com/galang-dana/Merawat Indonesia</loc>
+    <lastmod>2025-05-04T22:31:41+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
             </url>
     <url>
-    <loc>http://localhost/galang-dana/Yayasan 3</loc>
-    <lastmod>2025-04-27T14:31:56+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-            </url>
-    <url>
-    <loc>http://localhost/galang-dana/Yayasan 4</loc>
-    <lastmod>2025-04-20T08:05:50+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-            </url>
-    <url>
-    <loc>http://localhost/galang-dana/Yayasan 5</loc>
-    <lastmod>2025-04-20T09:51:32+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-            </url>
-    <url>
-    <loc>http://localhost/galang-dana/New Yayasan 2</loc>
-    <lastmod>2025-04-21T06:10:27+07:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-            </url>
-    <url>
-    <loc>http://localhost/galang-dana/Super Admin</loc>
-    <lastmod>2025-04-21T05:31:21+07:00</lastmod>
+    <loc>https://merawatindonesia.com/galang-dana/Yayasan Binamulia Bojonegoro</loc>
+    <lastmod>2025-05-04T22:35:19+07:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
             </url>
