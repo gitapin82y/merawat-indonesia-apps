@@ -24,6 +24,9 @@
                 <h4 class="m-0 font-weight-bold float-left text-danger">Semua Data Ceklis Donasi</h4>
             </div>
             <div class="col-12 col-sm-6">
+                   <button type="button" data-toggle="modal" data-target="#campaignFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
+        <i class="fas fa-filter fa-sm mr-1"></i> Filter Kampanye
+    </button>
                 <button type="button" data-toggle="modal" data-target="#statusFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
                     <i class="fas fa-filter fa-sm mr-1"></i> Filter Status
                 </button>
@@ -46,6 +49,7 @@
                             <th>Nama</th>
                             <th>Email</th>
                             <th>Phone</th>
+                            <th>Kampanye</th> 
                             <th>Total Donasi</th>
                             <th>Metode</th>
                             <th>Tanggal</th>
@@ -59,6 +63,37 @@
             </div>
         </div>
     </div>
+
+    <!-- Campaign Filter Modal -->
+<div class="modal fade" id="campaignFilterModal" tabindex="-1" role="dialog" aria-labelledby="campaignFilterModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="campaignFilterModalLabel">Filter Berdasarkan Kampanye</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="campaignFilterForm">
+                    <div class="form-group">
+                        <label for="campaign_id">Pilih Kampanye</label>
+                        <select class="form-control" id="campaign_id" name="campaign_id">
+                            <option value="">Semua Kampanye</option>
+                            @foreach($campaigns as $campaign)
+                                <option value="{{ $campaign->id }}">{{ $campaign->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-danger btn-apply-filter" id="applyCampaignFilter">Terapkan Filter</button>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Payment Method Filter Modal -->
     <div class="modal fade" id="methodFilterModal" tabindex="-1" role="dialog" aria-labelledby="methodFilterModalLabel" aria-hidden="true">
@@ -134,6 +169,7 @@ $(function () {
             data: function(d) {
                 d.payment_type = $('#payment_type').val();
                 d.status = $('#status').val(); 
+                d.campaign_id = $('#campaign_id').val();
             }
         },
         columns: [
@@ -141,6 +177,7 @@ $(function () {
             {data: 'name', name: 'name'},
             {data: 'email', name: 'email'},
             {data: 'phone', name: 'phone'},
+            {data: 'campaign_title', name: 'campaign_title'},
             {data: 'amount', name: 'amount'},
             {data: 'method', name: 'method'},
             {data: 'created_at', name: 'created_at'},
@@ -201,6 +238,8 @@ $(function () {
         const paymentLabel = $('#payment_type option:selected').text();
         const status = $('#status').val();
         const statusLabel = $('#status option:selected').text();
+        const campaignId = $('#campaign_id').val();
+        const campaignLabel = $('#campaign_id option:selected').text();
         
         let filtersHtml = '';
         
@@ -210,6 +249,10 @@ $(function () {
         
         if (status) {
             filtersHtml += `<span class="badge badge-danger mr-2 p-2">Status: ${statusLabel} <i class="fas fa-times ml-1 clear-filter" data-filter="status"></i></span>`;
+        }
+
+        if (campaignId) {
+            filtersHtml += `<span class="badge badge-danger mr-2 p-2">Kampanye: ${campaignLabel} <i class="fas fa-times ml-1 clear-filter" data-filter="campaign"></i></span>`;
         }
         
         if (filtersHtml) {
@@ -227,6 +270,8 @@ $(function () {
             $('#payment_type').val('');
         } else if (filterType === 'status') {
             $('#status').val('');
+        } else if (filterType === 'campaign') {
+            $('#campaign_id').val('');
         }
         
         // Update display and reload table
@@ -238,6 +283,7 @@ $(function () {
     $(document).on('click', '#clearAllFilters', function() {
         $('#payment_type').val('');
         $('#status').val('');
+        $('#campaign_id').val('');
         
         // Update display and reload table
         $('#active-filters').html('');

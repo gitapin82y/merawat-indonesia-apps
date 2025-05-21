@@ -1167,21 +1167,31 @@ public function index(Request $request)
 public function ceklis(Request $request)
 {
     Carbon::setLocale('id');
+     $campaigns = Campaign::orderBy('title')->get();
     if ($request->ajax()) {
         // Start with base query
-        $query = Donation::query();
+        $query = Donation::with('campaign'); 
         
-        // Apply payment method filter if provided
+         // Apply payment method filter if provided
         if ($request->has('payment_type') && $request->payment_type) {
             $query->where('payment_type', $request->payment_type);
         }
+        
         if ($request->has('status') && $request->status) {
             $query->where('status', $request->status);
+        }
+        
+        // Apply campaign filter if provided
+        if ($request->has('campaign_id') && $request->campaign_id) {
+            $query->where('campaign_id', $request->campaign_id);
         }
         
         // IMPORTANT: Use the query builder version of DataTables, not the collection version
         return DataTables::of($query->latest())
             ->addIndexColumn()
+             ->addColumn('campaign_title', function ($row) {
+                return $row->campaign ? $row->campaign->title : 'N/A';
+            })
             ->addColumn('method', function ($row) {
                 if($row->payment_type == "manual"){
                     $payment = "Manual";
@@ -1244,7 +1254,7 @@ public function ceklis(Request $request)
             ->make(true);
     }
     
-    return view('super_admin.ceklis_donasi.index');
+    return view('super_admin.ceklis_donasi.index', compact('campaigns'));
 }
 
     public function updateStatus(Request $request)
