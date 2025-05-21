@@ -13,6 +13,23 @@
         border: 2px solid #dc3545;
         background-color: rgba(220, 53, 69, 0.1);
     }
+
+      .recommendation-badge {
+        position: absolute;
+        top: -10px;
+        right: 10px;
+        background-color: #28a745;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 1;
+    }
+    
+    .popular-badge {
+        background-color: #007bff;
+    }
 </style>
 @endpush
 
@@ -40,6 +57,7 @@
                                     </div>
                                 </div>
                                 <div class="donation-amount-card card box-shadow mt-4 px-0" data-amount="50000">
+                                    <span class="recommendation-badge">REKOMENDASI ✨</span>
                                     <div class="col-12 row justify-between mx-0 py-2">
                                         <div class="col-9 d-flex align-self-center">
                                             <img src="{{asset('assets/img/nominal-donasi-2.png')}}" width="60px" height="60px">
@@ -51,6 +69,7 @@
                                     </div>
                                 </div>
                                 <div class="donation-amount-card card box-shadow mt-4 px-0" data-amount="100000">
+                                    <span class="recommendation-badge popular-badge">PILIHAN TERBANYAK 👑</span>
                                     <div class="col-12 row justify-between mx-0 py-2">
                                         <div class="col-9 d-flex align-self-center">
                                             <img src="{{asset('assets/img/nominal-donasi-3.png')}}" width="60px" height="60px">
