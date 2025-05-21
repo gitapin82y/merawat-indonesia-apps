@@ -29,6 +29,12 @@ window.paymentConfig = {
         text-align: center;
         margin: 15px 0;
     }
+    .text-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
     
     .virtual-account-number {
         font-size: 1.5rem;
@@ -251,46 +257,56 @@ if (isset($paymentDetail['payment_method'])) {
                     
                     <!-- Detail Donasi -->
                     <div class="mt-5">
-                        <h5 class="border-bottom pb-2 mb-3">Detail Donasi</h5>
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="mb-3">
-                                    <p class="mb-1"><strong>Kampanye:</strong></p>
-                                    <p class="mb-1"><strong>Nama Donatur:</strong></p>
-                                    <p class="mb-1"><strong>Email:</strong></p>
-                                    <p class="mb-1"><strong>Nominal Donasi:</strong></p>
-                                    <p class="mb-1"><strong>Metode Pembayaran:</strong></p>
-                                    <p class="mb-1"><strong>Status:</strong></p>
-                                    <p class="mb-1"><strong>Waktu:</strong></p>
-                                </div>
-                            </div>
-                            <div class="col-6 text-md-end">
-                                <div class="mb-3">
-                                    <p class="mb-1">{{ $campaign->title }}</p>
-                                    <p class="mb-1">{{ $donation->is_anonymous ? 'Sahabat Baik' : $donation->name }}</p>
-                                    <p class="mb-1">{{ $donation->email }}</p>
-                                    <p class="mb-1 fw-bold text-danger">Rp {{ number_format($donation->amount) }}</p>
-                                    <p class="mb-1">
-                                        @if($donation->payment_type == 'payment_gateway')
-                                            {{ $donation->payment_method }}
-                                        @else
-                                            Manual ({{ optional($donation->manualPaymentMethod)->name ?? 'Transfer Manual' }})
-                                        @endif
-                                    </p>
-                                    <p class="mb-1">
-                                        @if($donation->status == 'pending')
-                                            <span class="badge bg-warning">Menunggu</span>
-                                        @elseif($donation->status == 'sukses')
-                                            <span class="badge bg-success">Berhasil</span>
-                                        @else
-                                            <span class="badge bg-danger">Gagal</span>
-                                        @endif
-                                    </p>
-                                    <p class="mb-1">{{ $donation->created_at->format('d M Y H:i') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <h5 class="border-bottom pb-2 mb-3">Detail Donasi</h5>
+    <div class="row">
+        <div class="col-5">
+            <div class="mb-3">
+                <p class="mb-1"><strong>Kampanye:</strong></p>
+                <p class="mb-1"><strong>Nama Donatur:</strong></p>
+                <p class="mb-1"><strong>Email:</strong></p>
+                <p class="mb-1"><strong>Nominal Donasi:</strong></p>
+                <p class="mb-1"><strong>Metode Pembayaran:</strong></p>
+                <p class="mb-1"><strong>Status:</strong></p>
+                <p class="mb-1"><strong>Waktu:</strong></p>
+            </div>
+        </div>
+        <div class="col-7 text-md-end">
+            <div class="mb-3">
+                <p class="mb-1 text-truncate" title="{{ $campaign->title }}">{{ $campaign->title }}</p>
+                <p class="mb-1 text-truncate" title="{{ $donation->is_anonymous ? 'Sahabat Baik' : $donation->name }}">{{ $donation->is_anonymous ? 'Sahabat Baik' : $donation->name }}</p>
+                <p class="mb-1 text-truncate" title="{{ $donation->email }}">{{ $donation->email }}</p>
+                <p class="mb-1 fw-bold text-danger">Rp {{ number_format($donation->amount) }}</p>
+                <p class="mb-1">
+                    @if($donation->payment_type == 'payment_gateway')
+                        {{ $donation->payment_method }}
+                    @else
+                        Manual ({{ optional($donation->manualPaymentMethod)->name ?? 'Transfer Manual' }})
+                    @endif
+                </p>
+                <p class="mb-1">
+                    @if($donation->status == 'pending')
+                        <span class="badge bg-warning">Menunggu</span>
+                    @elseif($donation->status == 'sukses')
+                        <span class="badge bg-success">Berhasil</span>
+                    @else
+                        <span class="badge bg-danger">Gagal</span>
+                    @endif
+                </p>
+                <p class="mb-1">{{ $donation->created_at->format('d M Y H:i') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Tambahkan di bagian style */
+    .text-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+</style>
 
                     <!-- Instruksi Pembayaran dengan Dropdown -->
                     @if($donation->status == 'pending' && isset($paymentDetail['payment_instructions']) && !empty($paymentDetail['payment_instructions']))
