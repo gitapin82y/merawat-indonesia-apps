@@ -342,116 +342,157 @@ window.paymentConfig = {
 @endpush
 
 @push('after-script')
+<script>
+// Simple event tracking manager to prevent duplicate events
+(function() {
+    // Function to check if an event has already been tracked
+    function isEventTracked(donationId, eventType) {
+        const key = `donation_${donationId}_${eventType}`;
+        return localStorage.getItem(key) === 'true';
+    }
+    
+    // Function to mark an event as tracked
+    function markEventTracked(donationId, eventType) {
+        const key = `donation_${donationId}_${eventType}`;
+        localStorage.setItem(key, 'true');
+        console.log(`Event ${eventType} sudah ditandai sebagai dipicu untuk donasi ${donationId}`);
+    }
+    
+    // Make functions globally available
+    window.pixelHelper = {
+        isEventTracked: isEventTracked,
+        markEventTracked: markEventTracked
+    };
+})();
+</script>
 <script src="{{ asset('assets/js/payment-realtime.js') }}"></script>
 @php $adsense = \App\Models\Adsense::first(); @endphp
 <script>
-@if($donation->status == 'pending')
-        // HALAMAN PEMBAYARAN/INVOICE - Track "Purchase" untuk halaman invoice
-        console.log('Halaman Invoice/Pembayaran');
-        
-        // Facebook Pixel - Purchase (Invoice)
-        @if($adsense && $adsense->facebook_pixel)
-        fbq('track', 'Purchase', {
-            content_name: '{{ $campaign->title ?? "Donation" }}',
-            content_category: '{{ $campaign->category->name ?? "Campaign" }}',
-            content_ids: ['{{ $campaign->id ?? "" }}'],
-            content_type: 'product',
-            value: {{ $donation->amount ?? 0 }},
-            currency: 'IDR',
-            transaction_id: '{{ $donation->snap_token ?? "" }}'
-        });
-        @endif
+document.addEventListener('DOMContentLoaded', function() {
+    const donationId = {{ $donation->id }};
+    
+    @if($donation->status == 'pending')
+        // Check if Purchase event has already been tracked for this donation
+        if (!window.pixelHelper.isEventTracked(donationId, 'purchase')) {
+            console.log('Tracking Purchase event for the first time');
+            
+            // Facebook Pixel - Purchase (Invoice)
+            @if($adsense && $adsense->facebook_pixel)
+            fbq('track', 'Purchase', {
+                content_name: '{{ $campaign->title ?? "Donation" }}',
+                content_category: '{{ $campaign->category->name ?? "Campaign" }}',
+                content_ids: ['{{ $campaign->id ?? "" }}'],
+                content_type: 'product',
+                value: {{ $donation->amount ?? 0 }},
+                currency: 'IDR',
+                transaction_id: '{{ $donation->snap_token ?? "" }}'
+            });
+            @endif
 
-        // Google Ads - purchase event (Invoice)
-        @if($adsense && $adsense->google_ads_id)
-        gtag('event', 'purchase', {
-            'send_to': '{{ $adsense->google_ads_id }}',
-            'transaction_id': '{{ $donation->id }}',
-            'value': {{ $donation->amount ?? 0 }},
-            'currency': 'IDR',
-            'items': [{
-                'item_id': '{{ $campaign->id ?? "" }}',
-                'item_name': '{{ $campaign->title ?? "Donation" }}',
-                'item_category': '{{ $campaign->category->name ?? "Campaign" }}',
-                'price': {{ $donation->amount ?? 0 }},
-                'quantity': 1
-            }]
-        });
-        @endif
+            // Google Ads - purchase event (Invoice)
+            @if($adsense && $adsense->google_ads_id)
+            gtag('event', 'purchase', {
+                'send_to': '{{ $adsense->google_ads_id }}',
+                'transaction_id': '{{ $donation->id }}',
+                'value': {{ $donation->amount ?? 0 }},
+                'currency': 'IDR',
+                'items': [{
+                    'item_id': '{{ $campaign->id ?? "" }}',
+                    'item_name': '{{ $campaign->title ?? "Donation" }}',
+                    'item_category': '{{ $campaign->category->name ?? "Campaign" }}',
+                    'price': {{ $donation->amount ?? 0 }},
+                    'quantity': 1
+                }]
+            });
+            @endif
 
-        // TikTok Pixel - CompletePayment (Invoice)
-        @if($adsense && $adsense->tiktok_pixel)
-        ttq.track('CompletePayment', {
-            content_type: 'product',
-            content_id: '{{ $campaign->id ?? "" }}',
-            content_name: '{{ $campaign->title ?? "Donation" }}',
-            value: {{ $donation->amount ?? 0 }},
-            currency: 'IDR',
-            quantity: 1,
-            transaction_id: '{{ $donation->snap_token ?? "" }}'
-        });
-        @endif
+            // TikTok Pixel - CompletePayment (Invoice)
+            @if($adsense && $adsense->tiktok_pixel)
+            ttq.track('CompletePayment', {
+                content_type: 'product',
+                content_id: '{{ $campaign->id ?? "" }}',
+                content_name: '{{ $campaign->title ?? "Donation" }}',
+                value: {{ $donation->amount ?? 0 }},
+                currency: 'IDR',
+                quantity: 1,
+                transaction_id: '{{ $donation->snap_token ?? "" }}'
+            });
+            @endif
+            
+            // Mark Purchase event as tracked
+            window.pixelHelper.markEventTracked(donationId, 'purchase');
+        } else {
+            console.log('Purchase event already tracked for this donation. Skipping...');
+        }
 
     @elseif($donation->status === 'sukses')
-        // HALAMAN KONFIRMASI - Track "Donate" atau custom event setelah berhasil
-        console.log('Halaman Konfirmasi Pembayaran Berhasil');
-        
-        // Hapus localStorage UTM parameters jika ada
-        localStorage.removeItem('utm_source');
-        localStorage.removeItem('utm_medium');
-        localStorage.removeItem('utm_campaign');
-        localStorage.removeItem('referral_code');
+        // Check if Donate event has already been tracked for this donation
+        if (!window.pixelHelper.isEventTracked(donationId, 'donate')) {
+            console.log('Tracking Donate event for the first time');
+            
+            // Delete localStorage UTM parameters
+            localStorage.removeItem('utm_source');
+            localStorage.removeItem('utm_medium');
+            localStorage.removeItem('utm_campaign');
+            localStorage.removeItem('referral_code');
 
-        // Track custom "Donate" event untuk konfirmasi
-        
-        // Facebook Pixel - Donate (Custom Event)
-        @if($adsense && $adsense->facebook_pixel)
-        fbq('trackCustom', 'Donate', {
-            content_name: '{{ $campaign->title ?? "Donation" }}',
-            content_category: '{{ $campaign->category->name ?? "Campaign" }}',
-            content_ids: ['{{ $campaign->id ?? "" }}'],
-            content_type: 'product',
-            value: {{ $donation->amount ?? 0 }},
-            currency: 'IDR',
-            transaction_id: '{{ $donation->snap_token ?? "" }}'
-        });
-        @endif
+            // Facebook Pixel - Donate (Custom Event)
+            @if($adsense && $adsense->facebook_pixel)
+            fbq('trackCustom', 'Donate', {
+                content_name: '{{ $campaign->title ?? "Donation" }}',
+                content_category: '{{ $campaign->category->name ?? "Campaign" }}',
+                content_ids: ['{{ $campaign->id ?? "" }}'],
+                content_type: 'product',
+                value: {{ $donation->amount ?? 0 }},
+                currency: 'IDR',
+                transaction_id: '{{ $donation->snap_token ?? "" }}'
+            });
+            @endif
 
-        // Google Ads - custom event "donation_completed"
-        @if($adsense && $adsense->google_ads_id)
-        gtag('event', 'donation_completed', {
-            'send_to': '{{ $adsense->google_ads_id }}',
-            'transaction_id': '{{ $donation->id }}',
-            'value': {{ $donation->amount ?? 0 }},
-            'currency': 'IDR',
-            'event_category': 'ecommerce',
-            'event_label': 'donation_success'
-        });
-        @endif
+            // Google Ads - custom event "donation_completed"
+            @if($adsense && $adsense->google_ads_id)
+            gtag('event', 'donation_completed', {
+                'send_to': '{{ $adsense->google_ads_id }}',
+                'transaction_id': '{{ $donation->id }}',
+                'value': {{ $donation->amount ?? 0 }},
+                'currency': 'IDR',
+                'event_category': 'ecommerce',
+                'event_label': 'donation_success'
+            });
+            @endif
 
-        // TikTok Pixel - Custom Donate event
-        @if($adsense && $adsense->tiktok_pixel)
-        ttq.track('Donate', {
-            content_type: 'product',
-            content_id: '{{ $campaign->id ?? "" }}',
-            content_name: '{{ $campaign->title ?? "Donation" }}',
-            value: {{ $donation->amount ?? 0 }},
-            currency: 'IDR',
-            quantity: 1,
-            transaction_id: '{{ $donation->snap_token ?? "" }}'
-        });
-        @endif
+            // TikTok Pixel - Custom Donate event
+            @if($adsense && $adsense->tiktok_pixel)
+            ttq.track('Donate', {
+                content_type: 'product',
+                content_id: '{{ $campaign->id ?? "" }}',
+                content_name: '{{ $campaign->title ?? "Donation" }}',
+                value: {{ $donation->amount ?? 0 }},
+                currency: 'IDR',
+                quantity: 1,
+                transaction_id: '{{ $donation->snap_token ?? "" }}'
+            });
+            @endif
 
-        // Google Ads Conversion (if you have conversion action for donations)
-        @if($adsense && $adsense->google_ads_id && $adsense->google_ads_label)
-        gtag('event', 'conversion', {
-            'send_to': '{{ $adsense->google_ads_id }}/{{ $adsense->google_ads_label }}',
-            'value': {{ $donation->amount ?? 0 }},
-            'currency': 'IDR',
-            'transaction_id': '{{ $donation->snap_token ?? "" }}'
-        });
-        @endif
+            // Google Ads Conversion
+            @if($adsense && $adsense->google_ads_id && $adsense->google_ads_label)
+            gtag('event', 'conversion', {
+                'send_to': '{{ $adsense->google_ads_id }}/{{ $adsense->google_ads_label }}',
+                'value': {{ $donation->amount ?? 0 }},
+                'currency': 'IDR',
+                'transaction_id': '{{ $donation->snap_token ?? "" }}'
+            });
+            @endif
+            
+            // Mark Donate event as tracked
+            window.pixelHelper.markEventTracked(donationId, 'donate');
+        } else {
+            console.log('Donate event already tracked for this donation. Skipping...');
+        }
     @endif
+
+    // Your existing code with payment status checking can remain unchanged...
+});
 </script>
 
 <script> 
