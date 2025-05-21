@@ -161,6 +161,13 @@
 @push('after-script')
 <script>
 $(function () {
+     $('#campaign_id').select2({
+        theme: 'bootstrap4',
+        placeholder: 'Pilih kampanye',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#campaignFilterModal')
+    });
     var table = $('.yajra-datatable').DataTable({
         processing: true,
         serverSide: true,
@@ -215,6 +222,20 @@ $(function () {
         
         // Close the modal
         $('#statusFilterModal').modal('hide');
+    });
+
+    $('#applyCampaignFilter').click(function() {
+        const campaignId = $('#campaign_id').val();
+        const campaignLabel = $('#campaign_id option:selected').text();
+        
+        // Update active filters display
+        updateActiveFilters();
+        
+        // Reload the table with filter
+        table.ajax.reload();
+        
+        // Close the modal
+        $('#campaignFilterModal').modal('hide');
     });
 
 
