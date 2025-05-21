@@ -5,12 +5,12 @@ namespace App\Mail;
 use App\Models\Campaign;
 use App\Models\KabarTerbaru;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class CampaignUpdateMail extends Mailable implements ShouldQueue
+class CampaignUpdateMail extends Mailable 
 {
     use Queueable, SerializesModels;
 

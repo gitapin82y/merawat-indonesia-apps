@@ -6,9 +6,9 @@ use App\Models\Campaign;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class NewCampaignNotificationMail extends Mailable implements ShouldQueue
+
+class NewCampaignNotificationMail extends Mailable 
 {
     use Queueable, SerializesModels;
 
