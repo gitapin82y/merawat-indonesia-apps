@@ -311,8 +311,8 @@ class DonationController extends Controller
     protected function getPaymentChannels()
     {
         try {
-            Log::info('API URL from config: ' . ($this->apiUrl ?? 'NULL'));
-        Log::info('API Key from config: ' . (empty($this->apiKey) ? 'EMPTY' : substr($this->apiKey, 0, 5) . '...'));
+            // Log::info('API URL from config: ' . ($this->apiUrl ?? 'NULL'));
+        // Log::info('API Key from config: ' . (empty($this->apiKey) ? 'EMPTY' : substr($this->apiKey, 0, 5) . '...'));
             // Pastikan URL berakhir dengan slash
             $apiUrl = rtrim($this->apiUrl, '/') . '/';
             $endpoint = 'merchant/payment-channel';
@@ -322,8 +322,8 @@ class DonationController extends Controller
             ])->get($apiUrl . $endpoint);
 
             // Log full URL dan response
-            Log::info('Tripay Request URL: ' . $apiUrl . $endpoint);
-            Log::info('Tripay Response: ' . $response->body());
+            // Log::info('Tripay Request URL: ' . $apiUrl . $endpoint);
+            // Log::info('Tripay Response: ' . $response->body());
             
             if ($response->successful() && isset($response['success']) && $response['success']) {
                 // Get active payment methods from database
@@ -394,11 +394,7 @@ class DonationController extends Controller
             'Authorization' => 'Bearer ' . $this->apiKey
         ])->post($apiUrl . $endpoint, $data);
         
-        // Log for debugging
-        Log::info('Tripay createTransaction response', [
-            'donation_id' => $donation->id,
-            'response' => $response->json()
-        ]);
+      
         
         return $response->json();
     } catch (\Exception $e) {
@@ -647,7 +643,7 @@ private function processSuccessfulPayment($donation)
     // Kirim notifikasi dan track konversi
     try {
         Mail::to($donation->email)->send(new DonationSuccessMail($donation));
-        Log::info('Donation success email sent to donor: ' . $donation->email);
+        // Log::info('Donation success email sent to donor: ' . $donation->email);
     } catch (\Exception $e) {
         Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
     }
@@ -656,7 +652,7 @@ private function processSuccessfulPayment($donation)
         $campaign = Campaign::with('admin')->find($donation->campaign_id);
         if ($campaign && $campaign->admin && $campaign->admin->email) {
             Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
-            Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
+            // Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
         } else {
             Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
         }
@@ -708,7 +704,7 @@ public function status(Request $request, $id)
             ]);
             
             $responseData = $response->json();
-            Log::info('Tripay status check response', ['donation_id' => $id, 'response' => $responseData]);
+            // Log::info('Tripay status check response', ['donation_id' => $id, 'response' => $responseData]);
             
             if (isset($responseData['success']) && $responseData['success'] === true && isset($responseData['data'])) {
                 $transaction = $responseData['data'];
@@ -736,7 +732,7 @@ public function status(Request $request, $id)
                         
                         if ($freshDonation && $freshDonation->status !== 'sukses') {
                             $this->processSuccessfulPayment($freshDonation);
-                            Log::info('Payment successfully processed via status page', ['donation_id' => $donation->id]);
+                            // Log::info('Payment successfully processed via status page', ['donation_id' => $donation->id]);
                         }
                         
                         DB::commit();
@@ -752,7 +748,7 @@ public function status(Request $request, $id)
                     $donation->status = 'gagal';
                     $donation->save();
                     
-                    Log::info('Payment marked as failed via status page', ['donation_id' => $donation->id]);
+                    // Log::info('Payment marked as failed via status page', ['donation_id' => $donation->id]);
                 }
             }
         } catch (\Exception $e) {
@@ -832,7 +828,7 @@ public function pollPendingTransactions()
         ->limit(50)
         ->get();
         
-        Log::info('Running payment polling', ['total_pending' => $pendingDonations->count()]);
+        // Log::info('Running payment polling', ['total_pending' => $pendingDonations->count()]);
         
         $counter = 0;
         
@@ -868,14 +864,14 @@ public function pollPendingTransactions()
                             $this->processSuccessfulPayment($freshDonation);
                             $counter++;
                             
-                            Log::info('Donation updated by polling', ['donation_id' => $donation->id]);
+                            // Log::info('Donation updated by polling', ['donation_id' => $donation->id]);
                         }
                         
                         DB::commit();
                     } else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND']) && $donation->status !== 'gagal') {
                         $donation->status = 'gagal';
                         $donation->save();
-                        Log::info('Donation marked as failed by polling', ['donation_id' => $donation->id]);
+                        // Log::info('Donation marked as failed by polling', ['donation_id' => $donation->id]);
                     }
                 }
             } catch (\Exception $e) {
@@ -932,7 +928,6 @@ private function checkStatusToken($donationId, $token)
 public function checkStatus($reference)
 {
     try {
-        Log::error('Progress 1');
         // Cari donasi berdasarkan reference/snap_token
         $donation = Donation::where('snap_token', $reference)->first();
         
@@ -986,18 +981,15 @@ public function checkStatus($reference)
                 
                 
                 if ($transaction['status'] === 'PAID') {
-                    Log::error('PAID');
                     $status = 'PAID';
 
                 $freshDonation = Donation::lockForUpdate()->find($donation->id);
                         
                 if ($freshDonation && $freshDonation->status !== 'sukses') {
                     $this->processSuccessfulPayment($freshDonation);
-                    Log::info('Payment successfully processed via status page', ['donation_id' => $donation->id]);
                 }
 
                 } else if (in_array($transaction['status'], ['EXPIRED', 'FAILED', 'REFUND'])) {
-                     Log::error('EXPIRED');
                     $status = 'EXPIRED';
                     
                     $donation = Donation::where('snap_token', $reference)->first();
@@ -1320,7 +1312,7 @@ public function ceklis(Request $request)
 
                 try {
                     Mail::to($donation->email)->send(new DonationSuccessMail($donation));
-                    Log::info('Donation success email sent to donor: ' . $donation->email);
+                    // Log::info('Donation success email sent to donor: ' . $donation->email);
                 } catch (\Exception $e) {
                     Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
                 }
@@ -1329,7 +1321,7 @@ public function ceklis(Request $request)
                     $campaign = Campaign::with('admin')->find($donation->campaign_id);
                     if ($campaign && $campaign->admin && $campaign->admin->email) {
                         Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
-                        Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
+                        // Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
                     } else {
                         Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
                     }
