@@ -161,9 +161,9 @@
 @push('after-script')
 <script>
 $(function () {
-     $('#campaign_id').select2({
-        theme: 'bootstrap4',
-        placeholder: 'Pilih kampanye',
+   
+      $('#campaign_id').select2({
+        placeholder: 'Pilih Kampanye',
         allowClear: true,
         width: '100%',
         dropdownParent: $('#campaignFilterModal')
