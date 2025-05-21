@@ -18,7 +18,7 @@
         position: absolute;
         top: -10px;
         right: 10px;
-        background-color: #28a745;
+        background-color: #007bff;
         color: white;
         padding: 2px 8px;
         border-radius: 10px;
@@ -27,9 +27,6 @@
         z-index: 1;
     }
     
-    .popular-badge {
-        background-color: #007bff;
-    }
 </style>
 @endpush
 
@@ -69,7 +66,7 @@
                                     </div>
                                 </div>
                                 <div class="donation-amount-card card box-shadow mt-4 px-0" data-amount="100000">
-                                    <span class="recommendation-badge popular-badge">PILIHAN TERBANYAK 👑</span>
+                                    <span class="recommendation-badge">PILIHAN TERBANYAK 👑</span>
                                     <div class="col-12 row justify-between mx-0 py-2">
                                         <div class="col-9 d-flex align-self-center">
                                             <img src="{{asset('assets/img/nominal-donasi-3.png')}}" width="60px" height="60px">
@@ -245,6 +242,24 @@
                 });
                 return false;
             }
+
+                // Validasi nama, phone, dan email
+                const name = $('#full_name').val();
+                const phone = $('#whatsapp').val();
+                const email = $('#email').val();
+                
+                if (!name || !phone || !email) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        text: 'Silakan lengkapi data diri Anda',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                    return false;
+                }
             
             $('#donationForm').submit();
         });
