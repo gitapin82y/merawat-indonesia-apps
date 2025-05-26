@@ -45,7 +45,7 @@
                     <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label>Kampanye</label>
-                            <select name="campaign_id" class="form-control @error('campaign_id') is-invalid @enderror" required>
+                            <select name="campaign_id" id="select2" class="form-control @error('campaign_id') is-invalid @enderror" required>
                                 <option value="">Pilih Kampanye</option>
                                 @foreach($campaigns as $campaign)
                                     <option value="{{ $campaign->id }}" {{ (old('campaign_id', $urgentKampanye->campaign_id ?? '') == $campaign->id) ? 'selected' : '' }}>
@@ -101,6 +101,12 @@
 
 @push('after-script')
 <script>
+     $('#select2').select2({
+        placeholder: 'Pilih Kampanye',
+        allowClear: true,
+        width: '100%',
+    });
+
     @if(session('success'))
     Swal.fire({
       icon: 'success',
