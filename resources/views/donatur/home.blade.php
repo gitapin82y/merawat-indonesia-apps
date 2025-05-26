@@ -133,7 +133,7 @@
              @if($urgentCampaigns->isEmpty())
                 <div class="text-center w-100">
                     <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                    <p>Belum Ada Prioritas Galang Dana</p>
+                    <p>Belum Ada Program Donasi Mendesak</p>
                 </div>
             @else
                 @foreach($urgentCampaigns as $urgentItem)
