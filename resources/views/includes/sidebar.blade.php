@@ -65,6 +65,7 @@
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item {{ Request::is('super-admin/kampanye') ? 'active' : '' }}" href="{{ route('kampanye.index') }}">Lihat Kampanye</a>
                 <a class="collapse-item {{ Request::is('super-admin/prioritas-kampanye') ? 'active' : '' }}" href="{{ route('prioritas-kampanye.index') }}">Promosi Kampanye</a>
+                <a class="collapse-item {{ Request::is('super-admin/urgent-kampanye') ? 'active' : '' }}" href="{{ route('urgent-kampanye.index') }}">Pilihan Kampanye</a>
             </div>
         </div>
     </li>

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
  
-@section('title', 'Manajemen Prioritas Kampanye')
+@section('title', 'Manajemen Pilihan Kampanye')
 
 @push('after-style')
 <style>
@@ -25,19 +25,19 @@
 <div class="card mb-4">
     <div class="card-header bg-danger py-3 align-items-center justify-content-between row m-0">
         <div class="col-12 col-sm-6 p-0">
-            <h4 class="m-0 font-weight-bold float-left text-white">{{ isset($prioritasKampanye->id) ? 'Edit Prioritas Kampanye' : 'Tambah Prioritas Kampanye' }}</h4>
+            <h4 class="m-0 font-weight-bold float-left text-white">{{ isset($urgentKampanye->id) ? 'Edit Pilihan Kampanye' : 'Tambah Pilihan Kampanye' }}</h4>
         </div>
     </div>
     <div class="card-body">
         @if(count($campaigns) == 0)
             <div class="alert alert-warning">
-                Semua kampanye sudah berada dalam daftar prioritas. <a href="{{ route('prioritas-kampanye.index') }}">Kembali ke daftar</a>
+                Semua kampanye sudah berada dalam daftar prioritas. <a href="{{ route('urgent-kampanye.index') }}">Kembali ke daftar</a>
             </div>
         @else
-            <form action="{{ isset($prioritasKampanye->id) ? route('prioritas-kampanye.update', $prioritasKampanye->id) : route('prioritas-kampanye.store') }}" 
+            <form action="{{ isset($urgentKampanye->id) ? route('urgent-kampanye.update', $urgentKampanye->id) : route('urgent-kampanye.store') }}" 
                     method="POST" enctype="multipart/form-data" id="kampanyeForm">
                 @csrf
-                @if(isset($prioritasKampanye->id))
+                @if(isset($urgentKampanye->id))
                     @method('PUT')
                 @endif
               
@@ -48,7 +48,7 @@
                             <select name="campaign_id" class="form-control @error('campaign_id') is-invalid @enderror" required>
                                 <option value="">Pilih Kampanye</option>
                                 @foreach($campaigns as $campaign)
-                                    <option value="{{ $campaign->id }}" {{ (old('campaign_id', $prioritasKampanye->campaign_id ?? '') == $campaign->id) ? 'selected' : '' }}>
+                                    <option value="{{ $campaign->id }}" {{ (old('campaign_id', $urgentKampanye->campaign_id ?? '') == $campaign->id) ? 'selected' : '' }}>
                                         {{ $campaign->title }}
                                     </option>
                                 @endforeach
@@ -64,7 +64,7 @@
                                 <option value="">Pilih Prioritas</option>
                                 @for ($i = 1; $i <= 10; $i++)
                                     <option value="{{ $i }}" 
-                                        {{ (old('prioritas', $prioritasKampanye->prioritas ?? '') == $i) ? 'selected' : '' }}
+                                        {{ (old('prioritas', $urgentKampanye->prioritas ?? '') == $i) ? 'selected' : '' }}
                                         {{ isset($usedPriorities) && in_array($i, $usedPriorities) ? 'disabled' : '' }}>
                                         {{ $i }}{{ isset($usedPriorities) && in_array($i, $usedPriorities) ? ' (Sudah digunakan)' : '' }}
                                     </option>
@@ -90,8 +90,8 @@
                 </div>
 
                 <div class="form-group">
-                    <button type="submit" class="btn btn-danger">Simpan Prioritas</button>
-                    <a href="{{ route('prioritas-kampanye.index') }}" class="btn btn-secondary">Kembali</a>
+                    <button type="submit" class="btn btn-danger">Simpan Pilihan Kampanye</button>
+                    <a href="{{ route('urgent-kampanye.index') }}" class="btn btn-secondary">Kembali</a>
                 </div>
             </form>
         @endif

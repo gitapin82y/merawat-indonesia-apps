@@ -28,6 +28,7 @@ use App\Http\Controllers\TripayPaymentMethodController;
 use Illuminate\Http\Request; 
 use App\Http\Controllers\LegalDocumentController;
 use App\Http\Controllers\SiteSettingsController;
+use App\Http\Controllers\UrgentCampaignController;
 
 
 Route::get('/cron/check-pending-donations', [DonationController::class, 'pollPendingTransactions']);
@@ -187,8 +188,7 @@ Route::post('/site-settings/social-media', [SiteSettingsController::class, 'upda
     Route::resource('donasi-kampanye', DonationController::class);
 
     Route::resource('prioritas-kampanye', PrioritasCampaignController::class);
-
-   
+    Route::resource('urgent-kampanye', UrgentCampaignController::class);
 
     Route::resource('fundraising', FundraisingController::class);
     Route::resource('pencairan-fundraising', FundraisingWithdrawalController::class);

@@ -124,20 +124,22 @@
 
     <div class="row kampanye mt-4">
         <div class="justify-content-between d-flex">
-            <h2>Galang Dana Akhir Pekan</h2>
+            <h2>Program Donasi Mendesak</h2>
             <a href="{{url('eksplore-kampanye')}}">Lihat Semua</a>
          </div>
 
          <div class="swiper mySwiper mt-2">
             <div class="swiper-wrapper">
-            @if($weekendCampaigns->isEmpty())
-            <div class="text-center w-100">
-                <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                <p>Belum Ada Galang Dana Akhir Pekan</p>
-            </div>
+             @if($urgentCampaigns->isEmpty())
+                <div class="text-center w-100">
+                    <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
+                    <p>Belum Ada Prioritas Galang Dana</p>
+                </div>
             @else
-                @foreach($weekendCampaigns as $campaign)
-                        @include('includes.main-campaign-card', ['campaign' => $campaign])
+                @foreach($urgentCampaigns as $urgentItem)
+                    @if($urgentItem) <!-- Pastikan kampanye terkait ada -->
+                        @include('includes.urgent-campaign-card', ['urgentItem' => $urgentItem->campaign])
+                    @endif
                 @endforeach
             @endif
             <!-- <div class="swiper-button-next"></div>

@@ -38,12 +38,13 @@
     
         <!-- Dropdown Kampanye -->
         <div class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {{ Request::is('kampanye') || Request::is('super-admin/prioritas-kampanye') ? 'active' : '' }}" href="#" id="kampanyeDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a class="nav-link dropdown-toggle {{ Request::is('kampanye') || Request::is('super-admin/urgent-kampanye') || Request::is('super-admin/prioritas-kampanye') ? 'active' : '' }}" href="#" id="kampanyeDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Kampanye
             </a>
             <div class="dropdown-menu" aria-labelledby="kampanyeDropdown">
                 <a class="dropdown-item" href="{{ route('kampanye.index') }}">Lihat Kampanye</a>
                 <a class="dropdown-item" href="{{ route('prioritas-kampanye.index') }}">Promosi Kampanye</a>
+                <a class="dropdown-item" href="{{ route('urgent-kampanye.index') }}">Pilihan Kampanye</a>
             </div>
         </div>
     

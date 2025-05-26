@@ -9,6 +9,7 @@ use App\Models\Banner;
 use App\Models\Donation;
 use App\Models\Category;
 use App\Models\PrioritasCampaign;
+use App\Models\UrgentCampaign;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
@@ -64,6 +65,11 @@ class UserController extends Controller
         ->orderBy('prioritas', 'asc')
         ->get();
 
+        $urgentCampaigns = UrgentCampaign::with(['campaign'])
+        ->orderBy('prioritas', 'asc')
+        ->get();
+
+
         $banners = Banner::get();
 
         // Untuk permintaan AJAX, hanya kirim data kampanye dan status pagination
@@ -77,7 +83,7 @@ class UserController extends Controller
         $categories = Category::all();
         $categoriesCount = $categories->count();
 
-        return view('donatur.home', compact('categories', 'categoriesCount','donaturLeaderboard', 'campaigns', 'weekendCampaigns','prioritasCampaigns','banners'));
+        return view('donatur.home', compact('categories', 'categoriesCount','donaturLeaderboard', 'campaigns', 'weekendCampaigns','prioritasCampaigns','urgentCampaigns','banners'));
     }
 
     public function eksplore(Request $request)
