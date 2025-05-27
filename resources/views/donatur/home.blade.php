@@ -124,7 +124,7 @@
 
     <div class="row kampanye mt-4">
         <div class="justify-content-between d-flex">
-            <h2>Program Donasi Mendesak</h2>
+            <h2>Program Merawat Indonesia</h2>
             <a href="{{url('eksplore-kampanye')}}">Lihat Semua</a>
          </div>
 
@@ -133,7 +133,7 @@
              @if($urgentCampaigns->isEmpty())
                 <div class="text-center w-100">
                     <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                    <p>Belum Ada Program Donasi Mendesak</p>
+                    <p>Belum Ada Program Merawat Indonesia</p>
                 </div>
             @else
                 @foreach($urgentCampaigns as $urgentItem)
