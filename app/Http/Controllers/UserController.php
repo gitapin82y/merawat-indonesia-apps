@@ -51,15 +51,7 @@ class UserController extends Controller
         $oneWeekFromNow = $today->copy()->addWeek();
 
         // Gunakan paginate untuk pagination biasa
-        $campaigns = Campaign::where('status', 'aktif')->paginate(6); // Perhatikan jumlah item per halaman
-
-        // Filter kampanye yang tinggal 1 minggu lagi
-         $weekendCampaigns = Campaign::where('status', 'aktif')
-            ->whereNotNull('deadline')
-            ->whereDate('deadline', '>=', $today->toDateString())
-            ->whereDate('deadline', '<=', $oneWeekFromNow->toDateString())
-            ->limit(10)
-            ->get();
+        $campaigns = Campaign::where('status', 'aktif')->orderBy('created_at', 'desc')->paginate(6); // Perhatikan jumlah item per halaman
 
         $prioritasCampaigns = prioritasCampaign::with(['campaign'])
         ->orderBy('prioritas', 'asc')
@@ -83,7 +75,7 @@ class UserController extends Controller
         $categories = Category::all();
         $categoriesCount = $categories->count();
 
-        return view('donatur.home', compact('categories', 'categoriesCount','donaturLeaderboard', 'campaigns', 'weekendCampaigns','prioritasCampaigns','urgentCampaigns','banners'));
+        return view('donatur.home', compact('categories', 'categoriesCount','donaturLeaderboard', 'campaigns','prioritasCampaigns','urgentCampaigns','banners'));
     }
 
     public function eksplore(Request $request)
@@ -110,8 +102,8 @@ class UserController extends Controller
         $today = Carbon::now();
         $oneWeekFromNow = $today->copy()->addWeek();
 
-        // Gunakan paginate untuk pagination biasa
-        $campaigns = Campaign::where('status', 'aktif')->paginate(8); // Perhatikan jumlah item per halaman
+          // Gunakan paginate untuk pagination biasa
+        $campaigns = Campaign::where('status', 'aktif')->orderBy('created_at', 'desc')->paginate(6); // Perhatikan jumlah item per halaman
 
         // Filter kampanye yang tinggal 1 minggu lagi
          $weekendCampaigns = Campaign::where('status', 'aktif')
