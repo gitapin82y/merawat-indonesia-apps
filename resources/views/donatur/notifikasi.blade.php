@@ -38,6 +38,7 @@
           @endif
       </div> --}}
 
+
         <div class="notification-container">
           @forelse($notifications as $notification)
           <div class="notification-item">
@@ -47,9 +48,21 @@
             <p class="notification-text mt-3">
               {{ Str::limit($notification->message, 150) }}
             </p>
+            
 
-            @if($notification->image_path)
-                        <img src="{{ Storage::url($notification->image_path) }}" alt="Notification Image" class="notification-image">
+               @php
+                $filePath = $notification->image_path;
+                $fileUrl = Storage::url($filePath);
+                $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+                $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+            @endphp
+
+            @if($filePath)
+                @if(in_array($extension, $imageExtensions))
+                    <img src="{{ $fileUrl }}" alt="Notification Image" class="notification-image" style="max-width: 200px;">
+                @else
+                <a href="{{ url('storage/' . $filePath) }}" class="btn btn-danger">Lihat File</a>
+                @endif
             @endif
 
             <div class="row justify-content-between">

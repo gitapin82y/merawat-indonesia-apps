@@ -241,7 +241,7 @@ class CampaignWithdrawalController extends Controller
                 // Kirim email dengan gambar bukti pencairan
                 $emailData = [
                     'withdrawal' => $kampanyeWithdrawal,
-                    'bukti_pencairan_url' => asset('storage/' . $buktiPath)
+                    'bukti_pencairan_url' => url('storage/' . $buktiPath)
                 ];
                 Mail::to($adminUser->email)->send(new CampaignStatusMail($kampanyeWithdrawal, $emailData));
             } else {

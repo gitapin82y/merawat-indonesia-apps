@@ -319,10 +319,11 @@ class FundraisingWithdrawalController extends Controller
                         $buktiPath // Tambahkan path gambar
                     );
                     
+                    
                     // Kirim email dengan gambar bukti pencairan
                     $emailData = [
                         'withdrawal' => $fundraisingWithdrawal,
-                        'bukti_pencairan_url' => asset('storage/' . $buktiPath)
+                        'bukti_pencairan_url' => url('storage/' . $buktiPath)
                     ];
 
                     Mail::to($user->email)->send(new FundraisingStatusMail($fundraisingWithdrawal, $emailData));

@@ -97,7 +97,8 @@
             @if(isset($bukti_pencairan_url))
             <div class="bukti-transfer">
                 <h3>Bukti Transfer</h3>
-                <img src="{{ $bukti_pencairan_url }}" alt="Bukti Transfer" style="max-width: 100%;">
+                {{-- <img src="{{ $bukti_pencairan_url }}" alt="Bukti Transfer" style="max-width: 100%;"> --}}
+                <a href="{{ url($bukti_pencairan_url) }}" class="btn btn-danger">Lihat File</a>
             </div>
             @endif
             
