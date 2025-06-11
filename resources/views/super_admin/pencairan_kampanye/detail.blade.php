@@ -104,10 +104,18 @@
                     @if($pencairanKampanye->status == 'disetujui' && $pencairanKampanye->bukti_pencairan)
                     <!-- Bukti Transfer -->
                     <h5 class="border-bottom pb-2 mb-3">Bukti Transfer</h5>
-                    <div class="mb-4 text-center">
-                        <img src="{{ asset('storage/' . $pencairanKampanye->bukti_pencairan) }}" 
-                             alt="Bukti Transfer" class="img-fluid border rounded" 
-                             style="max-height: 300px;">
+                    <div class="mb-4">
+                
+                        @if($pencairanKampanye->bukti_pencairan)
+                            <div class="text-center mb-3">
+                                <a href="{{ asset('storage/' . $pencairanKampanye->bukti_pencairan) }}" target="_blank" class="btn btn-danger">
+                                    <i class="fas fa-file-download"></i> Lihat File
+                                </a>
+                            </div>
+                        @else
+                            <div class="alert alert-info">Tidak ada dokumen RAB yang diunggah.</div>
+                        @endif
+
                     </div>
                     @endif
 
