@@ -56,7 +56,7 @@ return [
         'api_key' => env('TRIPAY_API_KEY', 'DEV-kWVp5CybKc0Gn8qfSsAMhG4I9zJukegvQr6tKjzR'),
         'private_key' => env('TRIPAY_PRIVATE_KEY', 'APYxC-u3v8x-jjmAo-wptx6-Cb1Iu'),
         'merchant_code' => env('TRIPAY_MERCHANT_CODE', 'T31052'),
-        'api_url' => env('TRIPAY_API_URL', 'https://tripay.co.id/api-sandbox/'),
+        'api_url' => env('TRIPAY_API_URL', 'https://tripay.co.id/api/'),
     ],
 
 ];
