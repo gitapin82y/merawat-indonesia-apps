@@ -1,3 +1,10 @@
+<style>
+   .accordion-body img{
+      max-width: 100%;
+    height: auto;
+    display: block;
+   }
+</style>
 @forelse($kabarTerbaru as $index => $kabar)
 <div class="accordion-item">
     <h2 class="accordion-header">
