@@ -424,7 +424,9 @@ public function __construct(NotificationService $notificationService)
             ->paginate($perPage, ['*'], 'comments_page');
         
         $totalDonaturs = $campaign->donations->where('status', 'sukses')->count();
-        $totalKampanye = Campaign::where('status', 'aktif')->count();
+
+        $totalCampaign = Campaign::where('admin_id', $campaign->admin_id)->get();
+        $totalKampanye = $totalCampaign->where('status', 'aktif')->count();
         
         // Get guest identifier from cookie
         $guestIdentifier = $request->cookie('guest_identifier');

@@ -171,6 +171,28 @@ class KabarTerbaruController extends Controller
             // just because notifications couldn't be sent
         }
     }
+
+        public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $kabar = KabarTerbaru::findOrFail($id);
+        $kabar->update([
+            'title' => $request->title,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->back()->with('success', 'Kabar terbaru berhasil diperbarui');
+    }
     
     /**
      * Send an email to a donor about the campaign update

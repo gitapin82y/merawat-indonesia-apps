@@ -18,6 +18,7 @@ class AdsenseController extends Controller
             $validated = $request->validate([
                 'tiktok_pixel' => 'nullable|string|max:255',
                 'facebook_pixel' => 'nullable|string|max:255',
+                 'facebook_pixel_second' => 'nullable|string|max:255',
                 'google_analytics_tag' => 'nullable|string|max:255',
                 'meta_token' => 'nullable|string|max:255',
                 'meta_endpoint' => 'nullable|string|max:255',
@@ -43,6 +44,7 @@ class AdsenseController extends Controller
             $validated = $request->validate([
                 'tiktok_pixel' => 'nullable|string|max:255',
                 'facebook_pixel' => 'nullable|string|max:255',
+                 'facebook_pixel_second' => 'nullable|string|max:255',
                 'google_analytics_tag' => 'nullable|string|max:255',
                 'meta_token' => 'nullable|string|max:255',
                 'meta_endpoint' => 'nullable|string|max:255',

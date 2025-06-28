@@ -56,6 +56,9 @@
                     <tbody>
                     </tbody>
                 </table>
+                <div class="mt-3">
+                    <strong>Jumlah Total Donasi: </strong><span id="total-donation">Rp 0</span>
+                </div>
             </div>
         </div>
     </div>
@@ -173,6 +176,11 @@ $(function () {
             search: "Cari:",
             zeroRecords: "Tidak ditemukan data yang sesuai"
         }
+    });
+
+     table.on('xhr.dt', function(e, settings, json){
+        const total = json.totalAmount || 0;
+        $('#total-donation').text('Rp ' + new Intl.NumberFormat('id-ID').format(total));
     });
 
     // Apply campaign filter

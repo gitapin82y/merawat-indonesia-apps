@@ -169,7 +169,7 @@
         @endif
 
      @if ($campaigns->hasMorePages())
-        <button id="load-more" data-next-page="{{ $campaigns->nextPageUrl() }}" class="btn btn-primary mt-1 mb-4">
+        <button id="load-more" data-next-page="{{ $campaigns->nextPageUrl() }}" class="btn btn-primary mt-3 mb-4">
             Lihat Lebih Banyak
         </button>
     @endif

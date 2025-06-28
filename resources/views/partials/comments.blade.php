@@ -23,10 +23,10 @@
             <i class="fa-solid fa-hands-praying"></i> &nbsp; 
             <span class="like-count">{{ $comment->donationLikes->count() }}</span> Aaminn
         </a>
-        <h2 class="d-flex mb-0 align-self-center">
+        {{-- <h2 class="d-flex mb-0 align-self-center">
             Rp {{ number_format($comment->amount, 0, ',', '.') }} 
             <small class="fw-normal ms-1 mt-1">Donasi Terkirim</small>
-        </h2>
+        </h2> --}}
     </div>
 </div>
 @empty

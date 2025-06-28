@@ -12,8 +12,8 @@ class Adsense extends Model
     protected $table = 'adsense';
 
     protected $fillable = [
-        'tiktok_pixel', 'facebook_pixel', 'google_analytics_tag', 
-        'meta_token', 'meta_endpoint', 'google_ads_id', 
+         'tiktok_pixel', 'facebook_pixel', 'facebook_pixel_second', 'google_analytics_tag',
+        'meta_token', 'meta_endpoint', 'google_ads_id',
         'google_ads_label', 'tiktok_token', 'tiktok_endpoint'
     ];
 }

@@ -20,10 +20,10 @@
     <!-- Page Heading -->
     <div class="card mb-4">
         <div class="card-header bg-white py-3 align-items-center justify-content-between row m-0">
-            <div class="col-12 col-sm-6 p-0">
+            <div class="col-12 col-sm-4 p-0">
                 <h4 class="m-0 font-weight-bold float-left text-danger">Semua Data Ceklis Donasi</h4>
             </div>
-            <div class="col-12 col-sm-6">
+            <div class="col-12 col-sm-8">
                    <button type="button" data-toggle="modal" data-target="#campaignFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
         <i class="fas fa-filter fa-sm mr-1"></i> Filter Kampanye
     </button>
@@ -32,6 +32,9 @@
                 </button>
                 <button type="button" data-toggle="modal" data-target="#methodFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">
                     <i class="fas fa-filter fa-sm mr-1"></i> Filter Metode
+                </button>
+                  <button type="button" id="exportExcel" class="btn btn-success float-left mt-3 mt-sm-0 float-sm-right shadow-sm mx-2">
+                    <i class="fas fa-file-excel fa-sm mr-1"></i> Export Excel
                 </button>
             </div>
         </div>
@@ -168,6 +171,18 @@ $(function () {
         width: '100%',
         dropdownParent: $('#campaignFilterModal')
     });
+
+     $('#exportExcel').click(function(){
+        const params = {
+            payment_type: $('#payment_type').val(),
+            status: $('#status').val(),
+            campaign_id: $('#campaign_id').val(),
+            search: table.search()
+        };
+        const query = $.param(params);
+        window.location = "{{ route('ceklis-donasi.export') }}?" + query;
+    });
+    
     var table = $('.yajra-datatable').DataTable({
         processing: true,
         serverSide: true,

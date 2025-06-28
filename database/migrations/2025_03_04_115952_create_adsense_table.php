@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('tiktok_pixel')->nullable();
             $table->string('facebook_pixel')->nullable();
+            $table->string('facebook_pixel_second')->nullable()->after('facebook_pixel');
             $table->string('google_analytics_tag')->nullable();
             $table->string('meta_token')->nullable();
             $table->string('meta_endpoint')->nullable();

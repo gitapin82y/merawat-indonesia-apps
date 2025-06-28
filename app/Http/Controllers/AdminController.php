@@ -279,11 +279,11 @@ public function __construct(NotificationService $notificationService)
     {
         $admin = Admin::where('name',$name)->first();
 
-            $campaign = Campaign::with([
-                'donations', 
-                'kabarTerbaru', 
-                'campaignWithdrawals'
-            ])->where('admin_id', $admin->id)->get();
+        $campaign = Campaign::with([
+            'donations', 
+            'kabarTerbaru', 
+            'campaignWithdrawals'
+        ])->where('admin_id', $admin->id)->get();
 
              // Hitung jumlah donatur (total donasi yang sudah dikonfirmasi)
     $totalDonaturs = $campaign->sum(function($campaign) {

@@ -3,6 +3,7 @@
 @section('title', 'Lihat Kabar Terbaru')
 
 @push('after-style')
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
 <style>
     .accordion-button::after {
         display: none;
@@ -50,10 +51,23 @@
             <div id="collapseKabarTerbaru{{ $index }}" class="accordion-collapse collapse" 
                 aria-labelledby="heading{{ $index }}">
                 <div class="accordion-body">
-                    {!! $kabar->description !!}
+                    {{-- {!! $kabar->description !!}
                     @if($kabar->image)
                         <img src="{{ asset($kabar->image) }}" alt="{{ $kabar->title }}" class="img-fluid rounded">
-                    @endif
+                    @endif --}}
+
+                     <form action="{{ route('kabar-terbaru.update', $kabar->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="form-group mb-3">
+                            <label>Judul</label>
+                            <input type="text" name="title" class="form-control" value="{{ $kabar->title }}">
+                        </div>
+                        <div class="form-group mb-3">
+                            <textarea class="form-control summernote" name="description">{!! $kabar->description !!}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger">Simpan</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -71,6 +85,7 @@
 @endsection
 
 @push('after-script')
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
 <script>
     // Make sure Bootstrap is fully loaded
     document.addEventListener('DOMContentLoaded', function() {
@@ -100,6 +115,44 @@
                 }
             });
         });
+
+         $('.summernote').summernote({
+            height: 200,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            callbacks: {
+                onImageUpload: function(files) {
+                    for(let i = 0; i < files.length; i++) {
+                        uploadSummernoteImage(files[i], this);
+                    }
+                }
+            }
+        });
+
+        function uploadSummernoteImage(file, editor) {
+            let formData = new FormData();
+            formData.append('file', file);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            $.ajax({
+                url: '{{ route("image.upload") }}',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    $(editor).summernote('insertImage', data.location);
+                },
+            });
+        }
+
     });
 </script>
 @endpush

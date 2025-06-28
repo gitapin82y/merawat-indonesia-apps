@@ -214,6 +214,7 @@ Route::post('/site-settings/social-media', [SiteSettingsController::class, 'upda
     Route::get('/pencairan-kampanye/{id}/reject', [CampaignWithdrawalController::class, 'reject'])->name('pencairan-kampanye.reject');
 
     Route::get('ceklis-donasi', [DonationController::class, 'ceklis'])->name('ceklis-donasi.index');
+    Route::get('ceklis-donasi/export', [DonationController::class, 'exportCeklis'])->name('ceklis-donasi.export');
     Route::post('ceklis-donasi/{id}', [DonationController::class, 'destroy'])->name('ceklis-donasi.destroy');
     Route::post('/donasi/update-status', [DonationController::class, 'updateStatus'])->name('donasi.updateStatus');  
 

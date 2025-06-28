@@ -1128,6 +1128,8 @@ public function index(Request $request)
             $endDate = Carbon::parse($request->end_date)->endOfDay();
             $query->whereBetween('created_at', [$startDate, $endDate]);
         }
+
+        $totalAmount = $query->sum('amount');
         
         return DataTables::of($query->latest())
             ->addIndexColumn()
@@ -1150,6 +1152,7 @@ public function index(Request $request)
                 return $actionBtn;
             })
             ->rawColumns(['campaign_title','created_at','action'])
+            ->with('totalAmount', $totalAmount)
             ->make(true);
     }
     
@@ -1247,6 +1250,64 @@ public function ceklis(Request $request)
     }
     
     return view('super_admin.ceklis_donasi.index', compact('campaigns'));
+}
+
+public function exportCeklis(Request $request)
+{
+    $query = Donation::with('campaign');
+
+    if ($request->has('payment_type') && $request->payment_type) {
+        $query->where('payment_type', $request->payment_type);
+    }
+    if ($request->has('status') && $request->status) {
+        $query->where('status', $request->status);
+    }
+    if ($request->has('campaign_id') && $request->campaign_id) {
+        $query->where('campaign_id', $request->campaign_id);
+    }
+    if ($request->has('search') && $request->search) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name','like',"%$search%")
+              ->orWhere('email','like',"%$search%")
+              ->orWhere('phone','like',"%$search%")
+              ->orWhereHas('campaign', function($c) use ($search){
+                  $c->where('title','like',"%$search%");
+              });
+        });
+    }
+
+    $donations = $query->latest()->get();
+
+    $filename = 'ceklis_donasi_'.now()->format('Ymd_His').'.csv';
+
+    $headers = [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => 'attachment; filename='.$filename,
+    ];
+
+    $columns = ['Nama','Email','Phone','Kampanye','Total Donasi','Metode','Tanggal','Status'];
+
+    $callback = function() use ($donations, $columns) {
+        $handle = fopen('php://output', 'w');
+        fputcsv($handle, $columns);
+        foreach ($donations as $d) {
+            $method = ($d->payment_type == 'manual' ? 'Manual' : 'Payment Gateway') .' ('. $d->payment_method .')';
+            fputcsv($handle, [
+                $d->name,
+                $d->email,
+                $d->phone,
+                optional($d->campaign)->title,
+                $d->amount,
+                $method,
+                optional($d->created_at)->timezone('Asia/Jakarta')->format('d M Y'),
+                $d->status,
+            ]);
+        }
+        fclose($handle);
+    };
+
+    return response()->stream($callback, 200, $headers);
 }
 
     public function updateStatus(Request $request)

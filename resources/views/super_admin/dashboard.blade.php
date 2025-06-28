@@ -17,6 +17,7 @@
             data-id="{{ optional($adsense)->id }}"
             data-tiktok_pixel="{{ optional($adsense)->tiktok_pixel }}"
             data-facebook_pixel="{{ optional($adsense)->facebook_pixel }}"
+            data-facebook_pixel_second="{{ optional($adsense)->facebook_pixel_second }}"
             data-google_analytics_tag="{{ optional($adsense)->google_analytics_tag }}"
             data-meta_token="{{ optional($adsense)->meta_token }}"
             data-meta_endpoint="{{ optional($adsense)->meta_endpoint }}"
@@ -471,6 +472,7 @@ $(document).ready(function () {
                 id: $('#adsense_id').val(),
                 tiktok_pixel: $('#tiktok_pixel').val(),
                 facebook_pixel: $('#facebook_pixel').val(),
+                facebook_pixel_second: $('#facebook_pixel_second').val(),
                 google_analytics_tag: $('#google_analytics_tag').val(),
                 meta_token: $('#meta_token').val(),
                 meta_endpoint: $('#meta_endpoint').val(),

@@ -16,6 +16,7 @@
                     $fields = [
                         'tiktok_pixel' => 'TikTok Pixel',
                         'facebook_pixel' => 'Facebook Pixel',
+                        'facebook_pixel_second' => 'Facebook Pixel 2',
                         'google_analytics_tag' => 'Google Analytics Tag',
                         'meta_token' => 'Meta Token',
                         'meta_endpoint' => 'Meta Endpoint',
