@@ -57,7 +57,7 @@
                     </tbody>
                 </table>
                 <div class="mt-3">
-                    <strong>Jumlah Total Donasi: </strong><span id="total-donation">Rp 0</span>
+                    <strong>Jumlah Total Donasi: </strong><span id="total-donation" style="font-size:20px;" class="badge bg-danger text-white">Rp 0</span>
                 </div>
             </div>
         </div>
