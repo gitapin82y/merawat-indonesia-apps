@@ -134,7 +134,7 @@ window.paymentConfig = {
                                         <div class="col-12">
                                             <small class="text-muted">Jumlah yang harus dibayar:</small>
                                             <div class="payment-amount-highlight">
-            Rp {{ number_format($paymentDetail['payment_amount'] ?? $donation->amount) }}
+            Rp {{ number_format( $donation->amount) }}
             <button class="copy-button ms-2" onclick="copyToClipboard('{{ $paymentDetail['payment_amount'] ?? $donation->amount }}', this)" title="Salin nominal">
                 <i class="fa fa-copy"></i>
             </button>
