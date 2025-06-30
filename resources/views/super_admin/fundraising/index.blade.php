@@ -24,11 +24,10 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Nama</th>
-                            <th>Email</th>
-                            <th>Total Komisi</th>
-                            <th>Total Donatur</th>
+                             <th>Kampanye</th>
+                            <th>Total Fundraiser</th>
                             <th>Jumlah Donasi</th>
+                            <th>Total Komisi</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -50,15 +49,14 @@ $(function () {
         ajax: "{{ route('fundraising.index') }}",
         columns: [
             {data: 'DT_RowIndex', name: 'DT_RowIndex'},
-            {data: 'name', name: 'name'},
-            {data: 'email', name: 'email'},
-            {data: 'commission', name: 'commission'},
-            {data: 'total_donatur', name: 'total_donatur'},
+             {data: 'campaign', name: 'campaign'},
+            {data: 'total_fundraiser', name: 'total_fundraiser'},
             {data: 'jumlah_donasi', name: 'jumlah_donasi'},
+            {data: 'total_komisi', name: 'total_komisi'},
             {
-                data: 'action', 
-                name: 'action', 
-                orderable: false, 
+                 data: 'action',
+                name: 'action',
+                orderable: false,
                 searchable: false
             },
         ],
@@ -75,6 +73,57 @@ $(function () {
         }
     });
 }); 
+
+function deleteCampaignFundraising(slug) {
+    Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: "Anda tidak dapat mengembalikan data yang dihapus!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Hapus!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: 'fundraising-campaign/' + slug,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: response.message,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                        $('.yajra-datatable').DataTable().ajax.reload();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: response.message,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire(
+                        'Error!',
+                        'Terjadi kesalahan saat menghapus data',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+}
 
 function deleteFundraising(id) {
     Swal.fire({
@@ -235,6 +284,8 @@ function showCustomCommissionModal(currentValue) {
     });
 }
 });
+
+
 
 
 </script>

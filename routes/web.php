@@ -191,7 +191,8 @@ Route::post('/site-settings/social-media', [SiteSettingsController::class, 'upda
 
     Route::resource('prioritas-kampanye', PrioritasCampaignController::class);
     Route::resource('urgent-kampanye', UrgentCampaignController::class);
-
+    Route::get('fundraising-campaign/{campaign}', [FundraisingController::class, 'campaignDetail'])->name('fundraising.campaign.detail');
+    Route::delete('fundraising-campaign/{campaign}', [FundraisingController::class, 'destroyByCampaign'])->name('fundraising.campaign.destroy');
     Route::resource('fundraising', FundraisingController::class);
     Route::resource('pencairan-fundraising', FundraisingWithdrawalController::class);
     Route::resource('pencairan-kampanye', CampaignWithdrawalController::class);

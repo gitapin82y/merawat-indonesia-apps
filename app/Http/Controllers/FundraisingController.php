@@ -35,47 +35,59 @@ class FundraisingController extends Controller
     {
         Carbon::setLocale('id');
         if ($request->ajax()) {
-            $query = Fundraising::with(['campaign','user'])->get();
-            
+            $query = Campaign::with('fundraisings')->has('fundraisings')->get();
             return DataTables::of($query)
                 ->addIndexColumn()
-                ->addColumn('name', function ($row) {
-                    return $row->user->name;
-                })    
-                ->addColumn('email', function($row) {
-                    return $row->user->email;
+                 ->addColumn('campaign', function ($row) {
+                    return $row->title;
+                })          
+                    ->addColumn('total_fundraiser', function ($row) {
+                    return '<span class="badge bg-primary text-white">'.$row->fundraisings->count().'</span>';
+                })  
+                ->addColumn('jumlah_donasi', function ($row) {
+                    $total = $row->fundraisings->sum('jumlah_donasi');
+                    return 'Rp ' . number_format($total, 0, ',', '.');
                 })
-                ->addColumn('commission', function($row) {
-                    return 'Komisi Saat ini : '.$row->commission . ' | Jumlah Donasi : Rp ' . number_format($row->jumlah_donasi, 0, ',', '.');
-                })                
-                ->addColumn('total_donatur', function($row) {
-                    return '<span class="badge bg-primary text-white">'.$row->total_donatur.'</span>';
+                ->addColumn('total_komisi', function ($row) {
+                    $total = $row->fundraisings->sum('commission');
+                    return 'Rp ' . number_format($total, 0, ',', '.');
                 })
-                ->addColumn('jumlah_donasi', function($row) {
-                    return 'Rp ' . number_format($row->jumlah_donasi, 0, ',', '.');
-                })                
-                ->addColumn('action', function($row) {
-                    $whatsappUrl = "https://wa.me/". $row->user->phone;
-                    
-                    $actionBtn = '<div class="btn-group" role="group">';
-                    $actionBtn .= '
-                        <a href="'.$whatsappUrl.'" target="_blank" class="btn btn-success btn-sm">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                          <a href="'.route('fundraising.edit', $row->id).'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
-                        <button onclick="deleteFundraising('.$row->id.')" class="btn btn-danger btn-sm">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>'; // Tutup div.btn-group
-                
-                    return $actionBtn;
-                })            
-                ->rawColumns(['name','email','commission','total_donatur','jumlah_donasi','action'])
-                 ->make(true);
+                 ->addColumn('action', function ($row) {
+                    $detailUrl = route('fundraising.campaign.detail', $row->slug);
+                    $deleteUrl = route('fundraising.campaign.destroy', $row->slug);
+                    $btn = '<div class="btn-group" role="group">';
+                    $btn .= '<a href="'.$detailUrl.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>';
+                    $btn .= '<button onclick="deleteCampaignFundraising(\''.$row->slug.'\')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>';
+                    $btn .= '</div>';
+                    return $btn;
+                })
+                ->rawColumns(['campaign','total_fundraiser','jumlah_donasi','total_komisi','action'])
+                ->make(true);
+             
         }
         
         return view('super_admin.fundraising.index');
     }
+  public function destroyByCampaign(Campaign $campaign)
+    {
+        DB::beginTransaction();
+        try {
+            $campaign->fundraisings()->delete();
+
+            DB::commit();
+            return response()->json(['status' => 'success', 'message' => 'Data fundraising kampanye berhasil dihapus']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => 'Gagal menghapus data fundraising kampanye: ' . $e->getMessage()], 500);
+        }
+    }
+      public function campaignDetail(Campaign $campaign)
+    {
+        $campaign->load(['fundraisings.user']);
+
+        return view('super_admin.fundraising.campaign-detail', compact('campaign'));
+    }
+
 
     public function fundraising()
     {
