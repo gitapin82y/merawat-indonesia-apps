@@ -211,10 +211,22 @@ if (isset($paymentDetail['payment_method'])) {
                                     <div class="alert alert-warning">
                                         <h4 class="mb-0"><i class="fa fa-money-bill-transfer me-2"></i> Menunggu Pembayaran Manual</h4>
                                     </div>
-                                    <p class="mt-4">Silakan lakukan transfer manual dan upload bukti pembayaran.</p>
-                                    <a href="{{ route('donations.select-payment-method', $donation->id) }}" class="btn btn-danger btn-lg">
-                                        <i class="fa fa-money-bill-transfer me-1"></i> Bayar Sekarang
-                                    </a>
+                                    <p class="mt-4">Silakan transfer sesuai instruksi kemudian unggah bukti pembayaran di bawah ini.</p>
+
+                                    <form action="{{ route('donations.process-manual-payment') }}" method="POST" enctype="multipart/form-data" class="mt-3">
+                                        @csrf
+                                        <input type="hidden" name="donation_id" value="{{ $donation->id }}">
+                                        <input type="hidden" name="payment_type" value="manual">
+                                        <input type="hidden" name="selected_payment_method" value="{{ $donation->manual_payment_method_id }}">
+                                        <div class="mb-3">
+                                            <label for="payment_proof" class="form-label">Upload Bukti Transfer <span class="text-danger">*</span></label>
+                                            <input type="file" class="form-control" id="payment_proof" name="payment_proof" required accept="image/*">
+                                            <div class="form-text">Format: JPG, PNG, JPEG (Maks. 2MB)</div>
+                                        </div>
+                                        <button type="submit" class="btn btn-danger btn-lg">
+                                            <i class="fa fa-upload me-1"></i> Kirim Bukti Pembayaran
+                                        </button>
+                                    </form>
                                 @else
                                     <div class="alert alert-info">
                                         <h4 class="mb-0"><i class="fa fa-clock me-2"></i> Menunggu Verifikasi Admin</h4>

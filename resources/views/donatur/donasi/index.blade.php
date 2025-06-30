@@ -164,7 +164,7 @@
                                 </div>
                             </div>
 
-                             <div class="row container m-0 pb-4">
+                              <div class="row container m-0 pb-4">
                                 <h3>Pilih Metode Pembayaran</h3>
 
                                 <ul class="nav nav-tabs payment-type-tabs mb-3" id="paymentTypeTabs" role="tablist">
@@ -231,7 +231,7 @@
 
                                         <div id="manualPaymentDetails" class="mt-4 d-none">
                                             <div class="alert alert-info">
-                                                <i class="fa-solid fa-info-circle me-1"></i> Silakan transfer sesuai nominal donasi dan upload bukti transfer
+                                                <i class="fa-solid fa-info-circle me-1"></i> Jumlah transfer akan diinformasikan setelah submit.
                                             </div>
 
                                             <div class="selected-method-details mb-3">
@@ -239,11 +239,6 @@
                                                 <div id="methodDetails" class="bg-light p-3 rounded"></div>
                                             </div>
 
-                                            <div class="mb-3">
-                                                <label for="payment_proof" class="form-label">Upload Bukti Transfer <span class="text-danger">*</span></label>
-                                                <input type="file" class="form-control" id="payment_proof" name="payment_proof" accept="image/*">
-                                                <div class="form-text">Format: JPG, PNG, JPEG (Maks. 2MB)</div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -418,19 +413,6 @@
                 return false;
             }
 
-            if (paymentType === 'manual' && !$('#payment_proof').val()) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'error',
-                    text: 'Silakan upload bukti pembayaran',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-                return false;
-            }
-            
             $('#donationForm').submit();
         });
     });
