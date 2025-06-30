@@ -38,6 +38,10 @@
     .share-whatsapp {
         background-color: #25D366;
     }
+
+    .article-content img{
+        height: auto;
+    }
     
     .share-facebook {
         background-color: #1877F2;
