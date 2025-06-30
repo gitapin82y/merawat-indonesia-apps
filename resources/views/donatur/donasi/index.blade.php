@@ -60,9 +60,9 @@
                 <div class="card">
                     <div class="card-header">{{ $campaign->title }}</div>
                     <div class="card-body">
-                        <form id="donationForm" action="{{ route('donations.process') }}" method="POST" enctype="multipart/form-data">
+                       <form id="donationForm" action="{{ route('donations.process') }}" method="POST" enctype="multipart/form-data">
                             @csrf
-                            <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
+                        <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
                             <input type="hidden" name="payment_type" id="payment_type">
                             <input type="hidden" name="selected_payment_method" id="selected_payment_method">
                             <!-- Pilihan Nominal Donasi -->
@@ -163,7 +163,7 @@
                                 </div>
                             </div>
 
-                              <div class="row container m-0 pb-4">
+                             <div class="row container m-0 pb-4">
                                 <h3>Pilih Metode Pembayaran</h3>
 
                                 <ul class="nav nav-tabs payment-type-tabs mb-3" id="paymentTypeTabs" role="tablist">
@@ -329,7 +329,7 @@
             $('#customAmount').val(amount);
         });
 
-             // Pilih metode pembayaran
+          // Pilih metode pembayaran
         $('.payment-method-card').click(function() {
             $('.payment-method-card').removeClass('selected');
             $('.payment-check-icon').addClass('d-none');

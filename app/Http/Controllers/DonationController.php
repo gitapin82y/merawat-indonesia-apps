@@ -28,6 +28,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class DonationController extends Controller
 {
@@ -190,13 +191,12 @@ class DonationController extends Controller
             'utm_source' => 'nullable|string',
             'utm_medium' => 'nullable|string',
             'utm_campaign' => 'nullable|string',
-            'payment_type' => 'required|string|in:payment_gateway,manual',
+             'payment_type' => 'required|string|in:payment_gateway,manual',
             'selected_payment_method' => 'required|string',
         ];
 
         if ($request->payment_type === 'manual') {
             $rules['selected_payment_method'] = 'required|exists:manual_payment_methods,id';
-            $rules['payment_proof'] = 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
         }
 
         $validated = $request->validate($rules);
@@ -247,7 +247,7 @@ class DonationController extends Controller
             'utm_campaign' => $utmCampaign,
         ]);
         
-         if ($request->payment_type === 'payment_gateway') {
+        if ($request->payment_type === 'payment_gateway') {
             $donation->payment_method = $request->selected_payment_method;
             $donation->save();
 
@@ -266,9 +266,13 @@ class DonationController extends Controller
 
             return redirect()->back()->with('error', 'Gagal membuat transaksi pembayaran');
         } else {
+            // Pembayaran manual
+
             $manualMethod = ManualPaymentMethod::find($request->selected_payment_method);
             $donation->payment_method = $manualMethod ? $manualMethod->name : 'manual';
-            $donation->manual_payment_method_id = $request->selected_payment_method;
+            if (Schema::hasColumn('donations', 'manual_payment_method_id')) {
+                $donation->manual_payment_method_id = $request->selected_payment_method;
+            }
 
             $originalAmount = $donation->amount;
             $donation->amount = $originalAmount + $donation->unique_code;
@@ -337,7 +341,9 @@ class DonationController extends Controller
         // Update metode pembayaran donasi
         $donation->payment_type = $request->payment_type;
         $donation->payment_method = $manual_method;
-        $donation->manual_payment_method_id = $request->selected_payment_method;
+        if (Schema::hasColumn('donations', 'manual_payment_method_id')) {
+            $donation->manual_payment_method_id = $request->selected_payment_method;
+        }
         $donation->save();
 
         

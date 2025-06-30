@@ -192,6 +192,17 @@ if (isset($paymentDetail['payment_method'])) {
                                     
                                     <div class="text-center mt-3">
                                         <p class="text-muted">Metode: {{ $paymentDetail['payment_method'] }}</p>
+                                         @if(isset($paymentDetail['manual_account_number']))
+                                            <div class="bg-light p-3 rounded d-inline-block mt-2">
+                                                <p class="mb-1"><strong>Nomor Rekening:</strong>
+                                                    <span id="manualAccountNumber">{{ $paymentDetail['manual_account_number'] }}</span>
+                                                    <button type="button" class="copy-button btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ $paymentDetail['manual_account_number'] }}', this)" title="Salin nomor rekening">
+                                                        <i class="fa fa-copy"></i>
+                                                    </button>
+                                                </p>
+                                                <p class="mb-0"><small>{{ $paymentDetail['manual_account_name'] }}</small></p>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             @endif
@@ -212,6 +223,29 @@ if (isset($paymentDetail['payment_method'])) {
                                         <h4 class="mb-0"><i class="fa fa-money-bill-transfer me-2"></i> Menunggu Pembayaran Manual</h4>
                                     </div>
                                     <p class="mt-4">Silakan transfer sesuai instruksi kemudian unggah bukti pembayaran di bawah ini.</p>
+
+                                    <div class="bg-light p-3 rounded mb-3">
+                                        <p class="mb-1"><strong>Bank/E-wallet:</strong> {{ optional($donation->manualPaymentMethod)->name }}</p>
+                                        <p class="mb-1"><strong>Nomor Rekening:</strong>
+                                            <span id="accountNumberDisplay">{{ optional($donation->manualPaymentMethod)->account_number }}</span>
+                                            <button type="button" class="copy-button btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ optional($donation->manualPaymentMethod)->account_number }}', this)" title="Salin nomor rekening">
+                                                <i class="fa fa-copy"></i>
+                                            </button>
+                                        </p>
+                                        <p class="mb-1"><strong>Atas Nama:</strong> {{ optional($donation->manualPaymentMethod)->account_name }}</p>
+                                        <p class="mb-0"><strong>Jumlah Transfer:</strong> Rp
+                                            <span id="transferAmount">{{ number_format($donation->amount) }}</span>
+                                            <button type="button" class="copy-button btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ $donation->amount }}', this)" title="Salin nominal">
+                                                <i class="fa fa-copy"></i>
+                                            </button>
+                                        </p>
+                                    </div>
+
+                                    @if(optional($donation->manualPaymentMethod)->instructions)
+                                        <div class="alert alert-secondary mt-3">
+                                            {!! nl2br(e(optional($donation->manualPaymentMethod)->instructions)) !!}
+                                        </div>
+                                    @endif
 
                                     <form action="{{ route('donations.process-manual-payment') }}" method="POST" enctype="multipart/form-data" class="mt-3">
                                         @csrf
