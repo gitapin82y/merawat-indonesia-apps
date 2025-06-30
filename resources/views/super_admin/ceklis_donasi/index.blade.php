@@ -432,5 +432,13 @@ function deleteDonasi(id) {
         }
     });
 }
+
+function noPaymentProofAlert() {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Bukti pembayaran belum diupload!',
+        text: 'User sudah mengisi form donasi dan mungkin sedang proses melakukan pembayaran sehingga belum mengirimkan foto bukti pembayaran.'
+    });
+}
 </script>
 @endpush

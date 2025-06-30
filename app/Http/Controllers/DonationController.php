@@ -1260,10 +1260,17 @@ public function ceklis(Request $request)
             
                 // Jika status masih pending, tampilkan tombol ceklis & silang lebih dulu
                 if ($row->status == 'pending' && $row->payment_type == 'manual') {
-                    $actionBtn .= '
+                        if ($row->payment_proof) {
+                        $actionBtn .= '
                     <a href="'.asset('storage/'.$row->payment_proof).'" target="_blank" class="btn btn-info text-white btn-sm">
                         <i class="fas fa-file"></i>
                     </a>';
+                                        } else {
+                        $actionBtn .= '
+                    <button onclick="noPaymentProofAlert()" class="btn btn-info text-white btn-sm">
+                        <i class="fas fa-file"></i>
+                    </button>';
+                    }
                     $actionBtn .= '
                         <button onclick="updateStatus('.$row->id.', \'sukses\')" class="btn btn-primary btn-sm">
                             <i class="fas fa-check"></i>
