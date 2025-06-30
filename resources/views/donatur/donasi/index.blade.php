@@ -161,6 +161,11 @@
                                     <textarea class="form-control" placeholder="Leave a comment here" id="pesan_doa" name="doa" style="height: 100px"></textarea>
                                     <label for="pesan_doa">Tulis Pesan atau doa (optional)</label>
                                 </div>
+                                 <div class="form-check my-2 ms-2">
+  <input class="form-check-input" type="checkbox" id="contact_agree" name="contact_agree" required checked>
+  <label class="form-check-label m-0 pt-1" for="contact_agree">Saya bersedia dihubungi</label>
+</div>
+
                             </div>
 
                              <div class="row container m-0 pb-4">
@@ -350,7 +355,6 @@
                 $('#methodDetails').html(`
                     <p class="mb-1"><strong>Bank/E-wallet:</strong> ${methodName}</p>
                     <p class="mb-1"><strong>Nomor Rekening:</strong> ${methodInfo}</p>
-                    <p class="mb-0 mt-2 text-danger">Jumlah transfer akan diinformasikan setelah submit.</p>
                 `);
             } else {
                 $('#manualPaymentDetails').addClass('d-none');
@@ -387,6 +391,20 @@
                     Swal.fire({
                         icon: 'error',
                         text: 'Silakan lengkapi data diri Anda',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                    return false;
+                }
+
+
+                if (!$('#contact_agree').is(':checked')) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        text: 'Silakan setujui bahwa Anda bersedia dihubungi',
                         toast: true,
                         position: 'top-end',
                         showConfirmButton: false,
