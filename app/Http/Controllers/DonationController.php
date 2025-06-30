@@ -266,12 +266,6 @@ class DonationController extends Controller
 
             return redirect()->back()->with('error', 'Gagal membuat transaksi pembayaran');
         } else {
-            // Pembayaran manual
-            if ($request->hasFile('payment_proof')) {
-                $path = $request->file('payment_proof')->store('payment_proofs', 'public');
-                $donation->payment_proof = $path;
-            }
-
             $manualMethod = ManualPaymentMethod::find($request->selected_payment_method);
             $donation->payment_method = $manualMethod ? $manualMethod->name : 'manual';
             $donation->manual_payment_method_id = $request->selected_payment_method;
@@ -339,10 +333,6 @@ class DonationController extends Controller
             $method = ManualPaymentMethod::find($request->selected_payment_method);
             $manual_method = $method->name;
         }
-
-        $originalAmount = $donation->amount;
-        $uniqueCode = $donation->unique_code;
-        $donation->amount = $originalAmount + $uniqueCode;
         
         // Update metode pembayaran donasi
         $donation->payment_type = $request->payment_type;

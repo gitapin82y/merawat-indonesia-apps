@@ -65,7 +65,6 @@
                             <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
                             <input type="hidden" name="payment_type" id="payment_type">
                             <input type="hidden" name="selected_payment_method" id="selected_payment_method">
-                            
                             <!-- Pilihan Nominal Donasi -->
                             <div class="row container m-0">
                                 <div class="donation-amount-card card box-shadow mt-4 px-0" data-amount="25000">
@@ -330,7 +329,7 @@
             $('#customAmount').val(amount);
         });
 
-         // Pilih metode pembayaran
+             // Pilih metode pembayaran
         $('.payment-method-card').click(function() {
             $('.payment-method-card').removeClass('selected');
             $('.payment-check-icon').addClass('d-none');
@@ -355,7 +354,6 @@
                 `);
             } else {
                 $('#manualPaymentDetails').addClass('d-none');
-                $('#payment_proof').val('');
             }
         });
 
