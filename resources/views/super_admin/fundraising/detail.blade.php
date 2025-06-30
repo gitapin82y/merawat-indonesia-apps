@@ -189,9 +189,9 @@
                 </div>
                 
                 <div class="summary-item">
-                    <div class="summary-label">Total Komisi {{ $fundraising->commission }}%</div>
+                    <div class="summary-label">Total Komisi</div>
                     <div class="summary-value commission">
-                        Rp {{ number_format($fundraising->jumlah_donasi * ($fundraising->commission / 100), 0, ',', '.') }}
+                        Rp {{ number_format($fundraising->commission, 0, ',', '.') }}
                     </div>
                 </div>
                 
@@ -257,7 +257,7 @@
         </div>
         
         <div class="form-group">
-            <a href="{{ route('fundraising.index') }}" class="btn btn-secondary">Kembali</a>
+            <a href="{{ url('/super-admin/fundraising-campaign/'.$fundraising->campaign->slug) }}" class="btn btn-secondary">Kembali</a>
         </div>
     </div>
 </div>
