@@ -120,7 +120,10 @@ class DonationController extends Controller
     {
         $campaign = Campaign::where('slug',$slug)->first();
         
-        return view('donatur.donasi.index', compact('campaign'));
+        $channels = $this->getPaymentChannels();
+        $manualMethods = ManualPaymentMethod::where('is_active', true)->get();
+
+        return view('donatur.donasi.index', compact('campaign', 'channels', 'manualMethods'));
     }
 
     public function selectPaymentMethod($id)
@@ -176,7 +179,7 @@ class DonationController extends Controller
     public function processDonation(Request $request)
     {
         // Validasi input
-        $validated = $request->validate([
+        $rules = [
             'campaign_id' => 'required|exists:campaigns,id',
             'amount' => 'required|numeric|min:10000',
             'name' => 'required|string|max:255',
@@ -187,7 +190,16 @@ class DonationController extends Controller
             'utm_source' => 'nullable|string',
             'utm_medium' => 'nullable|string',
             'utm_campaign' => 'nullable|string',
-        ]);
+            'payment_type' => 'required|string|in:payment_gateway,manual',
+            'selected_payment_method' => 'required|string',
+        ];
+
+        if ($request->payment_type === 'manual') {
+            $rules['selected_payment_method'] = 'required|exists:manual_payment_methods,id';
+            $rules['payment_proof'] = 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
+        }
+
+        $validated = $request->validate($rules);
         
         $campaign = Campaign::findOrFail($request->campaign_id);
 
@@ -223,8 +235,8 @@ class DonationController extends Controller
             'doa' => $request->doa,
             'is_anonymous' => $request->has('is_anonymous'),
             'amount' => $request->amount,
-            'payment_type' => null, // Akan diupdate setelah memilih metode pembayaran
-            'payment_method' => null, // Akan diupdate setelah memilih metode pembayaran
+            'payment_type' => $request->payment_type,
+            'payment_method' => null,
             'status' => 'pending',
             'unique_code' => $uniqueCode,
             'snap_token' => Str::random(32), // Placeholder untuk snap_token
@@ -235,7 +247,41 @@ class DonationController extends Controller
             'utm_campaign' => $utmCampaign,
         ]);
         
-        return redirect()->route('donations.select-payment-method', $donation->id);
+         if ($request->payment_type === 'payment_gateway') {
+            $donation->payment_method = $request->selected_payment_method;
+            $donation->save();
+
+            $transaction = $this->createTransaction($donation, $campaign);
+
+            if (isset($transaction['success']) && $transaction['success'] && isset($transaction['data'])) {
+                $donation->snap_token = $transaction['data']['reference'];
+                $donation->save();
+
+                $statusToken = $this->createStatusToken($donation->id);
+                return redirect()->route('donations.status', [
+                    'id' => $donation->id,
+                    'status_token' => $statusToken
+                ]);
+            }
+
+            return redirect()->back()->with('error', 'Gagal membuat transaksi pembayaran');
+        } else {
+            // Pembayaran manual
+            if ($request->hasFile('payment_proof')) {
+                $path = $request->file('payment_proof')->store('payment_proofs', 'public');
+                $donation->payment_proof = $path;
+            }
+
+            $manualMethod = ManualPaymentMethod::find($request->selected_payment_method);
+            $donation->payment_method = $manualMethod ? $manualMethod->name : 'manual';
+            $donation->manual_payment_method_id = $request->selected_payment_method;
+
+            $originalAmount = $donation->amount;
+            $donation->amount = $originalAmount + $donation->unique_code;
+            $donation->save();
+
+            return redirect()->route('donations.status', ['id' => $donation->id]);
+        }
     }
 
     public function markExpired($id)
