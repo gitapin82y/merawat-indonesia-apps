@@ -9,6 +9,7 @@ use App\Models\Campaign;
 use App\Models\Category;
 use App\Models\User;
 use App\Models\Admin;
+use App\Models\Article;
 use Carbon\Carbon;
 
 class GenerateSitemap extends Command
@@ -37,6 +38,11 @@ class GenerateSitemap extends Command
             ->setLastModificationDate(Carbon::yesterday())
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
             ->setPriority(0.8));
+
+        $sitemap->add(Url::create('/artikel')
+            ->setLastModificationDate(Carbon::yesterday())
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+            ->setPriority(0.7));
             
         $sitemap->add(Url::create('/kalkulator-zakat')
             ->setLastModificationDate(Carbon::yesterday())
@@ -92,6 +98,14 @@ class GenerateSitemap extends Command
                 ->setLastModificationDate($category->updated_at)
                 ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
                 ->setPriority(0.7));
+        });
+
+          // Tambahkan halaman artikel
+        Article::all()->each(function (Article $article) use ($sitemap) {
+            $sitemap->add(Url::create("/artikel/{$article->slug}")
+                ->setLastModificationDate($article->updated_at)
+                ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+                ->setPriority(0.6));
         });
         
         // Tambahkan halaman profil donatur (opsional - berbasis user)

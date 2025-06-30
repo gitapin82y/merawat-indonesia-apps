@@ -29,7 +29,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\LegalDocumentController;
 use App\Http\Controllers\SiteSettingsController;
 use App\Http\Controllers\UrgentCampaignController;
-
+use App\Http\Controllers\ArticleController;
 
 Route::get('/cron/check-pending-donations', [DonationController::class, 'pollPendingTransactions']);
 Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
@@ -131,6 +131,8 @@ Route::get('/galang-dana/berhasil-buat-akun', function(){
 });
 
 Route::get('/leaderboard', [UserController::class, 'leaderboard']);
+Route::get('/artikel', [ArticleController::class, 'userIndex']);
+Route::get('/artikel/{slug}', [ArticleController::class, 'show']);
 
 Route::get('/edit-profile', function(){
     return view('donatur.edit-profile');
@@ -196,7 +198,7 @@ Route::post('/site-settings/social-media', [SiteSettingsController::class, 'upda
     Route::resource('adsense', AdsenseController::class);
     Route::resource('categories', CategoryController::class);
     Route::resource('banner', BannerController::class);
-
+    Route::resource('artikel', ArticleController::class);
     // Add to your routes/web.php
     Route::post('admin/{admin}/change-status', [AdminController::class, 'changeStatus'])->name('admin.change-status');
 
