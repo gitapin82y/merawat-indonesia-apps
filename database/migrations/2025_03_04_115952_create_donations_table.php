@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('utm_source')->nullable();
             $table->string('utm_medium')->nullable();
             $table->string('utm_campaign')->nullable();
+            $table->boolean('is_contactable')->default(true);
             $table->string('referral_code')->nullable();
             $table->string('name')->nullable();
             $table->string('doa')->nullable();

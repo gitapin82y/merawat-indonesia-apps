@@ -191,7 +191,8 @@ class DonationController extends Controller
             'utm_source' => 'nullable|string',
             'utm_medium' => 'nullable|string',
             'utm_campaign' => 'nullable|string',
-             'payment_type' => 'required|string|in:payment_gateway,manual',
+            'contact_agree' => 'nullable|boolean',
+            'payment_type' => 'required|string|in:payment_gateway,manual',
             'selected_payment_method' => 'required|string',
         ];
 
@@ -234,6 +235,7 @@ class DonationController extends Controller
             'email' => $request->email,
             'doa' => $request->doa,
             'is_anonymous' => $request->has('is_anonymous'),
+             'is_contactable' => $request->has('contact_agree'),
             'amount' => $request->amount,
             'payment_type' => $request->payment_type,
             'payment_method' => null,
@@ -1163,6 +1165,7 @@ public function index(Request $request)
         if ($request->has('campaign_id') && $request->campaign_id) {
             $query->where('campaign_id', $request->campaign_id);
         }
+
         
         // Apply date range filter if provided
         if ($request->has('start_date') && $request->has('end_date') && $request->start_date && $request->end_date) {
@@ -1207,7 +1210,7 @@ public function ceklis(Request $request)
      $campaigns = Campaign::orderBy('title')->get();
     if ($request->ajax()) {
         // Start with base query
-        $query = Donation::with('campaign'); 
+       $query = Donation::with(['campaign', 'user']);
         
          // Apply payment method filter if provided
         if ($request->has('payment_type') && $request->payment_type) {
@@ -1217,6 +1220,12 @@ public function ceklis(Request $request)
         if ($request->has('status') && $request->status) {
             $query->where('status', $request->status);
         }
+
+        // Filter by contact agreement
+        if ($request->is_contactable !== null ) {
+            $query->where('is_contactable', $request->is_contactable);
+        }
+        
         
         // Apply campaign filter if provided
         if ($request->has('campaign_id') && $request->campaign_id) {
@@ -1236,9 +1245,12 @@ public function ceklis(Request $request)
                     $payment = "Payment Gateway";
                 }
                 return $payment . ' ('. $row->payment_method . ')';
+            })
+            ->addColumn('is_contactable', function($row){
+                return $row->is_contactable ? 'Bersedia' : 'Tidak Bersedia';
             })    
             ->addColumn('created_at', function($row) {
-                return $row->created_at 
+                return $row->created_at
                 ? Carbon::parse($row->created_at)->timezone('Asia/Jakarta')->format('d M Y')
                 : '-';
             })
@@ -1303,7 +1315,7 @@ public function ceklis(Request $request)
 
 public function exportCeklis(Request $request)
 {
-    $query = Donation::with('campaign');
+    $query = Donation::with(['campaign','user']);
 
     if ($request->has('payment_type') && $request->payment_type) {
         $query->where('payment_type', $request->payment_type);
@@ -1313,6 +1325,9 @@ public function exportCeklis(Request $request)
     }
     if ($request->has('campaign_id') && $request->campaign_id) {
         $query->where('campaign_id', $request->campaign_id);
+    }
+      if ($request->is_contactable !== null) {
+            $query->where('is_contactable', $request->is_contactable);
     }
     if ($request->has('search') && $request->search) {
         $search = $request->search;
@@ -1335,7 +1350,7 @@ public function exportCeklis(Request $request)
         'Content-Disposition' => 'attachment; filename='.$filename,
     ];
 
-    $columns = ['Nama','Email','Phone','Kampanye','Total Donasi','Metode','Tanggal','Status'];
+     $columns = ['Nama','Email','Phone','Bersedia Dihubungi','Kampanye','Total Donasi','Metode','Tanggal','Status'];
 
     $callback = function() use ($donations, $columns) {
         $handle = fopen('php://output', 'w');
@@ -1346,6 +1361,7 @@ public function exportCeklis(Request $request)
                 $d->name,
                 $d->email,
                 $d->phone,
+                optional($d->is_contactable) ? 'Bersedia' : 'Tidak Bersedia',
                 optional($d->campaign)->title,
                 $d->amount,
                 $method,

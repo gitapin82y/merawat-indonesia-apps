@@ -33,7 +33,10 @@
                 <button type="button" data-toggle="modal" data-target="#methodFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">
                     <i class="fas fa-filter fa-sm mr-1"></i> Filter Metode
                 </button>
-                  <button type="button" id="exportExcel" class="btn btn-success float-left mt-3 mt-sm-0 float-sm-right shadow-sm mx-2">
+                   <button type="button" data-toggle="modal" data-target="#contactFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
+                    <i class="fas fa-filter fa-sm mr-1"></i> Filter Kontak
+                </button>
+                  <button type="button" id="exportExcel" class="btn btn-success float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
                     <i class="fas fa-file-excel fa-sm mr-1"></i> Export Excel
                 </button>
             </div>
@@ -52,7 +55,8 @@
                             <th>Nama</th>
                             <th>Email</th>
                             <th>Phone</th>
-                            <th>Kampanye</th> 
+                            <th>Bersedia Dihubungi</th>
+                            <th>Kampanye</th>
                             <th>Total Donasi</th>
                             <th>Metode</th>
                             <th>Tanggal</th>
@@ -159,6 +163,37 @@
     </div>
 </div>
 
+<!-- Contact Filter Modal -->
+<div class="modal fade" id="contactFilterModal" tabindex="-1" role="dialog" aria-labelledby="contactFilterModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contactFilterModalLabel">Filter Bersedia Dihubungi</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="contactFilterForm">
+                    <div class="form-group">
+                        <label for="is_contactable">Status</label>
+                        <select class="form-control" id="is_contactable" name="is_contactable">
+                            <option value="">Semua</option>
+                            <option value="1">Bersedia</option>
+                            <option value="0">Tidak Bersedia</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-danger btn-apply-filter" id="applyContactFilter">Terapkan Filter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @endsection
 
 @push('after-script')
@@ -177,6 +212,7 @@ $(function () {
             payment_type: $('#payment_type').val(),
             status: $('#status').val(),
             campaign_id: $('#campaign_id').val(),
+            is_contactable: $('#is_contactable').val(),
             search: table.search()
         };
         const query = $.param(params);
@@ -189,16 +225,18 @@ $(function () {
         ajax: {
             url: "{{ route('ceklis-donasi.index') }}",
             data: function(d) {
-                d.payment_type = $('#payment_type').val();
-                d.status = $('#status').val(); 
-                d.campaign_id = $('#campaign_id').val();
-            }
+               d.payment_type = $('#payment_type').val();
+               d.status = $('#status').val();
+               d.campaign_id = $('#campaign_id').val();
+                d.is_contactable = $('#is_contactable').val();
+           }
         },
         columns: [
             {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
             {data: 'name', name: 'name'},
             {data: 'email', name: 'email'},
             {data: 'phone', name: 'phone'},
+            {data: 'is_contactable', name: 'is_contactable'},
             {data: 'campaign_title', name: 'campaign_title'},
             {data: 'amount', name: 'amount'},
             {data: 'method', name: 'method'},
@@ -211,7 +249,7 @@ $(function () {
                 searchable: false
             },
         ],
-        order: [[4, 'desc']],
+        order: [[5, 'desc']],
         language: {
             processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>',
             emptyTable: "Tidak ada data yang tersedia",
@@ -269,13 +307,25 @@ $(function () {
         $('#methodFilterModal').modal('hide');
     });
 
+    // Apply contact filter
+    $('#applyContactFilter').click(function() {
+        const contactStatus = $('#is_contactable').val();
+        const contactLabel = $('#is_contactable option:selected').text();
+
+        updateActiveFilters();
+        table.ajax.reload();
+        $('#contactFilterModal').modal('hide');
+    });
+
     function updateActiveFilters() {
         const paymentType = $('#payment_type').val();
-        const paymentLabel = $('#payment_type option:selected').text();
-        const status = $('#status').val();
-        const statusLabel = $('#status option:selected').text();
-        const campaignId = $('#campaign_id').val();
-        const campaignLabel = $('#campaign_id option:selected').text();
+       const paymentLabel = $('#payment_type option:selected').text();
+       const status = $('#status').val();
+       const statusLabel = $('#status option:selected').text();
+       const campaignId = $('#campaign_id').val();
+       const campaignLabel = $('#campaign_id option:selected').text();
+        const contactStatus = $('#is_contactable').val();
+        const contactLabel = $('#is_contactable option:selected').text();
         
         let filtersHtml = '';
         
@@ -287,8 +337,12 @@ $(function () {
             filtersHtml += `<span class="badge badge-danger mr-2 p-2">Status: ${statusLabel} <i class="fas fa-times ml-1 clear-filter" data-filter="status"></i></span>`;
         }
 
-        if (campaignId) {
-            filtersHtml += `<span class="badge badge-danger mr-2 p-2">Kampanye: ${campaignLabel} <i class="fas fa-times ml-1 clear-filter" data-filter="campaign"></i></span>`;
+         if (campaignId) {
+           filtersHtml += `<span class="badge badge-danger mr-2 p-2">Kampanye: ${campaignLabel} <i class="fas fa-times ml-1 clear-filter" data-filter="campaign"></i></span>`;
+       }
+
+        if (contactStatus) {
+            filtersHtml += `<span class="badge badge-danger mr-2 p-2">Kontak: ${contactLabel} <i class="fas fa-times ml-1 clear-filter" data-filter="contact"></i></span>`;
         }
         
         if (filtersHtml) {
@@ -302,13 +356,15 @@ $(function () {
     $(document).on('click', '.clear-filter', function() {
         const filterType = $(this).data('filter');
         
-        if (filterType === 'payment') {
-            $('#payment_type').val('');
-        } else if (filterType === 'status') {
-            $('#status').val('');
-        } else if (filterType === 'campaign') {
-            $('#campaign_id').val('');
-        }
+         if (filterType === 'payment') {
+           $('#payment_type').val('');
+       } else if (filterType === 'status') {
+           $('#status').val('');
+       } else if (filterType === 'campaign') {
+           $('#campaign_id').val('');
+        } else if (filterType === 'contact') {
+            $('#is_contactable').val('');
+       }
         
         // Update display and reload table
         updateActiveFilters();
@@ -320,6 +376,7 @@ $(function () {
         $('#payment_type').val('');
         $('#status').val('');
         $('#campaign_id').val('');
+        $('#is_contactable').val('');
         
         // Update display and reload table
         $('#active-filters').html('');

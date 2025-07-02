@@ -161,11 +161,7 @@
                                     <textarea class="form-control" placeholder="Leave a comment here" id="pesan_doa" name="doa" style="height: 100px"></textarea>
                                     <label for="pesan_doa">Tulis Pesan atau doa (optional)</label>
                                 </div>
-                                 <div class="form-check my-2 ms-2">
-  <input class="form-check-input" type="checkbox" id="contact_agree" name="contact_agree" required checked>
-  <label class="form-check-label m-0 pt-1" for="contact_agree">Saya bersedia dihubungi</label>
-</div>
-
+                                  <input class="form-check-input" type="checkbox" id="contact_agree" name="contact_agree" {{ old('contact_agree') ? 'checked' : '' }}>
                             </div>
 
                              <div class="row container m-0 pb-4">
@@ -399,19 +395,6 @@
                     return false;
                 }
 
-
-                if (!$('#contact_agree').is(':checked')) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        text: 'Silakan setujui bahwa Anda bersedia dihubungi',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 2000
-                    });
-                    return false;
-                }
 
                   const paymentType = $('#payment_type').val();
             const paymentMethod = $('#selected_payment_method').val();
