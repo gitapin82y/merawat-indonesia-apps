@@ -161,13 +161,15 @@
                                     <textarea class="form-control" placeholder="Leave a comment here" id="pesan_doa" name="doa" style="height: 100px"></textarea>
                                     <label for="pesan_doa">Tulis Pesan atau doa (optional)</label>
                                 </div>
-                            </div>
 
-                               <div class="form-check my-2 ms-2">
+                                      <div class="form-check my-2 ms-2">
                                   <input class="form-check-input" type="checkbox" id="contact_agree" name="contact_agree" {{ old('contact_agree') ? 'checked' : '' }}>
   <label class="form-check-label m-0 pt-1" for="contact_agree">Saya bersedia dihubungi</label>
 </div>
 
+                            </div>
+
+                         
                              <div class="row container m-0 pb-4">
                                 <h3>Pilih Metode Pembayaran</h3>
 
