@@ -33,7 +33,7 @@
                 <button type="button" data-toggle="modal" data-target="#methodFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">
                     <i class="fas fa-filter fa-sm mr-1"></i> Filter Metode
                 </button>
-                   <button type="button" data-toggle="modal" data-target="#contactFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
+                   <button type="button" data-toggle="modal" data-target="#contactFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm mx-2">
                     <i class="fas fa-filter fa-sm mr-1"></i> Filter Kontak
                 </button>
                   <button type="button" id="exportExcel" class="btn btn-success float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">

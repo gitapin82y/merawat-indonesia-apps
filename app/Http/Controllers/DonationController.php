@@ -179,6 +179,7 @@ class DonationController extends Controller
 
     public function processDonation(Request $request)
     {
+
         // Validasi input
         $rules = [
             'campaign_id' => 'required|exists:campaigns,id',
@@ -191,7 +192,7 @@ class DonationController extends Controller
             'utm_source' => 'nullable|string',
             'utm_medium' => 'nullable|string',
             'utm_campaign' => 'nullable|string',
-            'contact_agree' => 'nullable|boolean',
+            'contact_agree' => 'nullable',
             'payment_type' => 'required|string|in:payment_gateway,manual',
             'selected_payment_method' => 'required|string',
         ];
@@ -201,6 +202,9 @@ class DonationController extends Controller
         }
 
         $validated = $request->validate($rules);
+
+
+
         
         $campaign = Campaign::findOrFail($request->campaign_id);
 
@@ -223,6 +227,8 @@ class DonationController extends Controller
         ['source_type' => $sourceType, 'utm_source' => $utmSource, 'utm_medium' => $utmMedium, 'utm_campaign' => $utmCampaign],
         ['campaign_name' => $utmCampaign]
     );
+
+
 
         $uniqueCode = rand(100, 999);
       
@@ -1361,7 +1367,7 @@ public function exportCeklis(Request $request)
                 $d->name,
                 $d->email,
                 $d->phone,
-                optional($d->is_contactable) ? 'Bersedia' : 'Tidak Bersedia',
+                $d->is_contactable ? 'Bersedia' : 'Tidak Bersedia',
                 optional($d->campaign)->title,
                 $d->amount,
                 $method,

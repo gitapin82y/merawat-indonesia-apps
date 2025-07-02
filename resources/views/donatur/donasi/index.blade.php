@@ -163,9 +163,9 @@
                                 </div>
 
                                       <div class="form-check my-2 ms-2">
-                                  <input class="form-check-input" type="checkbox" id="contact_agree" name="contact_agree" {{ old('contact_agree') ? 'checked' : '' }}>
-  <label class="form-check-label m-0 pt-1" for="contact_agree">Saya bersedia dihubungi</label>
-</div>
+                                  <input class="form-check-input" type="checkbox" id="contact_agree" name="contact_agree" {{ old('contact_agree') ? 'checked' : '' }} checked>
+                                <label class="form-check-label m-0 pt-1" for="contact_agree">Saya bersedia dihubungi</label>
+                                </div>
 
                             </div>
 
