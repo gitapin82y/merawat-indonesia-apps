@@ -68,9 +68,7 @@
                 <img src="{{ asset('storage/' . $notification->image_path) }}" alt="Notification Image" class="notification-image">
             @endif
             
-            <div style="text-align: center;">
-                <a href="{{ route('notifications.show', $notification) }}" class="button">Lihat Detail</a>
-            </div>
+         
         </div>
         <div class="footer">
             <p>Email ini dikirim secara otomatis. Mohon tidak membalas email ini.</p>

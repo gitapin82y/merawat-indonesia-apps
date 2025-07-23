@@ -354,6 +354,25 @@ class DonationController extends Controller
         }
         $donation->save();
 
+        $user = User::where('email', 'suport@merawatindonesia.com')->first();
+        if ($user) {
+            $notificationData = [
+                'donation_id' => $donation->id,
+                'amount' => $donation->amount,
+                'campaign_title' => $donation->campaign->title
+            ];
+            
+            $notif = $this->notificationService->createNotification(
+                $user,
+                'Request Verifikasi Payment Manual', 
+                'Memerlukan persetujuan donasi dengan jumlah Rp ' . number_format($donation->amount) . ' untuk "' . $donation->campaign->title . '".',
+                'request_verifikasi',
+                $notificationData
+            );
+            
+            $this->notificationService->sendEmail($notif);
+        }
+
         
         return redirect()->route('donations.status', ['id' => $donation->id]);
     }
@@ -823,24 +842,6 @@ public function status(Request $request, $id)
             ];
         }
 
-        $user = User::where('email', 'suport@merawatindonesia.com')->first();
-        if ($user) {
-            $notificationData = [
-                'donation_id' => $donation->id,
-                'amount' => $donation->amount,
-                'campaign_title' => $donation->campaign->title
-            ];
-            
-            $notif = $this->notificationService->createNotification(
-                $user,
-                'Request Verifikasi Payment Manual', 
-                'Memerlukan persetujuan donasi dengan jumlah Rp ' . number_format($donation->amount) . ' untuk "' . $donation->campaign->title . '".',
-                'request_verifikasi',
-                $notificationData
-            );
-            
-            $this->notificationService->sendEmail($notif);
-        }
     }
     
     // Ambil data donasi lagi untuk mendapatkan status terbaru
