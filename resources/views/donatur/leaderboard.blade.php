@@ -295,7 +295,7 @@
           </div>
   
           <!-- Penggalang Dana Leaderboard Content -->
-          <div class="leaderboard-content" id="pengalang-content" style="padding-bottom: 500px;">
+          <div class="leaderboard-content" id="pengalang-content" style="padding-bottom: 100px;">
             <h2 class="leaderboard-title">
               Top 10 Penggalang Dana Terbaik
             </h2>

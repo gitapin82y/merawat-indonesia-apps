@@ -32,7 +32,7 @@ public function processDeletionRequest(Request $request)
     
     try {
         // Kirim email ke admin
-        Mail::to('merawatindonesia2@gmail.com')
+        Mail::to('suport@merawatindonesia.com')
             ->send(new DataDeletionRequestMail($validated));
         
         // Log permintaan

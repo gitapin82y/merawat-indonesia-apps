@@ -46,7 +46,7 @@
                     <div class="card my-4">
                         <div class="card-body">
                             <h3 class="h5">Opsi 2: Melalui Email</h3>
-                            <p>Anda dapat mengirim email permintaan penghapusan data ke <a href="mailto:merawatindonesia2@gmail.com">merawatindonesia2@gmail.com</a> dengan subjek "Permintaan Penghapusan Data". Sertakan:</p>
+                            <p>Anda dapat mengirim email permintaan penghapusan data ke <a href="mailto:suport@merawatindonesia.com">suport@merawatindonesia.com</a> dengan subjek "Permintaan Penghapusan Data". Sertakan:</p>
                             <ul>
                                 <li>Alamat email yang terkait dengan akun Anda</li>
                                 <li>Nama lengkap Anda</li>
@@ -99,7 +99,7 @@
                     <p>Jika Anda masuk menggunakan Facebook atau platform sosial lainnya, penghapusan data dari sistem kami tidak akan menghapus data Anda dari platform tersebut. Anda perlu menghubungi platform tersebut secara terpisah untuk mengelola data Anda di sana.</p>
                     
                     <h2 class="h4 mt-4">Pertanyaan Tambahan</h2>
-                    <p>Jika Anda memiliki pertanyaan lain tentang penghapusan data atau privasi Anda, silakan hubungi kami di <a href="mailto:merawatindonesia2@gmail.com">merawatindonesia2@gmail.com</a>.</p>
+                    <p>Jika Anda memiliki pertanyaan lain tentang penghapusan data atau privasi Anda, silakan hubungi kami di <a href="mailto:suport@merawatindonesia.com">suport@merawatindonesia.com</a>.</p>
                 </div>
             </div>
         </div>

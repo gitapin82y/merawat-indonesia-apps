@@ -10,12 +10,15 @@
 
     @include('includes.public.navbar-back', ['title' => 'Fundraishing'])
 
-    @if($fundraisings->isEmpty())
-    @include('donatur.fundraishing.not-available',['commission'=>$commission])
-
+    @if(!isset($hasAnyFundraising) || !$hasAnyFundraising)
+        @include('donatur.fundraishing.not-available', ['commission' => $commission])
     @else
-    @include('donatur.fundraishing.available',['fundraisings'=>$fundraisings,'totalCommission'=> $totalCommission,'commission'=>$commission])
-
+        @include('donatur.fundraishing.available', [
+            'fundraisings' => $fundraisings,
+            'totalCommission' => $totalCommission,
+            'commission' => $commission,
+            'filterData' => $filterData ?? []
+        ])
     @endif
  
     @include('includes.public.menu')

@@ -192,7 +192,7 @@ public function __construct(NotificationService $notificationService)
                 ->with('success', 'Admin berhasil ditambahkan');
             } else {          
                 // Kirim email ke alamat email tetap
-                Mail::to('merawatindonesia2@gmail.com')->send(new AdminApplicationMail($admin, $user));
+                Mail::to('suport@merawatindonesia.com')->send(new AdminApplicationMail($admin, $user));
                     return redirect()->back()
                     ->with('success', 'Berhasil Mendaftar, Data sedang divalidasi');
             }

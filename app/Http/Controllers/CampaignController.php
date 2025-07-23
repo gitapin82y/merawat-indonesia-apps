@@ -181,7 +181,7 @@ public function __construct(NotificationService $notificationService)
                 }
             }else{
                 try {
-                    Mail::to('merawatindonesia2@gmail.com')->send(new NewCampaignNotificationMail($campaign));
+                    Mail::to('suport@merawatindonesia.com')->send(new NewCampaignNotificationMail($campaign));
                     
                     // Send notification to campaign admin
                     if ($campaign->admin) {

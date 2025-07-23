@@ -89,17 +89,142 @@ class FundraisingController extends Controller
     }
 
 
-    public function fundraising()
+    public function fundraising(Request $request)
     {
         $user = Auth::user();
-        $fundraisings = Fundraising::where('user_id', $user->id)
-            ->with('campaign')
-            ->get();
         
+        // Cek apakah user memiliki fundraising sama sekali
+        $hasAnyFundraising = Fundraising::where('user_id', $user->id)->exists();
+        
+        // Jika tidak punya fundraising sama sekali, tampilkan not-available
+        if (!$hasAnyFundraising) {
+            $commission = Commission::first();
+            $commission = $commission->amount;
+            return view('donatur.fundraishing.index', compact('commission'));
+        }
+        
+        // Ambil parameter filter
+        $filterType = $request->get('filter_type', 'all');
+        $date = $request->get('date');
+        $month = $request->get('month');
+        $start_date = $request->get('start_date');
+        $end_date = $request->get('end_date');
+        
+        // Query dasar - semua fundraising user
+        $allFundraisingsQuery = Fundraising::where('user_id', $user->id)
+            ->with(['campaign', 'fundraisingWithdrawals']);
+            
+        // Query untuk filter
+        $filteredFundraisingsQuery = clone $allFundraisingsQuery;
+        
+        // Terapkan filter jika ada
+        $isFiltered = false;
+        switch($filterType) {
+            case 'daily':
+                if($date) {
+                    $filteredFundraisingsQuery->whereDate('updated_at', $date);
+                    $isFiltered = true;
+                }
+                break;
+                
+            case 'monthly':
+                if($month) {
+                    $filteredFundraisingsQuery->whereYear('updated_at', Carbon::parse($month)->year)
+                                            ->whereMonth('updated_at', Carbon::parse($month)->month);
+                    $isFiltered = true;
+                }
+                break;
+                
+            case 'range':
+                if($start_date && $end_date) {
+                    $filteredFundraisingsQuery->whereBetween('updated_at', [
+                        Carbon::parse($start_date)->startOfDay(),
+                        Carbon::parse($end_date)->endOfDay()
+                    ]);
+                    $isFiltered = true;
+                }
+                break;
+        }
+        
+        // Ambil data hasil filter
+        $fundraisings = $filteredFundraisingsQuery->get();
+        
+        // Hitung total commission dari data yang terfilter
+        $totalCommission = $fundraisings->sum('commission');
+        
+        // Ambil commission rate
         $commission = Commission::first();
         $commission = $commission->amount;
+        
+        // Data untuk view
+        $filterData = [
+            'filter_type' => $filterType,
+            'date' => $date,
+            'month' => $month,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+            'is_filtered' => $isFiltered,
+            'has_results' => $fundraisings->isNotEmpty()
+        ];
+        
+        // Selalu tampilkan available blade karena user memiliki fundraising
+        return view('donatur.fundraishing.index', compact(
+            'fundraisings', 
+            'totalCommission',
+            'commission',
+            'filterData',
+            'hasAnyFundraising'
+        ));
+    }
+    
+    // Method untuk AJAX filter jika diperlukan
+    public function getFilteredData(Request $request)
+    {
+        $user = Auth::user();
+        
+        $filterType = $request->get('filter_type', 'all');
+        $date = $request->get('date');
+        $month = $request->get('month');
+        $start_date = $request->get('start_date');
+        $end_date = $request->get('end_date');
+        
+        $fundraisingsQuery = Fundraising::where('user_id', $user->id)
+            ->with(['campaign']);
+        
+        switch($filterType) {
+            case 'daily':
+                if($date) {
+                    $fundraisingsQuery->whereDate('updated_at', $date);
+                }
+                break;
+                
+            case 'monthly':
+                if($month) {
+                    $fundraisingsQuery->whereYear('updated_at', Carbon::parse($month)->year)
+                                    ->whereMonth('updated_at', Carbon::parse($month)->month);
+                }
+                break;
+                
+            case 'range':
+                if($start_date && $end_date) {
+                    $fundraisingsQuery->whereBetween('updated_at', [
+                        Carbon::parse($start_date)->startOfDay(),
+                        Carbon::parse($end_date)->endOfDay()
+                    ]);
+                }
+                break;
+        }
+        
+        $fundraisings = $fundraisingsQuery->get();
         $totalCommission = $fundraisings->sum('commission');
-        return view('donatur.fundraishing.index', compact('fundraisings', 'totalCommission','commission'));
+        
+        return response()->json([
+            'success' => true,
+            'data' => $fundraisings,
+            'totalCommission' => $totalCommission,
+            'formattedTotal' => number_format($totalCommission),
+            'hasResults' => $fundraisings->isNotEmpty()
+        ]);
     }
 
     public function join($slug)
@@ -179,7 +304,7 @@ class FundraisingController extends Controller
         // Cari fundraising dengan komisi terbesar untuk dijadikan sebagai fundraising_id
         $primaryFundraising = $fundraisings->sortByDesc('commission')->first();
         
-        $admin = User::where('email', 'merawatindonesia2@gmail.com')->first();
+        $admin = User::where('email', 'suport@merawatindonesia.com')->first();
 
         // Buat entri pencairan dana
         $withdrawal = FundraisingWithdrawal::create([
@@ -201,7 +326,7 @@ class FundraisingController extends Controller
             ['withdrawal_id' => $withdrawal->id]
         );
 
-        Mail::to("merawatindonesia2@gmail.com")->send(new FundraisingWithdrawalMail($withdrawal));
+        Mail::to("suport@merawatindonesia.com")->send(new FundraisingWithdrawalMail($withdrawal));
 
         DB::commit();
         

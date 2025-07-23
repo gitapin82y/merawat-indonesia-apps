@@ -86,6 +86,7 @@ Route::middleware(['checkAuth'])->group(function () {
     Route::delete('/notifikasi/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
     Route::get('/profile/fundraising', [FundraisingController::class, 'fundraising'])->name('profile.fundraising.index');
+    Route::get('/profile/fundraising/filter', [FundraisingController::class, 'getFilteredData'])->name('profile.fundraising.filter');
     Route::post('/kampanye/{slug}/join-fundraising', [FundraisingController::class, 'join'])->name('fundraising.join');
     Route::post('/profile/fundraising/withdraw', [FundraisingController::class, 'withdrawFunds'])->name('fundraising.withdraw');
     Route::get('/profile', [UserController::class, 'profileDonatur']);

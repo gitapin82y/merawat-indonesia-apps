@@ -823,7 +823,7 @@ public function status(Request $request, $id)
             ];
         }
 
-        $user = User::where('email', 'merawatindonesia2@gmail.com')->first();
+        $user = User::where('email', 'suport@merawatindonesia.com')->first();
         if ($user) {
             $notificationData = [
                 'donation_id' => $donation->id,

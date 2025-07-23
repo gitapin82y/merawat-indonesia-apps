@@ -177,10 +177,10 @@ class FundraisingWithdrawalController extends Controller
                 'status' => 'menunggu',
             ]);
             
-            $user = User::where('email', 'merawatindonesia2@gmail.com')->first();
+            $user = User::where('email', 'suport@merawatindonesia.com')->first();
             
             // Jika spesifik ke satu email
-            Mail::to('merawatindonesia2@gmail.com')->send(new FundraisingWithdrawalMail($withdrawal));
+            Mail::to('suport@merawatindonesia.com')->send(new FundraisingWithdrawalMail($withdrawal));
             
             // Create system notification for admin
             $this->notificationService->createNotification(

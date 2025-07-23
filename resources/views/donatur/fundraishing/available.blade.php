@@ -179,15 +179,21 @@
       }
     }
   </style>
+  @include('donatur.fundraishing.filter-form', ['filterData' => $filterData])
 
         <!-- Fundraising Kampanye -->
         <div class="container mt-4">
             <div class="row kampanye mt-4">
               <div class="justify-content-between d-flex">
+                  @if(($filterData['filter_type'] ?? 'all') != 'all')
+                <small class="text-muted align-self-center">
+                    ({{ $fundraisings->count() }} hasil)
+                </small>
+            @endif
                 <h2 id="kategoriTitle">Fundraising Kampanye Anda</h2>
               </div>
               
-              @foreach($fundraisings as $fundraising)
+              @forelse($fundraisings as $fundraising)
               <div class="col-12 row kampanye-item">
                   <a href="{{ route('campaign.detail', $fundraising->campaign->slug) }}" class="col-6 align-self-center">
                       <img
@@ -208,7 +214,17 @@
                     <button type="button" class="btn btn-salin btn-action d-inline" data-link="{{ route('campaign.referral', ['slug' => $fundraising->campaign->slug, 'code' => $fundraising->code_link]) }}">Salin Link</button>
                   </div>
               </div>
-              @endforeach
+              @empty
+        <div class="col-12 text-center py-5">
+            <div class="text-muted">
+                <i class="fas fa-search fa-3x mb-3"></i>
+                <p>Tidak ada data fundraising ditemukan untuk filter yang dipilih.</p>
+                <a href="{{ route('profile.fundraising.index') }}" class="btn btn-sm btn-primary">
+                    Lihat Semua Data
+                </a>
+            </div>
+        </div>
+        @endforelse
             </div>
         </div>
   
@@ -359,4 +375,6 @@
               </div>
             </div>
           </div>
+
+          
 
