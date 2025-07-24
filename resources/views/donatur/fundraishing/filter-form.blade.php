@@ -2,7 +2,8 @@
 <div class="container mt-4">
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-3">
-            <h6 class="mb-3 text-secondary">Filter Fundraising</h6>
+            <h6 class="mb-2 text-secondary">Filter Perolehan Donasi Fundraising</h6>
+            <small class="text-muted mb-3 d-block">Filter berdasarkan tanggal donasi yang masuk dari referral link Anda</small>
             
             <form id="filterForm" method="GET" action="{{ route('profile.fundraising.index') }}">
                 <div class="row g-3">
@@ -10,23 +11,23 @@
                     <div class="col-md-3 col-sm-6">
                         <label class="form-label small px-0 mx-0">Jenis Filter</label>
                         <select name="filter_type" id="filter_type" class="form-select form-select-sm">
-                            <option value="all" {{ ($filterData['filter_type'] ?? 'all') == 'all' ? 'selected' : '' }}>Semua Data</option>
-                            <option value="daily" {{ ($filterData['filter_type'] ?? '') == 'daily' ? 'selected' : '' }}>Harian</option>
-                            <option value="monthly" {{ ($filterData['filter_type'] ?? '') == 'monthly' ? 'selected' : '' }}>Bulanan</option>
-                            <option value="range" {{ ($filterData['filter_type'] ?? '') == 'range' ? 'selected' : '' }}>Rentang Tanggal</option>
+                            <option value="all" {{ ($filterData['filter_type'] ?? 'all') == 'all' ? 'selected' : '' }}>Semua Donasi</option>
+                            <option value="daily" {{ ($filterData['filter_type'] ?? '') == 'daily' ? 'selected' : '' }}>Donasi Harian</option>
+                            <option value="monthly" {{ ($filterData['filter_type'] ?? '') == 'monthly' ? 'selected' : '' }}>Donasi Bulanan</option>
+                            <option value="range" {{ ($filterData['filter_type'] ?? '') == 'range' ? 'selected' : '' }}>Rentang Tanggal Donasi</option>
                         </select>
                     </div>
                     
                     <!-- Daily Filter -->
                     <div class="col-md-3 col-sm-6" id="daily_filter" style="display: none;">
-                        <label class="form-label small px-0 mx-0">Tanggal</label>
+                        <label class="form-label small px-0 mx-0">Tanggal Donasi</label>
                         <input type="date" name="date" id="date" class="form-control form-control-sm" 
                                value="{{ $filterData['date'] ?? '' }}" max="{{ date('Y-m-d') }}">
                     </div>
                     
                     <!-- Monthly Filter -->
                     <div class="col-md-3 col-sm-6" id="monthly_filter" style="display: none;">
-                        <label class="form-label small px-0 mx-0">Bulan</label>
+                        <label class="form-label small px-0 mx-0">Bulan Donasi</label>
                         <input type="month" name="month" id="month" class="form-control form-control-sm" 
                                value="{{ $filterData['month'] ?? '' }}" max="{{ date('Y-m') }}">
                     </div>
@@ -35,12 +36,12 @@
                     <div class="col-md-6" id="range_filter" style="display: none;">
                         <div class="row">
                             <div class="col-6">
-                                <label class="form-label small px-0 mx-0">Tanggal Mulai</label>
+                                <label class="form-label small px-0 mx-0">Tanggal Donasi Mulai</label>
                                 <input type="date" name="start_date" id="start_date" class="form-control form-control-sm" 
                                        value="{{ $filterData['start_date'] ?? '' }}" max="{{ date('Y-m-d') }}">
                             </div>
                             <div class="col-6">
-                                <label class="form-label small px-0 mx-0">Tanggal Akhir</label>
+                                <label class="form-label small px-0 mx-0">Tanggal Donasi Akhir</label>
                                 <input type="date" name="end_date" id="end_date" class="form-control form-control-sm" 
                                        value="{{ $filterData['end_date'] ?? '' }}" max="{{ date('Y-m-d') }}">
                             </div>
@@ -65,13 +66,13 @@
                 <div class="mt-3 p-2 bg-light rounded">
                     <small class="text-muted">
                         <i class="fas fa-info-circle"></i> 
-                        Filter aktif: 
+                        Filter aktif - Perolehan donasi: 
                         @if(($filterData['filter_type'] ?? '') == 'daily' && $filterData['date'])
-                            Harian - {{ \Carbon\Carbon::parse($filterData['date'])->format('d/m/Y') }}
+                            Harian {{ \Carbon\Carbon::parse($filterData['date'])->format('d/m/Y') }}
                         @elseif(($filterData['filter_type'] ?? '') == 'monthly' && $filterData['month'])
-                            Bulanan - {{ \Carbon\Carbon::parse($filterData['month'])->format('F Y') }}
+                            Bulanan {{ \Carbon\Carbon::parse($filterData['month'])->format('F Y') }}
                         @elseif(($filterData['filter_type'] ?? '') == 'range' && $filterData['start_date'] && $filterData['end_date'])
-                            Rentang - {{ \Carbon\Carbon::parse($filterData['start_date'])->format('d/m/Y') }} s/d {{ \Carbon\Carbon::parse($filterData['end_date'])->format('d/m/Y') }}
+                            {{ \Carbon\Carbon::parse($filterData['start_date'])->format('d/m/Y') }} s/d {{ \Carbon\Carbon::parse($filterData['end_date'])->format('d/m/Y') }}
                         @endif
                     </small>
                 </div>

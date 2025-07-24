@@ -153,6 +153,33 @@
         font-size: 14px;
       }
 
+    /* Styling untuk info summary */
+    .filter-summary-card {
+      background: linear-gradient(135deg, var(--second-color, #007bff) 0%, rgba(0, 123, 255, 0.8) 100%);
+      color: white;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .summary-item {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .summary-number {
+      font-size: 24px;
+      font-weight: bold;
+      line-height: 1.2;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-top: 5px;
+    }
+
     @media (max-width: 480px) {
       .donasi-header {
         font-size: 11px;
@@ -177,20 +204,86 @@
         font-size: 12px;
         padding: 6px 12px;
       }
+      .summary-number {
+        font-size: 18px;
+      }
+      .summary-label {
+        font-size: 10px;
+      }
     }
   </style>
   @include('donatur.fundraishing.filter-form', ['filterData' => $filterData])
 
+        <!-- Summary Card untuk Filter -->
+        @if(($filterData['filter_type'] ?? 'all') != 'all' && ($filterData['has_results'] ?? false))
+        <div class="container mt-3">
+            <div class="card filter-summary-card border-0">
+                <div class="card-body p-3">
+                    <h6 class="mb-3 text-white">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Ringkasan Perolehan 
+                        @if(($filterData['filter_type'] ?? '') == 'daily' && $filterData['date'])
+                            Harian ({{ \Carbon\Carbon::parse($filterData['date'])->format('d/m/Y') }})
+                        @elseif(($filterData['filter_type'] ?? '') == 'monthly' && $filterData['month'])
+                            Bulanan ({{ \Carbon\Carbon::parse($filterData['month'])->format('F Y') }})
+                        @elseif(($filterData['filter_type'] ?? '') == 'range' && $filterData['start_date'] && $filterData['end_date'])
+                            ({{ \Carbon\Carbon::parse($filterData['start_date'])->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($filterData['end_date'])->format('d/m/Y') }})
+                        @endif
+                    </h6>
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <div class="summary-item">
+                                <div class="summary-number">{{ $fundraisings->count() }}</div>
+                                <div class="summary-label">Campaign Aktif</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="summary-item">
+                                <div class="summary-number">{{ $fundraisings->sum('total_donatur') }}</div>
+                                <div class="summary-label">Total Donatur</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="summary-item">
+                                <div class="summary-number">Rp {{ number_format($fundraisings->sum('jumlah_donasi')) }}</div>
+                                <div class="summary-label">Total Donasi</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-12">
+                            <div class="summary-item" style="background: rgba(255, 255, 255, 0.2);">
+                                <div class="summary-number">Rp {{ number_format($totalCommission) }}</div>
+                                <div class="summary-label">Total Komisi Periode Ini</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Fundraising Kampanye -->
         <div class="container mt-4">
             <div class="row kampanye mt-4">
-              <div class="justify-content-between d-flex">
+              <div class="justify-content-between d-flex mb-3">
+                  <h2 id="kategoriTitle" class="text-danger">
+                    @if(($filterData['filter_type'] ?? 'all') != 'all')
+                        Fundraising - Periode Filter
+                    @else
+                        Fundraising Kampanye Anda
+                    @endif
+                </h2>
                   @if(($filterData['filter_type'] ?? 'all') != 'all')
                 <small class="text-muted align-self-center">
-                    ({{ $fundraisings->count() }} hasil)
+                    ({{ $fundraisings->count() }} hasil untuk periode ini)
+                </small>
+            @else
+                <small class="text-muted align-self-center">
+                    ({{ $fundraisings->count() }} total fundraising)
                 </small>
             @endif
-                <h2 id="kategoriTitle">Fundraising Kampanye Anda</h2>
+              
               </div>
               
               @forelse($fundraisings as $fundraising)
@@ -206,11 +299,26 @@
                       <h3 class="mb-2 donasi-header">
                           {{ $fundraising->campaign->title }}
                       </h3>
-                      <p class="mb-0 donasi-info">Berhasil mengajak <b>{{ $fundraising->total_donatur }}</b> donatur</p>
-                      <p class="mb-0 donasi-info">Total donasi <b>{{ number_format($fundraising->jumlah_donasi) }}</b></p>
-                      <p class="mb-2 donasi-info">
-                          Pendapatan dari total donasi <b>{{ number_format($fundraising->commission) }}</b>
-                      </p>
+                      @if(($filterData['filter_type'] ?? 'all') != 'all')
+                          <p class="mb-0 donasi-info">
+                              <i class="fas fa-calendar-day text-primary"></i>
+                              Donatur periode ini: <b>{{ $fundraising->total_donatur }}</b>
+                          </p>
+                          <p class="mb-0 donasi-info">
+                              <i class="fas fa-money-bill-wave text-success"></i>
+                              Donasi periode ini: <b>Rp {{ number_format($fundraising->jumlah_donasi) }}</b>
+                          </p>
+                          <p class="mb-2 donasi-info">
+                              <i class="fas fa-percentage text-warning"></i>
+                              Komisi periode ini: <b>Rp {{ number_format($fundraising->commission) }}</b>
+                          </p>
+                      @else
+                          <p class="mb-0 donasi-info">Berhasil mengajak <b>{{ $fundraising->total_donatur }}</b> donatur</p>
+                          <p class="mb-0 donasi-info">Total donasi <b>Rp {{ number_format($fundraising->jumlah_donasi) }}</b></p>
+                          <p class="mb-2 donasi-info">
+                              Pendapatan dari total donasi <b>Rp {{ number_format($fundraising->commission) }}</b>
+                          </p>
+                      @endif
                     <button type="button" class="btn btn-salin btn-action d-inline" data-link="{{ route('campaign.referral', ['slug' => $fundraising->campaign->slug, 'code' => $fundraising->code_link]) }}">Salin Link</button>
                   </div>
               </div>
@@ -218,8 +326,14 @@
         <div class="col-12 text-center py-5">
             <div class="text-muted">
                 <i class="fas fa-search fa-3x mb-3"></i>
-                <p>Tidak ada data fundraising ditemukan untuk filter yang dipilih.</p>
-                <a href="{{ route('profile.fundraising.index') }}" class="btn btn-sm btn-primary">
+                @if(($filterData['filter_type'] ?? 'all') != 'all')
+                    <p>Tidak ada donasi masuk pada periode yang dipilih.</p>
+                    <small>Coba ubah filter tanggal atau pilih "Semua Donasi" untuk melihat keseluruhan data.</small>
+                @else
+                    <p>Tidak ada data fundraising ditemukan.</p>
+                @endif
+                <br>
+                <a href="{{ route('profile.fundraising.index') }}" class="btn btn-sm btn-primary mt-2">
                     Lihat Semua Data
                 </a>
             </div>
@@ -244,12 +358,36 @@
                 />
               </div>
               <div class="col-7 align-self-center">
-                <h2>Total Pendapatan {{ number_format($totalCommission) }}</h2>
-                <p class="mb-3">
-                    Anda dapat mencairkan semua pendapatan fundraising minimal 100.000
-                </p>
+                @if(($filterData['filter_type'] ?? 'all') != 'all')
+                    <h2>Pendapatan Periode: Rp {{ number_format($totalCommission) }}</h2>
+                    <p class="mb-1 text-muted small">
+                        @if(($filterData['filter_type'] ?? '') == 'daily' && $filterData['date'])
+                            Perolehan tanggal {{ \Carbon\Carbon::parse($filterData['date'])->format('d F Y') }}
+                        @elseif(($filterData['filter_type'] ?? '') == 'monthly' && $filterData['month'])
+                            Perolehan bulan {{ \Carbon\Carbon::parse($filterData['month'])->format('F Y') }}
+                        @elseif(($filterData['filter_type'] ?? '') == 'range' && $filterData['start_date'] && $filterData['end_date'])
+                            Perolehan {{ \Carbon\Carbon::parse($filterData['start_date'])->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($filterData['end_date'])->format('d/m/Y') }}
+                        @endif
+                    </p>
+                    <p class="mb-3">
+                        <small class="text-info">
+                            <i class="fas fa-info-circle"></i>
+                            Ini adalah komisi dari donasi yang masuk pada periode tersebut. 
+                            <a href="{{ route('profile.fundraising.index') }}" class="text-primary">Lihat total keseluruhan</a>
+                        </small>
+                    </p>
+                @else
+                    <h2>Total Pendapatan Rp {{ number_format($totalCommission) }}</h2>
+                    <p class="mb-3">
+                        Anda dapat mencairkan semua pendapatan fundraising minimal Rp 100.000
+                    </p>
+                @endif
                     <a href="javascript:void(0)" data-komisi="{{$totalCommission}}" class="btn-cairkandana btn-action">
-                        Cairkan Dana
+                        @if(($filterData['filter_type'] ?? 'all') != 'all')
+                            Lihat Pencairan
+                        @else
+                            Cairkan Dana
+                        @endif
                     </a>
               </div>
             </div>
@@ -307,6 +445,18 @@
             <!-- Popup Cairkan Dana -->
             <div id="popupCairkanDana" class="popup">
               <div class="popup-content">
+                @if(($filterData['filter_type'] ?? 'all') != 'all')
+                    <h3>Info Pencairan Dana</h3>
+                    <div class="alert alert-info p-3 mb-3 rounded">
+                        <i class="fas fa-info-circle"></i>
+                        <p class="mb-2"><strong>Pendapatan Periode Filter:</strong><br>
+                        Rp {{ number_format($totalCommission) }}</p>
+                        <small>Untuk mencairkan dana, silakan lihat halaman "Semua Data" untuk total keseluruhan pendapatan Anda.</small>
+                    </div>
+                    <a href="{{ route('profile.fundraising.index') }}" class="btn btn-primary w-100">
+                        Lihat Total Keseluruhan
+                    </a>
+                @else
                 <h3>Pencairan Dana Fundraising</h3>
                 <p class="saldo">Rp {{ number_format($totalCommission) }}</p>
                    <!-- Menampilkan pesan error/success -->
@@ -372,9 +522,7 @@
   
                 <button type="submit" class="btn-submit">Kirim Request Pencairan Dana</button>
               </form>
+              @endif
               </div>
             </div>
           </div>
-
-          
-

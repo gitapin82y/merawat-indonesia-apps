@@ -475,178 +475,6 @@ class DonationController extends Controller
     }
 }
 
-//     public function callback(Request $request)
-// {
-//     Log::info('Tripay Callback received', [
-//         'ip' => $request->ip(),
-//         'method' => $request->method(),
-//         'headers' => $request->headers->all(),
-//     ]);
-    
-//     // Get callback signature from header
-//     $callbackSignature = $request->server('HTTP_X_CALLBACK_SIGNATURE');
-//     $json = $request->getContent();
-    
-//     // Calculate signature
-//     $signature = hash_hmac('sha256', $json, $this->privateKey);
-    
-//     // Log signature details
-//     Log::info('Signature validation', [
-//         'received_signature' => $callbackSignature,
-//         'calculated_signature' => $signature,
-//         'json_content' => $json,
-//     ]);
-    
-//     // Verify signature
-//     if ($signature !== (string) $callbackSignature) {
-//         Log::warning('Invalid signature from Tripay');
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Invalid signature',
-//         ], 400);
-//     }
-    
-//     // Check callback event type
-//     if ('payment_status' !== (string) $request->server('HTTP_X_CALLBACK_EVENT')) {
-//         Log::warning('Unrecognized callback event', [
-//             'event' => $request->server('HTTP_X_CALLBACK_EVENT')
-//         ]);
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Unrecognized callback event, no action was taken',
-//         ], 400);
-//     }
-    
-//     // Parse JSON data
-//     $data = json_decode($json);
-//     if (JSON_ERROR_NONE !== json_last_error()) {
-//         Log::error('Invalid JSON from Tripay', [
-//             'error' => json_last_error_msg(),
-//             'json' => $json
-//         ]);
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Invalid data sent by tripay',
-//         ], 400);
-//     }
-    
-//     // Extract data
-//     $merchantRef = $data->merchant_ref;
-//     $tripayReference = $data->reference;
-//     $status = strtoupper((string) $data->status);
-    
-//     // Begin transaction
-//     DB::beginTransaction();
-    
-//     try {
-//         // Find donation by merchant_ref (DON-ID-timestamp)
-//         $donationId = null;
-//         if (strpos($merchantRef, 'DON-') === 0) {
-//             $parts = explode('-', $merchantRef);
-//             if (count($parts) > 1) {
-//                 $donationId = $parts[1];
-//             }
-//         }
-        
-//         if (!$donationId) {
-//             Log::error('Invalid merchant_ref format', ['merchant_ref' => $merchantRef]);
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'Invalid merchant reference format',
-//             ], 400);
-//         }
-        
-//         // Find donation
-//         $donation = Donation::where('id', $donationId)
-//             ->where('snap_token', $tripayReference)
-//             ->where('status', 'pending')
-//             ->first();
-            
-//         if (!$donation) {
-//             Log::warning('Donation not found or already processed', [
-//                 'donation_id' => $donationId,
-//                 'reference' => $tripayReference
-//             ]);
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'No donation found or already processed: ' . $donationId,
-//             ], 404);
-//         }
-        
-//         // Process based on status
-//         switch ($status) {
-//             case 'PAID':
-//                 $donation->status = 'sukses';
-//                 $donation->save();
-                
-//                 // Update campaign statistics
-//                 $campaign = Campaign::find($donation->campaign_id);
-//                 $campaign->jumlah_donasi += $donation->amount;
-//                 $campaign->current_donation += $donation->amount;
-//                 $campaign->total_donatur += 1;
-//                 $campaign->save();
-                
-//                 // Update donation source if exists
-//                 if ($donation->donation_source_id) {
-//                     $source = DonationSource::find($donation->donation_source_id);
-//                     if ($source) {
-//                         $source->total_donations += 1;
-//                         $source->total_amount += $donation->amount;
-//                         $source->save();
-//                     }
-//                 }
-                
-//                 // Process fundraising commission if exists
-//                 if ($donation->referral_code) {
-//                     $this->processFundraisingCommission($donation);
-//                 }
-                
-//                 // Send notifications
-//                 $this->sendDonationNotifications($donation);
-                
-//                 // Track conversion
-//                 $this->trackServerSideConversion($donation);
-                
-//                 $this->clearDonationSessions();
-                
-//                 Log::info('Donation marked as success via callback', ['donation_id' => $donation->id]);
-//                 break;
-                
-//             case 'EXPIRED':
-//             case 'FAILED':
-//                 $donation->status = 'gagal';
-//                 $donation->save();
-//                 Log::info('Donation marked as failed via callback', ['donation_id' => $donation->id]);
-//                 break;
-                
-//             default:
-//                 Log::warning('Unrecognized payment status', ['status' => $status]);
-//                 return response()->json([
-//                     'success' => false,
-//                     'message' => 'Unrecognized payment status',
-//                 ], 400);
-//         }
-        
-//         // Commit transaction
-//         DB::commit();
-        
-//         return response()->json(['success' => true]);
-        
-//     } catch (\Exception $e) {
-//         // Rollback transaction
-//         DB::rollBack();
-//         Log::error('Error processing Tripay callback', [
-//             'error' => $e->getMessage(),
-//             'trace' => $e->getTraceAsString()
-//         ]);
-        
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Error processing callback',
-//         ], 500);
-//     }
-// }
-
 // Helper method to process fundraising commission
 private function processFundraisingCommission($donation)
 {
@@ -732,6 +560,7 @@ private function processSuccessfulPayment($donation)
     try {
         $this->trackServerSideConversion($donation);
         $this->clearDonationSessions();
+        Log::info('Conversion tracking completed', ['donation_id' => $donation->id]);
     } catch (\Exception $e) {
         Log::error('Error when sending notifications or tracking conversion', [
             'donation_id' => $donation->id,
@@ -1092,17 +921,19 @@ private function trackServerSideConversion($donation)
         $adsense = Adsense::first();
         if (!$adsense) return;
         
-          // Facebook Conversion API - Track "Donate" event
+        // Facebook Conversion API - Track "Donate" event
         if ($adsense->meta_token && $adsense->meta_endpoint) {
             $userData = [
                 'em' => hash('sha256', strtolower($donation->email)),
                 'ph' => hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone)),
+                'client_user_agent' => request()->userAgent(),
+                'client_ip_address' => request()->ip(),
             ];
             
             $data = [
                 'data' => [
                     [
-                        'event_name' => 'Donate', // Changed from Purchase to Donate
+                        'event_name' => 'Donate',
                         'event_time' => time(),
                         'user_data' => $userData,
                         'custom_data' => [
@@ -1121,13 +952,44 @@ private function trackServerSideConversion($donation)
             ];
             
             Http::post($adsense->meta_endpoint, $data);
+            Log::info('Facebook Conversion API event sent', ['donation_id' => $donation->id]);
+        }
+
+        // Alternative: Menggunakan environment variables langsung
+        if (env('FB_PIXEL_ID') && env('FB_ACCESS_TOKEN')) {
+            $fbData = [
+                'data' => [[
+                    'event_name' => 'Donate',
+                    'event_time' => time(),
+                    'action_source' => 'website',
+                    'event_source_url' => url()->current(),
+                    'user_data' => [
+                        'em' => hash('sha256', strtolower($donation->email)),
+                        'ph' => hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone)),
+                        'client_user_agent' => request()->userAgent(),
+                        'client_ip_address' => request()->ip(),
+                    ],
+                    'custom_data' => [
+                        'currency' => 'IDR',
+                        'value' => $donation->amount,
+                        'content_name' => $donation->campaign->title,
+                        'content_type' => 'donation',
+                        'content_ids' => [$donation->campaign_id],
+                    ],
+                ]]
+            ];
+
+            Http::withToken(env('FB_ACCESS_TOKEN'))
+                ->post("https://graph.facebook.com/v18.0/" . env('FB_PIXEL_ID') . "/events", $fbData);
+            
+            Log::info('Facebook Conversion API (direct) event sent', ['donation_id' => $donation->id]);
         }
         
-        // TikTok Events API - Track "Donate" event
+        // TikTok Events API - Track "Donate" event  
         if ($adsense->tiktok_token && $adsense->tiktok_endpoint && $adsense->tiktok_pixel) {
             $data = [
                 'pixel_code' => $adsense->tiktok_pixel,
-                'event' => 'Donate', // Changed from CompletePayment to Donate
+                'event' => 'Donate',
                 'timestamp' => time(),
                 'properties' => [
                     'currency' => 'IDR',
@@ -1150,7 +1012,6 @@ private function trackServerSideConversion($donation)
                 'Access-Token' => $adsense->tiktok_token
             ])->post($adsense->tiktok_endpoint, $data);
         }
-
         
     } catch (\Exception $e) {
         Log::error('Error tracking conversion: ' . $e->getMessage());
