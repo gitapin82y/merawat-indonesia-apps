@@ -560,7 +560,6 @@ private function processSuccessfulPayment($donation)
     try {
         $this->trackServerSideConversion($donation);
         $this->clearDonationSessions();
-        Log::info('Conversion tracking completed', ['donation_id' => $donation->id]);
     } catch (\Exception $e) {
         Log::error('Error when sending notifications or tracking conversion', [
             'donation_id' => $donation->id,
@@ -952,7 +951,6 @@ private function trackServerSideConversion($donation)
             ];
             
             Http::post($adsense->meta_endpoint, $data);
-            Log::info('Facebook Conversion API event sent', ['donation_id' => $donation->id]);
         }
 
         // Alternative: Menggunakan environment variables langsung
@@ -981,8 +979,6 @@ private function trackServerSideConversion($donation)
 
             Http::withToken(env('FB_ACCESS_TOKEN'))
                 ->post("https://graph.facebook.com/v18.0/" . env('FB_PIXEL_ID') . "/events", $fbData);
-            
-            Log::info('Facebook Conversion API (direct) event sent', ['donation_id' => $donation->id]);
         }
         
         // TikTok Events API - Track "Donate" event  
