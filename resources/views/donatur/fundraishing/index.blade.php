@@ -1,6 +1,6 @@
 @extends('layouts.public')
  
-@section('title', 'Fundraishing')
+@section('title', 'Fundraising')
 
 @push('after-style')
 
@@ -8,7 +8,7 @@
 
 @section('content')
 
-    @include('includes.public.navbar-back', ['title' => 'Fundraishing'])
+    @include('includes.public.navbar-back', ['title' => 'Fundraising'])
 
     @if(!isset($hasAnyFundraising) || !$hasAnyFundraising)
         @include('donatur.fundraishing.not-available', ['commission' => $commission])
