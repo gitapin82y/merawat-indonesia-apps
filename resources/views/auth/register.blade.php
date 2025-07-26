@@ -72,6 +72,25 @@
         background-color: var(--bs-danger);
         color: white;
     }
+
+    /* Style untuk password toggle */
+    .password-toggle {
+        position: relative;
+    }
+
+    .password-toggle-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #6c757d;
+        z-index: 10;
+    }
+
+    .password-toggle-icon:hover {
+        color: #FF4747;
+    }
 </style>
 @endpush
 
@@ -123,16 +142,18 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                     </div>
-                    <div class="mb-3 form-floating">
+                    <div class="mb-3 form-floating password-toggle">
                         <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" value="{{ old('password') }}" placeholder="Password" id="password">
                         <label for="password">Password</label>
+                        <i class="fas fa-eye password-toggle-icon" id="togglePassword"></i>
                         @error('password')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                     </div>
-                    <div class="mb-4 form-floating">
+                    <div class="mb-4 form-floating password-toggle">
                         <input type="password" name="password_confirmation" class="form-control @error('password_confirmation') is-invalid @enderror" id="password_confirmation" value="{{ old('password_confirmation') }}" placeholder="Konfirmasi Password">
                         <label for="password_confirmation">Konfirmasi Password</label>
+                        <i class="fas fa-eye password-toggle-icon" id="togglePasswordConfirmation"></i>
                         @error('password_confirmation')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -150,6 +171,37 @@
 @endsection
 
 @push('after-script')
-   
-@endpush
+<script>
+    // Script untuk toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordField = document.getElementById('password');
+        const toggleIcon = document.getElementById('togglePassword');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    });
 
+    // Script untuk toggle password confirmation visibility
+    document.getElementById('togglePasswordConfirmation').addEventListener('click', function() {
+        const passwordConfirmationField = document.getElementById('password_confirmation');
+        const toggleIcon = document.getElementById('togglePasswordConfirmation');
+        
+        if (passwordConfirmationField.type === 'password') {
+            passwordConfirmationField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordConfirmationField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    });
+</script>
+@endpush
