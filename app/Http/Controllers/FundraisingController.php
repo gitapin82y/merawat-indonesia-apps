@@ -91,6 +91,7 @@ class FundraisingController extends Controller
  
 public function fundraising(Request $request)
 {
+        Log::info('Akses fundraising oleh user');
     $user = Auth::user();
 
     // Logging untuk tracing debugging
