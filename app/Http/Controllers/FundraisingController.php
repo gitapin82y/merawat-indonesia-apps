@@ -88,29 +88,32 @@ class FundraisingController extends Controller
         return view('super_admin.fundraising.campaign-detail', compact('campaign'));
     }
 
-
-    public function fundraising(Request $request)
+ 
+public function fundraising(Request $request)
 {
     $user = Auth::user();
-    
-    // Cek apakah user memiliki fundraising sama sekali
+
+    // Logging untuk tracing debugging
+    Log::info('Akses fundraising oleh user', ['user_id' => $user->id]);
+
+    // Cek apakah user memiliki fundraising
     $hasAnyFundraising = Fundraising::where('user_id', $user->id)->exists();
-    
-    // Jika tidak punya fundraising sama sekali, tampilkan not-available
+
+    // Ambil komisi dengan fallback
+    $commission = Commission::first();
+    $commission = $commission ? $commission->amount : 5;
+
     if (!$hasAnyFundraising) {
-        $commission = Commission::first();
-        $commission = $commission->amount;
-        return view('donatur.fundraishing.index', compact('commission'));
+        return view('donatur.fundraishing.index', compact('commission', 'hasAnyFundraising'));
     }
-    
-    // Ambil parameter filter
+
+    // Ambil filter dari request
     $filterType = $request->get('filter_type', 'all');
     $date = $request->get('date');
     $month = $request->get('month');
     $start_date = $request->get('start_date');
     $end_date = $request->get('end_date');
-    
-    // Query dasar - semua fundraising user
+
     $allFundraisings = Fundraising::where('user_id', $user->id)
         ->with(['campaign', 'fundraisingWithdrawals'])
         ->get();
@@ -119,112 +122,84 @@ class FundraisingController extends Controller
     $fundraisings = collect();
     $totalCommission = 0;
 
-    // Proses filter berdasarkan tanggal donasi
     foreach ($allFundraisings as $fundraising) {
-       
-       $donationIds = $fundraising->donations;
+        $donationIds = $fundraising->donations;
 
-// Jika masih string, decode dulu
-if (!is_array($donationIds)) {
-    $decoded = json_decode($donationIds, true);
-    if (json_last_error() === JSON_ERROR_NONE) {
-        $donationIds = $decoded;
-    }
-}
-
-if (empty($donationIds) || !is_array($donationIds)) {
-   
-        if ($filterType == 'all') {
-            $fundraisings->push($fundraising);
-            $totalCommission += $fundraising->commission;
+        // Decode jika bukan array
+        if (!is_array($donationIds)) {
+            $decoded = json_decode($donationIds, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $donationIds = $decoded;
+            } else {
+                continue; // Skip jika invalid
+            }
         }
-        continue;
-    }
-        
-     $donationIds = $fundraising->donations;
 
-// Pastikan $donationIds adalah array
-if (!is_array($donationIds)) {
-    $decoded = json_decode($donationIds, true);
-
-    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-        $donationIds = $decoded;
-    } else {
-       
-        continue; // skip fundraising ini
-    }
-}
-
-// Sekarang pasti array, aman dipakai
-$donationsQuery = Donation::whereIn('id', $donationIds)->where('status', 'sukses');
-        
-          // Debug: Cek total donations sebelum filter tanggal
-    $totalDonationsBeforeFilter = clone $donationsQuery;
-    $totalBeforeFilter = $totalDonationsBeforeFilter->count();
-    
-        // Terapkan filter tanggal
-        switch($filterType) {
-            case 'daily':
-                if($date) {
-                    $donationsQuery->whereDate('created_at', $date);
-                    $isFiltered = true;
-                }
-                break;
-                
-            case 'monthly':
-                if($month) {
-                    $donationsQuery->whereYear('created_at', Carbon::parse($month)->year)
-                                  ->whereMonth('created_at', Carbon::parse($month)->month);
-                    $isFiltered = true;
-                }
-                break;
-                
-            case 'range':
-                if($start_date && $end_date) {
-                    $donationsQuery->whereBetween('created_at', [
-                        Carbon::parse($start_date)->startOfDay(),
-                        Carbon::parse($end_date)->endOfDay()
-                    ]);
-                    $isFiltered = true;
-                }
-                break;
+        if (empty($donationIds)) {
+            if ($filterType === 'all') {
+                $fundraisings->push($fundraising);
+                $totalCommission += $fundraising->commission ?? 0;
+            }
+            continue;
         }
-        
+
+        $donationsQuery = Donation::whereIn('id', $donationIds)->where('status', 'sukses');
+
+        // Terapkan filter waktu
+        try {
+            switch ($filterType) {
+                case 'daily':
+                    if ($date) {
+                        $donationsQuery->whereDate('created_at', $date);
+                        $isFiltered = true;
+                    }
+                    break;
+                case 'monthly':
+                    if ($month) {
+                        $parsedMonth = Carbon::parse($month);
+                        $donationsQuery->whereYear('created_at', $parsedMonth->year)
+                            ->whereMonth('created_at', $parsedMonth->month);
+                        $isFiltered = true;
+                    }
+                    break;
+                case 'range':
+                    if ($start_date && $end_date) {
+                        $donationsQuery->whereBetween('created_at', [
+                            Carbon::parse($start_date)->startOfDay(),
+                            Carbon::parse($end_date)->endOfDay(),
+                        ]);
+                        $isFiltered = true;
+                    }
+                    break;
+            }
+        } catch (\Exception $e) {
+            Log::error('Tanggal filter tidak valid', ['error' => $e->getMessage()]);
+            continue;
+        }
+
         $filteredDonations = $donationsQuery->get();
-        
-        // Jika filter aktif
+
         if ($isFiltered) {
             if ($filteredDonations->isNotEmpty()) {
-                // Hitung ulang data berdasarkan donasi yang terfilter
                 $filteredTotalDonasi = $filteredDonations->sum('amount');
                 $filteredTotalDonatur = $filteredDonations->count();
-                
-                // Hitung commission untuk periode yang dipilih
-                $commissionRate = Commission::first()->amount ?? 5;
-                $filteredCommission = ($filteredTotalDonasi * $commissionRate) / 100;
-                
-                // Clone fundraising dan update data yang terfilter
+                $filteredCommission = ($filteredTotalDonasi * $commission) / 100;
+
                 $filteredFundraising = $fundraising->replicate();
                 $filteredFundraising->jumlah_donasi = $filteredTotalDonasi;
                 $filteredFundraising->total_donatur = $filteredTotalDonatur;
                 $filteredFundraising->commission = $filteredCommission;
                 $filteredFundraising->filtered_donations = $filteredDonations;
-                
+
                 $fundraisings->push($filteredFundraising);
                 $totalCommission += $filteredCommission;
             }
         } else {
-            // Jika tidak ada filter, gunakan data asli
             $fundraisings->push($fundraising);
-            $totalCommission += $fundraising->commission;
+            $totalCommission += $fundraising->commission ?? 0;
         }
     }
 
-    // Ambil commission rate
-    $commission = Commission::first();
-    $commission = $commission->amount;
-    
-    // Data untuk view
     $filterData = [
         'filter_type' => $filterType,
         'date' => $date,
@@ -234,16 +209,173 @@ $donationsQuery = Donation::whereIn('id', $donationIds)->where('status', 'sukses
         'is_filtered' => $isFiltered,
         'has_results' => $fundraisings->isNotEmpty()
     ];
-    
-    // Selalu tampilkan available blade karena user memiliki fundraising
+
     return view('donatur.fundraishing.index', compact(
-        'fundraisings', 
+        'fundraisings',
         'totalCommission',
         'commission',
         'filterData',
         'hasAnyFundraising'
     ));
 }
+
+
+
+    // public function fundraising(Request $request)
+    // {
+    //     $user = Auth::user();
+
+    //     // Cek apakah user memiliki fundraising sama sekali
+    //     $hasAnyFundraising = Fundraising::where('user_id', $user->id)->exists();
+
+    //     // Jika tidak punya fundraising sama sekali, tampilkan not-available
+    //     if (!$hasAnyFundraising) {
+    //     $commission = Commission::first();
+    //     $commission = $commission->amount;
+    //     return view('donatur.fundraishing.index', compact('commission'));
+    //     }
+
+    //     // Ambil parameter filter
+    //     $filterType = $request->get('filter_type', 'all');
+    //     $date = $request->get('date');
+    //     $month = $request->get('month');
+    //     $start_date = $request->get('start_date');
+    //     $end_date = $request->get('end_date');
+
+    //     // Query dasar - semua fundraising user
+    //     $allFundraisings = Fundraising::where('user_id', $user->id)
+    //     ->with(['campaign', 'fundraisingWithdrawals'])
+    //     ->get();
+
+    //     $isFiltered = false;
+    //     $fundraisings = collect();
+    //     $totalCommission = 0;
+
+    //     // Proses filter berdasarkan tanggal donasi
+    //     foreach ($allFundraisings as $fundraising) {
+
+    //     $donationIds = $fundraising->donations;
+
+    //     // Jika masih string, decode dulu
+    //     if (!is_array($donationIds)) {
+    //     $decoded = json_decode($donationIds, true);
+    //     if (json_last_error() === JSON_ERROR_NONE) {
+    //     $donationIds = $decoded;
+    //     }
+    //     }
+
+    //     if (empty($donationIds) || !is_array($donationIds)) {
+
+    //     if ($filterType == 'all') {
+    //     $fundraisings->push($fundraising);
+    //     $totalCommission += $fundraising->commission;
+    //     }
+    //     continue;
+    //     }
+
+    //     $donationIds = $fundraising->donations;
+
+    //     // Pastikan $donationIds adalah array
+    //     if (!is_array($donationIds)) {
+    //     $decoded = json_decode($donationIds, true);
+
+    //     if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+    //     $donationIds = $decoded;
+    //     } else {
+
+    //     continue; // skip fundraising ini
+    //     }
+    //     }
+
+    //     // Sekarang pasti array, aman dipakai
+    //     $donationsQuery = Donation::whereIn('id', $donationIds)->where('status', 'sukses');
+
+    //     // Debug: Cek total donations sebelum filter tanggal
+    //     $totalDonationsBeforeFilter = clone $donationsQuery;
+    //     $totalBeforeFilter = $totalDonationsBeforeFilter->count();
+
+    //     // Terapkan filter tanggal
+    //     switch($filterType) {
+    //     case 'daily':
+    //     if($date) {
+    //     $donationsQuery->whereDate('created_at', $date);
+    //     $isFiltered = true;
+    //     }
+    //     break;
+
+    //     case 'monthly':
+    //     if($month) {
+    //     $donationsQuery->whereYear('created_at', Carbon::parse($month)->year)
+    //     ->whereMonth('created_at', Carbon::parse($month)->month);
+    //     $isFiltered = true;
+    //     }
+    //     break;
+
+    //     case 'range':
+    //     if($start_date && $end_date) {
+    //     $donationsQuery->whereBetween('created_at', [
+    //     Carbon::parse($start_date)->startOfDay(),
+    //     Carbon::parse($end_date)->endOfDay()
+    //     ]);
+    //     $isFiltered = true;
+    //     }
+    //     break;
+    //     }
+
+    //     $filteredDonations = $donationsQuery->get();
+
+    //     // Jika filter aktif
+    //     if ($isFiltered) {
+    //     if ($filteredDonations->isNotEmpty()) {
+    //     // Hitung ulang data berdasarkan donasi yang terfilter
+    //     $filteredTotalDonasi = $filteredDonations->sum('amount');
+    //     $filteredTotalDonatur = $filteredDonations->count();
+
+    //     // Hitung commission untuk periode yang dipilih
+    //     $commissionRate = Commission::first()->amount ?? 5;
+    //     $filteredCommission = ($filteredTotalDonasi * $commissionRate) / 100;
+
+    //     // Clone fundraising dan update data yang terfilter
+    //     $filteredFundraising = $fundraising->replicate();
+    //     $filteredFundraising->jumlah_donasi = $filteredTotalDonasi;
+    //     $filteredFundraising->total_donatur = $filteredTotalDonatur;
+    //     $filteredFundraising->commission = $filteredCommission;
+    //     $filteredFundraising->filtered_donations = $filteredDonations;
+
+    //     $fundraisings->push($filteredFundraising);
+    //     $totalCommission += $filteredCommission;
+    //     }
+    //     } else {
+    //     // Jika tidak ada filter, gunakan data asli
+    //     $fundraisings->push($fundraising);
+    //     $totalCommission += $fundraising->commission;
+    //     }
+    //     }
+
+    //     // Ambil commission rate
+    //     $commission = Commission::first();
+    //     $commission = $commission->amount;
+
+    //     // Data untuk view
+    //     $filterData = [
+    //     'filter_type' => $filterType,
+    //     'date' => $date,
+    //     'month' => $month,
+    //     'start_date' => $start_date,
+    //     'end_date' => $end_date,
+    //     'is_filtered' => $isFiltered,
+    //     'has_results' => $fundraisings->isNotEmpty()
+    //     ];
+
+    //     // Selalu tampilkan available blade karena user memiliki fundraising
+    //     return view('donatur.fundraishing.index', compact(
+    //     'fundraisings',
+    //     'totalCommission',
+    //     'commission',
+    //     'filterData',
+    //     'hasAnyFundraising'
+    //     ));
+    // }
 
 // Method untuk AJAX filter jika diperlukan
 public function getFilteredData(Request $request)
