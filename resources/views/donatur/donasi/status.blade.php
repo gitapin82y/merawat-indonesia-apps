@@ -439,17 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Tracking Purchase event for the first time');
             
             // Facebook Pixel - Purchase (Invoice)
-            @if(env('FB_PIXEL_ID'))
-            fbq('track', 'Purchase', {
-                content_name: '{{ $campaign->title ?? "Donation" }}',
-                content_category: '{{ $campaign->category->name ?? "Campaign" }}',
-                content_ids: ['{{ $campaign->id ?? "" }}'],
-                content_type: 'product',
-                value: {{ $donation->amount ?? 0 }},
-                currency: 'IDR',
-                transaction_id: '{{ $donation->snap_token ?? "" }}'
-            });
-            @elseif($adsense && $adsense->facebook_pixel)
+            @if($adsense && $adsense->facebook_pixel)
             fbq('track', 'Purchase', {
                 content_name: '{{ $campaign->title ?? "Donation" }}',
                 content_category: '{{ $campaign->category->name ?? "Campaign" }}',
@@ -460,7 +450,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 transaction_id: '{{ $donation->snap_token ?? "" }}'
             });
             @endif
-            
 
             // Google Ads - purchase event (Invoice)
             @if($adsense && $adsense->google_ads_id)
@@ -510,17 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.removeItem('referral_code');
 
             // Facebook Pixel - Donate (Custom Event)
-            @if(env('FB_PIXEL_ID'))
-            fbq('trackCustom', 'Donate', {
-                content_name: '{{ $campaign->title ?? "Donation" }}',
-                content_category: '{{ $campaign->category->name ?? "Campaign" }}',
-                content_ids: ['{{ $campaign->id ?? "" }}'],
-                content_type: 'product',
-                value: {{ $donation->amount ?? 0 }},
-                currency: 'IDR',
-                transaction_id: '{{ $donation->snap_token ?? "" }}'
-            });
-            @elseif($adsense && $adsense->facebook_pixel)
+            @if($adsense && $adsense->facebook_pixel)
             fbq('trackCustom', 'Donate', {
                 content_name: '{{ $campaign->title ?? "Donation" }}',
                 content_category: '{{ $campaign->category->name ?? "Campaign" }}',
