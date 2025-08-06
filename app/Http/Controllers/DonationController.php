@@ -918,104 +918,61 @@ private function trackServerSideConversion($donation)
 {
     try {
         $adsense = Adsense::first();
+        if (!$adsense) {
+            Log::warning('No adsense configuration found');
+            return;
+        }
         
-        // PRIORITASKAN ENVIRONMENT VARIABLES TERLEBIH DAHULU
-        // Karena client sudah set di .env dan lebih aman
-        if (env('FB_PIXEL_ID') && env('FB_ACCESS_TOKEN')) {
+        // Facebook Conversion API - Track "Donate" event
+        if ($adsense->meta_token && $adsense->facebook_pixel) {
             
-            // HASH EMAIL DAN PHONE DENGAN BENAR
+            // Prepare user data dengan validasi
             $userData = [
                 'em' => hash('sha256', strtolower(trim($donation->email))),
-                'ph' => $donation->phone ? hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone)) : null,
                 'client_user_agent' => request()->userAgent(),
                 'client_ip_address' => request()->ip(),
             ];
             
-            // REMOVE NULL VALUES
-            $userData = array_filter($userData, function($value) {
-                return !is_null($value);
-            });
+            // Tambahkan phone jika ada
+            if ($donation->phone) {
+                $userData['ph'] = hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone));
+            }
             
             $eventData = [
-                'data' => [[
-                    'event_name' => 'Donate',
-                    'event_time' => time(),
-                    'action_source' => 'website',
-                    'event_source_url' => url('/donations/' . $donation->id . '/status'),
-                    'user_data' => $userData,
-                    'custom_data' => [
-                        'currency' => 'IDR',
-                        'value' => (float) $donation->amount,
-                        'content_name' => $donation->campaign->title ?? 'Donation',
-                        'content_type' => 'donation',
-                        'content_ids' => [(string) $donation->campaign_id],
-                        'content_category' => $donation->campaign->category->name ?? 'donation',
-                    ],
-                ]],
-                'test_event_code' => 'TEST25483', // TAMBAHKAN TEST EVENT CODE SESUAI CLIENT
+                'data' => [
+                    [
+                        'event_name' => 'Donate',
+                        'event_time' => time(),
+                        'user_data' => $userData,
+                        'custom_data' => [
+                            'currency' => 'IDR',
+                            'value' => (float) $donation->amount,
+                            'content_name' => $donation->campaign->title ?? 'Donation',
+                            'content_type' => 'donation',
+                            'content_ids' => [(string) $donation->campaign_id],
+                            'content_category' => $donation->campaign->category->name ?? 'donation',
+                        ],
+                        'event_source_url' => url('/donations/' . $donation->id . '/status'),
+                        'action_source' => 'website'
+                    ]
+                ],
             ];
-
-            // GUNAKAN PIXEL ID DARI ENV
-            $pixelId = env('FB_PIXEL_ID');
-            $accessToken = env('FB_ACCESS_TOKEN');
             
-            $response = Http::withToken($accessToken)
-                ->post("https://graph.facebook.com/v20.0/{$pixelId}/events", $eventData);
+            // Gunakan endpoint yang benar dengan pixel dari database
+            $response = Http::withToken($adsense->meta_token)
+                ->post("https://graph.facebook.com/v20.0/{$adsense->facebook_pixel}/events", $eventData);
             
             Log::info('Facebook Conversion API Response', [
                 'donation_id' => $donation->id,
-                'pixel_id' => $pixelId,
-                'status' => $response->status(),
-                'response' => $response->json()
-            ]);
-            
-        } 
-        // FALLBACK KE DATABASE CONFIG JIKA ENV TIDAK ADA
-        elseif ($adsense && $adsense->meta_token && $adsense->facebook_pixel) {
-            
-            $userData = [
-                'em' => hash('sha256', strtolower(trim($donation->email))),
-                'ph' => $donation->phone ? hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone)) : null,
-                'client_user_agent' => request()->userAgent(),
-                'client_ip_address' => request()->ip(),
-            ];
-            
-            $userData = array_filter($userData, function($value) {
-                return !is_null($value);
-            });
-            
-            $eventData = [
-                'data' => [[
-                    'event_name' => 'Donate',
-                    'event_time' => time(),
-                    'action_source' => 'website',
-                    'event_source_url' => url('/donations/' . $donation->id . '/status'),
-                    'user_data' => $userData,
-                    'custom_data' => [
-                        'currency' => 'IDR',
-                        'value' => (float) $donation->amount,
-                        'content_name' => $donation->campaign->title ?? 'Donation',
-                        'content_type' => 'donation',
-                        'content_ids' => [(string) $donation->campaign_id],
-                        'content_category' => $donation->campaign->category->name ?? 'donation',
-                    ],
-                ]],
-                'test_event_code' => 'TEST25483',
-            ];
-            
-            $response = Http::withToken($adsense->meta_token)
-                ->post("https://graph.facebook.com/v20.0/{$adsense->facebook_pixel}/events", $eventData);
-                
-            Log::info('Facebook Conversion API Response (DB)', [
-                'donation_id' => $donation->id,
                 'pixel_id' => $adsense->facebook_pixel,
                 'status' => $response->status(),
-                'response' => $response->json()
+                'response' => $response->json(),
+                'event_data' => $eventData
             ]);
         }
         
-        // TikTok Events API - PERBAIKI FORMAT
-        if ($adsense && $adsense->tiktok_token && $adsense->tiktok_pixel) {
+        // TikTok Events API - Track "Donate" event  
+        if ($adsense->tiktok_token && $adsense->tiktok_endpoint && $adsense->tiktok_pixel) {
             $tiktokData = [
                 'pixel_code' => $adsense->tiktok_pixel,
                 'event' => 'Donate',
@@ -1030,7 +987,6 @@ private function trackServerSideConversion($donation)
                 'context' => [
                     'user' => [
                         'email' => hash('sha256', strtolower(trim($donation->email))),
-                        'phone' => $donation->phone ? hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone)) : null,
                     ],
                     'page' => [
                         'url' => url('/donations/' . $donation->id . '/status')
@@ -1040,15 +996,15 @@ private function trackServerSideConversion($donation)
                 ]
             ];
             
-            // REMOVE NULL VALUES
-            if (!$tiktokData['context']['user']['phone']) {
-                unset($tiktokData['context']['user']['phone']);
+            // Tambahkan phone jika ada
+            if ($donation->phone) {
+                $tiktokData['context']['user']['phone'] = hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone));
             }
             
             $response = Http::withHeaders([
                 'Access-Token' => $adsense->tiktok_token,
                 'Content-Type' => 'application/json'
-            ])->post('https://business-api.tiktok.com/open_api/v1.3/event/track/', $tiktokData);
+            ])->post($adsense->tiktok_endpoint, $tiktokData);
             
             Log::info('TikTok Conversion API Response', [
                 'donation_id' => $donation->id,
