@@ -42,7 +42,7 @@
                     <div class="mb-4">
                         <div class="row mb-2">
                             <div class="col-sm-4 font-weight-bold">Total Donasi:</div>
-                            <div class="col-sm-8">Rp {{ number_format($pencairanKampanye->campaign->current_donation_real + $pencairanKampanye->amount, 0, ',', '.') }}</div>
+                            <div class="col-sm-8">Rp {{ number_format($pencairanKampanye->campaign->current_donation_formatted + $pencairanKampanye->amount, 0, ',', '.') }}</div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-sm-4 font-weight-bold">Jumlah Pencairan:</div>
@@ -50,7 +50,7 @@
                         </div>
                         <div class="row mb-2">
                             <div class="col-sm-4 font-weight-bold">Sisa Dana yang belum dicairkan:</div>
-                            <div class="col-sm-8">Rp {{ number_format($pencairanKampanye->campaign->current_donation_real, 0, ',', '.') }}</div>
+                            <div class="col-sm-8">Rp {{ number_format($pencairanKampanye->campaign->current_donation_formatted, 0, ',', '.') }}</div>
                         </div>
                     </div>
 
