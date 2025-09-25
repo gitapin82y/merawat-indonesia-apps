@@ -86,13 +86,23 @@ class Campaign extends Model
         return number_format($this->total_donasi_terkumpul, 0, ',', '.');
     }
     
-    /**
-     * Get formatted current donation
-     */
-    public function getCurrentDonationFormattedAttribute()
-    {
-        return number_format($this->current_donation_real, 0, ',', '.');
+  public function getCurrentDonationFormattedAttribute()
+{
+    $currentDonation = $this->current_donation_real;
+    
+    // ✅ Jika 0, tampilkan "0"
+    if ($currentDonation == 0) {
+        return '0';
     }
+    
+    // ✅ Jika negatif (dana dicairkan lebih besar dari donasi), tampilkan "0"
+    if ($currentDonation < 0) {
+        return '0';
+    }
+    
+    // ✅ Jika positif, tampilkan format rupiah
+    return 'Rp ' . number_format($currentDonation, 0, ',', '.');
+}
     
     /**
      * Get formatted total dana dicairkan

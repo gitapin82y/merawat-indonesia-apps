@@ -55,11 +55,6 @@ class KabarPencairanController extends Controller
         $campaign = Campaign::with(['kabarPencairan' => function ($query) {
             $query->where('status', 'disetujui');
         }])->where('id', $request->campaign_id)->first();
-
-        if($request->amount >= $campaign->current_donation){
-            return redirect()->back()
-            ->with('error', 'Jumlah Pencairan Dana Tidak Boleh Melebihi Total Donasi Kampanye Anda');
-        }
     
         DB::beginTransaction();
         try {
@@ -190,7 +185,7 @@ class KabarPencairanController extends Controller
         return view('admin.kampanye.pencairan-dana', [
             'idKampanye' => $campaign->id,
             'slug'=>$slug,
-            'current_donation' => $campaign->current_donation
+            'current_donation' => $campaign->current_donation_formatted
         ]);
     }
 

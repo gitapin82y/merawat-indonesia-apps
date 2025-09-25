@@ -112,7 +112,7 @@
                   value="{{ old('amount') }}" placeholder="Jumlah Pencairan Dana">
               <label for="amount">Jumlah Pencairan Dana</label>
               @error('amount')<div class="invalid-feedback">{{ $message }}</div>@enderror
-              <small class="mt-1">Tidak boleh melebihi jumlah donasi kampanye saat ini : <strong class="text-danger">{{'Rp ' . number_format($current_donation, 0, ',', '.')}}</strong></small>
+              <small class="mt-1">Tidak boleh melebihi jumlah donasi kampanye saat ini : <strong class="text-danger">{{'Rp ' . $current_donation}}</strong></small>
           </div>
                 
           <div class="mb-3 position-relative">
@@ -160,24 +160,43 @@
     $('#submitForm').on('click', function(e) {
         e.preventDefault();
         
-        // Ambil nilai amount (jumlah pencairan)
-        var rupiah = $('#amount').val();
-        var cleanAmount = rupiah.replace('Rp ', '').replace(/\./g, '').replace(',', '.');
-        var amountValue = parseFloat(cleanAmount);
-        
-        // Ambil nilai current_donation
-        var currentDonation = {{ $current_donation }};
-        
-        // Validasi: Periksa apakah jumlah pencairan melebihi current_donation
-        if (amountValue > currentDonation) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Jumlah Tidak Valid',
-                text: 'Jumlah pencairan dana tidak boleh melebihi Rp ' + new Intl.NumberFormat('id-ID').format(currentDonation),
-                confirmButtonText: 'OK'
-            });
-            return false;
-        }
+// Ambil nilai pencairan dari input (contoh: "Rp 901.452")
+var rupiah = $('#amount').val() || '';
+// Hapus semua yang bukan angka (menjadi "901452")
+var cleanAmount = rupiah.replace(/[^0-9]/g, '');
+// Ubah ke integer
+var amountValue = parseInt(cleanAmount, 10);
+
+// Ambil nilai current_donation dari Blade (contoh: "Rp 901.452")
+var currentDonationRaw = "{{ $current_donation }}" || '';
+var cleanDonation = currentDonationRaw.replace(/[^0-9]/g, '');
+var currentDonation = parseInt(cleanDonation, 10);
+
+// Debug
+console.log('amountValue =>', amountValue, typeof amountValue);
+console.log('currentDonation =>', currentDonation, typeof currentDonation);
+          
+// Validasi dasar: pastikan bukan NaN
+if (isNaN(amountValue) || isNaN(currentDonation)) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Data Tidak Valid',
+        text: 'Nilai pencairan atau saldo saat ini tidak valid.'
+    });
+    return false;
+}
+
+// CATATAN: gunakan ">" jika pencairan boleh sama dengan saldo.
+// Jika Anda menggunakan ">=" maka nilai yang sama akan ditolak.
+if (amountValue > currentDonation) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Jumlah Tidak Valid',
+        text: 'Jumlah pencairan dana tidak boleh melebihi Rp ' + new Intl.NumberFormat('id-ID').format(currentDonation),
+        confirmButtonText: 'OK'
+    });
+    return false;
+}
         
         // Jika validasi berhasil, tampilkan konfirmasi
         Swal.fire({
