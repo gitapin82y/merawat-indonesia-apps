@@ -39,20 +39,27 @@
 
                     <!-- Informasi Donasi -->
                     <h5 class="border-bottom pb-2 mb-3">Informasi Donasi Kampanye</h5>
-                    <div class="mb-4">
-                        <div class="row mb-2">
-                            <div class="col-sm-4 font-weight-bold">Total Donasi:</div>
-                            <div class="col-sm-8">Rp {{ number_format($pencairanKampanye->campaign->current_donation_formatted + $pencairanKampanye->amount, 0, ',', '.') }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-sm-4 font-weight-bold">Jumlah Pencairan:</div>
-                            <div class="col-sm-8 text-danger font-weight-bold">Rp {{ number_format($pencairanKampanye->amount, 0, ',', '.') }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-sm-4 font-weight-bold">Sisa Dana yang belum dicairkan:</div>
-                            <div class="col-sm-8">Rp {{ number_format($pencairanKampanye->campaign->current_donation_formatted, 0, ',', '.') }}</div>
-                        </div>
-                    </div>
+<div class="mb-4">
+    <div class="row mb-2">
+        <div class="col-sm-4 font-weight-bold">Total Donasi:</div>
+        <div class="col-sm-8">
+            Rp {{ number_format(max(0, $pencairanKampanye->campaign->current_donation_real + $pencairanKampanye->amount), 0, ',', '.') }}
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-sm-4 font-weight-bold">Jumlah Pencairan:</div>
+        <div class="col-sm-8 text-danger font-weight-bold">
+            Rp {{ number_format($pencairanKampanye->amount, 0, ',', '.') }}
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-sm-4 font-weight-bold">Sisa Dana yang belum dicairkan:</div>
+        <div class="col-sm-8">
+            Rp {{ number_format(max(0, $pencairanKampanye->campaign->current_donation_real), 0, ',', '.') }}
+        </div>
+    </div>
+</div>
+
 
                     <!-- Informasi Pencairan -->
                     <h5 class="border-bottom pb-2 mb-3">Informasi Pencairan</h5>
