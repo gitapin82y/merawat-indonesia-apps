@@ -112,7 +112,7 @@
                   value="{{ old('amount') }}" placeholder="Jumlah Pencairan Dana">
               <label for="amount">Jumlah Pencairan Dana</label>
               @error('amount')<div class="invalid-feedback">{{ $message }}</div>@enderror
-              <small class="mt-1">Tidak boleh melebihi jumlah donasi kampanye saat ini : <strong class="text-danger">{{'Rp ' . $current_donation}}</strong></small>
+              <small class="mt-1">Tidak boleh melebihi jumlah donasi kampanye saat ini : <strong class="text-danger">{{$current_donation}}</strong></small>
           </div>
                 
           <div class="mb-3 position-relative">
