@@ -214,7 +214,7 @@
 
             @if($campaign->kabarPencairan->count() >= 1)
             <div class="col-12 row px-0 pt-2 mx-0">
-                <small>Donasi saat ini <strong class="text-color">Rp {{ $campaign->current_donation_formatted }}</strong> Dana yang sudah dicairkan <strong>Rp {{ $campaign->total_dana_dicairkan_formatted }}</strong></small>
+                <small>Donasi saat ini <strong class="text-color">{{ $campaign->current_donation_formatted }}</strong> Dana yang sudah dicairkan <strong>Rp {{ $campaign->total_dana_dicairkan_formatted }}</strong></small>
             </div>
             @endif
 

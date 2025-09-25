@@ -43,12 +43,12 @@
                     </div>
 
                     <!-- Validasi Dana -->
-                    <div class="alert {{ $withdrawal->amount <= $withdrawal->campaign->current_donation_formatted ? 'alert-info' : 'alert-danger' }} mb-3">
-                        <div><strong>Dana kampanye tersedia:</strong> Rp {{ number_format($withdrawal->campaign->current_donation_formatted, 0, ',', '.') }}</div>
+                    <div class="alert {{ $withdrawal->amount <= $withdrawal->campaign->current_donation_real ? 'alert-info' : 'alert-danger' }} mb-3">
+                        <div><strong>Dana kampanye tersedia:</strong> {{ $withdrawal->campaign->current_donation_formatted }}</div>
                         <div><strong>Jumlah pencairan:</strong> Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</div>
                         <div>
                             <strong>Status:</strong> 
-                            @if($withdrawal->amount <= $withdrawal->campaign->current_donation_formatted)
+                            @if($withdrawal->amount <= $withdrawal->campaign->current_donation_real)
                                 <span class="text-success">Dana mencukupi</span>
                             @else
                                 <span class="text-danger">Dana tidak mencukupi!</span>
