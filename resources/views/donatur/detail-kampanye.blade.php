@@ -160,69 +160,76 @@
             <small>Donasi Terkumpul</small>
 
             <div class="col-12 row mx-0 align-items-end mb-2">
-                <div class="col-9 p-0 d-flex">
-                    <h2 class="text-color mb-0">
-                        Rp {{ number_format($campaign->jumlah_donasi, 0, ',', '.') }} 
-                        <span class="small">Kebutuhan</span> 
-                        @if($campaign->jumlah_target_donasi)
-                        <span class="fw-bold">Rp {{ number_format($campaign->jumlah_target_donasi, 0, ',', '.') }} </span> 
-                        @else
-                        <span class="small"><i class="fas fa-infinity text-danger"></i> Tanpa Target</span>
-                        @endif
-                    </h2>
-                </div>
-                <div class="col d-flex justify-content-end p-0 section-deadline">
-                    <strong class="position-deadline">
-                        @if($campaign->deadline)
-                            @if($campaign->remainingDays < 0)
-                                0
-                            @elseif($campaign->remainingDays == 0)
-                                {{ floor($campaign->remainingTime) }}
-                            @else
-                                {{ $campaign->remainingDays }}
-                            @endif
-                        @else
-                            <i class="fas fa-infinity"></i>
-                        @endif
-                    </strong>
-                    <small>
-                        @if($campaign->deadline)
-                            @if($campaign->remainingDays < 0)
-                                Hari Lagi
-                            @elseif($campaign->remainingDays == 0)
-                                Jam Lagi
-                            @else
-                                Hari Lagi
-                            @endif
-                        @else
-                            Tanpa Batas Waktu
-                        @endif
-                    </small>
-                </div>
-            </div>
-
-            <div class="col-12 row mx-0">
-                <div class="progress my-1 px-0">
-                    <div class="progress-bar progress-bar-striped bg-danger" role="progressbar"
-                    style="width: {{ min($campaign->progressPercentage, 100) }}%;" 
-                    aria-valuenow="{{ min($campaign->progressPercentage, 100) }}" 
-                    aria-valuemin="0" aria-valuemax="100">
-                    {{ min($campaign->progressPercentage, 100) }}%
-                    </div>
-                </div>
-            </div>
-
-            @if($campaign->kabarPencairan->count() >= 1)
-            <div class="col-12 row px-0 pt-2 mx-0">
-                <small>Donasi saat ini <strong class="text-color">Rp {{ number_format($campaign->current_donation, 0, ',', '.') }}</strong> Dana yang sudah dicairkan <strong>Rp {{ number_format($campaign->jumlah_pencairan_dana, 0, ',', '.') }}</strong></small>
-            </div>
+    <div class="col-9 p-0 d-flex">
+        <h2 class="text-color mb-0">
+            Rp {{ number_format($totalDonasiTerkumpul, 0, ',', '.') }} 
+            <span class="small">Kebutuhan</span> 
+            @if($campaign->jumlah_target_donasi)
+            <span class="fw-bold">Rp {{ number_format($campaign->jumlah_target_donasi, 0, ',', '.') }} </span> 
+            @else
+            <span class="small"><i class="fas fa-infinity text-danger"></i> Tanpa Target</span>
             @endif
+        </h2>
+    </div>
+    <div class="col d-flex justify-content-end p-0 section-deadline">
+        <strong class="position-deadline">
+            @if($campaign->deadline)
+                @if($campaign->remainingDays < 0)
+                    0
+                @elseif($campaign->remainingDays == 0)
+                    {{ floor($campaign->remainingTime) }}
+                @else
+                    {{ $campaign->remainingDays }}
+                @endif
+            @else
+                <i class="fas fa-infinity"></i>
+            @endif
+        </strong>
+        <small>
+            @if($campaign->deadline)
+                @if($campaign->remainingDays < 0)
+                    Hari Lagi
+                @elseif($campaign->remainingDays == 0)
+                    Jam Lagi
+                @else
+                    Hari Lagi
+                @endif
+            @else
+                Tanpa Batas Waktu
+            @endif
+        </small>
+    </div>
+</div>
+
+ @php
+    // Hitung progress percentage real-time
+    $progressPercentage = $campaign->jumlah_target_donasi ? 
+        ($totalDonasiTerkumpul / $campaign->jumlah_target_donasi * 100) : 0;
+    $displayProgress = min($progressPercentage, 100);
+@endphp
+
+<div class="col-12 row mx-0">
+    <div class="progress my-1 px-0">
+        <div class="progress-bar progress-bar-striped bg-danger" role="progressbar"
+        style="width: {{ $displayProgress }}%;" 
+        aria-valuenow="{{ $displayProgress }}" 
+        aria-valuemin="0" aria-valuemax="100">
+        {{ number_format($displayProgress, 1) }}%
+        </div>
+    </div>
+</div>
+
+@if($campaign->kabarPencairan->count() >= 1)
+<div class="col-12 row px-0 pt-2 mx-0">
+    <small>Donasi saat ini <strong class="text-color">Rp {{ number_format($currentDonation, 0, ',', '.') }}</strong> Dana yang sudah dicairkan <strong>Rp {{ number_format($totalDanaDicairkan, 0, ',', '.') }}</strong></small>
+</div>
+@endif
 
             <div class="col-12 row mx-0 my-3">
                 <div class="col-3  text-center">
                     <div class="d-flex align-items-center justify-content-center">
                         <img src="{{asset('assets/img/icon/user-donatur.svg')}}" alt="" class="me-2" style="height: 20px;">
-                        <p class="count m-0 d-flex align-items-center">{{ $campaign->donations->where('status', 'sukses')->count() }}</p>
+                        <p class="count m-0 d-flex align-items-center">{{ $totalDonaturs }} </p>
                     </div>
 
                     <small>Donatur</small>

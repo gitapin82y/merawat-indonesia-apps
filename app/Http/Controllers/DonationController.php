@@ -41,10 +41,10 @@ class DonationController extends Controller
     public function __construct(NotificationService $notificationService)
     {
         // Konfigurasi Tripay
-         $this->apiKey = env('TRIPAY_API_KEY', '738ktbs6qGsDWCz6y43l97GYETsEblbMNVaSD4QN');
-         $this->privateKey = env('TRIPAY_PRIVATE_KEY', 'DjCiT-tVIsX-9AFLb-WuW0F-o4P4E');
-         $this->merchantCode = env('TRIPAY_MERCHANT_CODE', 'T31062');
-         $this->apiUrl = env('TRIPAY_API_URL', 'https://tripay.co.id/api/');
+         $this->apiKey = env('TRIPAY_API_KEY', 'DEV-Q5hpFmFYWeIvgIsw9TYWsGxho3BxkzPXtHTEFawA');
+         $this->privateKey = env('TRIPAY_PRIVATE_KEY', 'bDdsC-FB4JH-XtxVx-kYwyv-fOWYX');
+         $this->merchantCode = env('TRIPAY_MERCHANT_CODE', 'T38797');
+         $this->apiUrl = env('TRIPAY_API_URL', 'https://tripay.co.id/api-sandbox');
         $this->notificationService = $notificationService;
     }
 

@@ -407,6 +407,26 @@ public function __construct(NotificationService $notificationService)
         
         // Get paginated data for each tab
         $kabarTerbaru = $campaign->kabarTerbaru()->paginate($perPage, ['*'], 'kabar_page');
+
+        $totalDonasiTerkumpul = DB::table('donations')
+        ->where('campaign_id', $campaign->id)
+        ->where('status', 'sukses')
+        ->sum('amount');
+    
+    // Total donatur (count donasi sukses)
+    $totalDonaturs = DB::table('donations')
+        ->where('campaign_id', $campaign->id)
+        ->where('status', 'sukses')
+        ->count();
+    
+    // Total dana yang sudah dicairkan
+    $totalDanaDicairkan = DB::table('campaign_withdrawals')
+        ->where('campaign_id', $campaign->id)
+        ->where('status', 'disetujui')
+        ->sum('amount');
+
+           $currentDonation = $totalDonasiTerkumpul - $totalDanaDicairkan;
+
         
         $donations = $campaign->donations()
             ->where('status', 'sukses')
@@ -478,6 +498,9 @@ public function __construct(NotificationService $notificationService)
             'totalDonaturs' => $totalDonaturs,
             'totalKampanye' => $totalKampanye,
             'commission' => $commission->amount,
+              'totalDonasiTerkumpul' => $totalDonasiTerkumpul,
+        'currentDonation' => $currentDonation,
+        'totalDanaDicairkan' => $totalDanaDicairkan,
         ]);
     }
 
