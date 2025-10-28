@@ -118,7 +118,7 @@
                             <!-- Jumlah Donasi Custom -->
                             <div class="row container m-0 my-4">
                                 <div class="card bg-danger p-3 align-self-center">
-                                    <h3 class="text-white d-flex">Atau Masukkan Donasi Lainnya &nbsp; <span class="text-white small"> (Min. Rp 15.000)</span></h3>
+                                    <h3 class="text-white d-flex">Atau Masukkan Donasi Lainnya &nbsp; <span class="text-white small"> (Min. Rp 10.000)</span></h3>
                                     <div class="input-group outline-none border-none">
                                         <span class="input-group-text bg-white">Rp</span>
                                         <input type="text" class="form-control" id="customAmount" name="amount" aria-label="Amount">
@@ -250,17 +250,24 @@
                                 </div>
                             </div>
                             
-                            <div class="footer mb-5 text-center">
+                            {{-- <div class="footer mb-5 text-center">
                                 <div class="main-menu row col-12 mx-0 justify-content-between d-flex ">
                                     <button type="submit" id="submitForm" class="button w-100 d-flex align-items-center justify-content-center text-white shadow-sm">
                                         <span class="text-white">Donasi Sekarang</span>
                                     </button>
                                 </div>
-                            </div>
+                            </div> --}}
+                            <div class="footer">
+    <div class="main-menu row col-12 mx-0 justify-content-between d-flex">
+        <button type="button" id="submitForm" class="button w-100">
+            <i class="fa-solid fa-hand-holding-heart"></i> Donasi Sekarang
+        </button>
+    </div>
+</div>
                         </form>
                     </div>
                 </div>
-    @include('includes.public.menu')
+    {{-- @include('includes.public.menu') --}}
 
 @endsection
 
@@ -370,11 +377,11 @@
 
             let submit = false;
             
-            if (!amount || parseInt(amount) < 15000) {
+            if (!amount || parseInt(amount) < 10000) {
                 e.preventDefault();
                 Swal.fire({
                     icon: 'info',
-                    text: 'Minimal donasi adalah Rp 15000',
+                    text: 'Minimal donasi adalah Rp 10.000',
                     toast: true,
                     position: 'top-end',
                     showConfirmButton: false,
