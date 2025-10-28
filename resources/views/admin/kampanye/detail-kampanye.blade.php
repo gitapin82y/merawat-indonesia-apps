@@ -89,7 +89,7 @@
             <div class="col-12 row mx-0 align-items-end mb-2">
                 <div class="col-9 p-0 d-flex">
                     <h2 class="text-color mb-0">
-                        Rp {{ number_format($campaign->jumlah_donasi, 0, ',', '.') }} 
+                        Rp {{ $campaign->total_donasi_formatted }} 
                         <span class="small">Kebutuhan</span> 
                         @if($campaign->jumlah_target_donasi)
                         <span class="fw-bold">Rp {{ number_format($campaign->jumlah_target_donasi, 0, ',', '.') }} </span> 
@@ -131,17 +131,17 @@
             <div class="col-12 row mx-0">
                 <div class="progress my-1 px-0">
                     <div class="progress-bar progress-bar-striped bg-danger" role="progressbar"
-                    style="width: {{ min($campaign->progressPercentage, 100) }}%;" 
-                    aria-valuenow="{{ min($campaign->progressPercentage, 100) }}" 
+                    style="width: {{ min($campaign->progress_percentage_real, 100) }}%;" 
+                    aria-valuenow="{{ min($campaign->progress_percentage_real, 100) }}" 
                     aria-valuemin="0" aria-valuemax="100">
-                    {{ min($campaign->progressPercentage, 100) }}%
+                    {{ min($campaign->progress_percentage_real, 100) }}%
                     </div>
                 </div>
             </div>
 
             @if($campaign->kabarPencairan->count() >= 1)
             <div class="col-12 row px-0 pt-2 mx-0">
-                <small>Donasi saat ini <strong class="text-color">Rp {{ number_format($campaign->current_donation, 0, ',', '.') }}</strong> Dana yang sudah dicairkan <strong>Rp {{ number_format($campaign->jumlah_pencairan_dana, 0, ',', '.') }}</strong></small>
+                <small>Donasi saat ini <strong class="text-color">{{ $campaign->current_donation_formatted }}</strong> Dana yang sudah dicairkan <strong>Rp {{ $campaign->total_dana_dicairkan_formatted }}</strong></small>
             </div>
             @endif
 

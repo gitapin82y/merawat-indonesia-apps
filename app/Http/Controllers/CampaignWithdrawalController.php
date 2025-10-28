@@ -179,17 +179,7 @@ class CampaignWithdrawalController extends Controller
     if ($request->status == 'disetujui') {        
         // Update campaign donation
         $campaign = Campaign::where('id', $kampanyeWithdrawal->campaign_id)->first();
-        
-        // Validate if request amount is not larger than current donation
-        if ($kampanyeWithdrawal->amount > $campaign->current_donation) {
-            if ($request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'Jumlah penarikan melebihi donasi yang tersedia']);
-            }
-            
-            return redirect()->back()
-                ->with('error', 'Jumlah penarikan (Rp ' . number_format($kampanyeWithdrawal->amount, 0, ',', '.') . ') melebihi donasi yang tersedia (Rp ' . number_format($campaign->current_donation, 0, ',', '.') . ').')
-                ->withInput();
-        }
+
         
         $campaign->current_donation -= $kampanyeWithdrawal->amount;
         $campaign->jumlah_pencairan_dana += $kampanyeWithdrawal->amount;

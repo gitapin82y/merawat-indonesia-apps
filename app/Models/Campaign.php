@@ -24,6 +24,94 @@ class Campaign extends Model
         'deadline' => 'date'
     ];
 
+      // ✅ HELPER METHODS untuk Real-time Data
+    
+    /**
+     * Get total donasi terkumpul (real-time from database)
+     */
+    public function getTotalDonasiTerkumpulAttribute()
+    {
+        return $this->donations()
+            ->where('status', 'sukses')
+            ->sum('amount') ?? 0;
+    }
+    
+    /**
+     * Get total donatur (real-time from database)
+     */
+    public function getTotalDonatursRealAttribute()
+    {
+        return $this->donations()
+            ->where('status', 'sukses')
+            ->count() ?? 0;
+    }
+    
+    /**
+     * Get total dana yang sudah dicairkan
+     */
+    public function getTotalDanaDicairkanAttribute()
+    {
+        return $this->campaignWithdrawals()
+            ->where('status', 'disetujui')
+            ->sum('amount') ?? 0;
+    }
+    
+    /**
+     * Get current donation (donasi terkumpul - dana dicairkan)
+     */
+    public function getCurrentDonationRealAttribute()
+    {
+        return $this->total_donasi_terkumpul - $this->total_dana_dicairkan;
+    }
+    
+ 
+    public function getProgressPercentageRealAttribute()
+{
+    if (!$this->jumlah_target_donasi) {
+        return 0;
+    }
+    
+    $percentage = ($this->total_donasi_terkumpul / $this->jumlah_target_donasi) * 100;
+    
+    // ✅ PERBAIKAN: Bulatkan ke bilangan bulat
+    return (int) min(round($percentage), 100);
+}
+
+    
+    /**
+     * Get formatted total donasi terkumpul
+     */
+    public function getTotalDonasiFormattedAttribute()
+    {
+        return number_format($this->total_donasi_terkumpul, 0, ',', '.');
+    }
+    
+  public function getCurrentDonationFormattedAttribute()
+{
+    $currentDonation = $this->current_donation_real;
+    
+    // ✅ Jika 0, tampilkan "0"
+    if ($currentDonation == 0) {
+        return '0';
+    }
+    
+    // ✅ Jika negatif (dana dicairkan lebih besar dari donasi), tampilkan "0"
+    if ($currentDonation < 0) {
+        return '0';
+    }
+    
+    // ✅ Jika positif, tampilkan format rupiah
+    return 'Rp ' . number_format($currentDonation, 0, ',', '.');
+}
+    
+    /**
+     * Get formatted total dana dicairkan
+     */
+    public function getTotalDanaDicairkanFormattedAttribute()
+    {
+        return number_format($this->total_dana_dicairkan, 0, ',', '.');
+    }
+
     public function generateUniqueSlug($title)
     {
         $slug = Str::slug($title);
@@ -89,19 +177,30 @@ class Campaign extends Model
         return $this->hasOne(PrioritasCampaign::class);
     }
     
-     // Tambahkan appends untuk accessor
-     protected $appends = ['progressPercentage', 'remainingDays', 'remainingTime', 'timeFormatted'];
+  protected $appends = [
+        'progressPercentage', 
+        'remainingDays', 
+        'remainingTime', 
+        'timeFormatted',
+
+        'total_donasi_terkumpul',
+        'total_donaturs_real',
+        'total_dana_dicairkan',
+        'current_donation_real',
+        'progress_percentage_real',
+        'total_donasi_formatted',
+        'current_donation_formatted',
+        'total_dana_dicairkan_formatted'
+    ];
 
 
 
-
-    // Accessor for progress percentage
-    public function getProgressPercentageAttribute()
+        public function getProgressPercentageAttribute()
     {
         return $this->jumlah_target_donasi ? 
-            round(($this->jumlah_donasi / $this->jumlah_target_donasi) * 100) : 
-            0;
+            ($this->jumlah_donasi / $this->jumlah_target_donasi) * 100 : 0;
     }
+
 
      // Accessor untuk menghitung sisa hari
      public function getRemainingDaysAttribute()

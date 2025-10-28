@@ -29,15 +29,15 @@
         <h3>{{ $campaign->title }}</h3>
         <div class="progress mb-2" style="height: 12px;font-size:8px;">
             <div class="progress-bar progress-bar-striped bg-danger" role="progressbar"
-                style="width: {{ min($campaign->progressPercentage, 100) }}%;" 
-                aria-valuenow="{{ min($campaign->progressPercentage, 100) }}" 
+                style="width: {{ min($campaign->progress_percentage_real, 100) }}%;" 
+                aria-valuenow="{{ min($campaign->progress_percentage_real, 100) }}" 
                 aria-valuemin="0" aria-valuemax="100">
-                {{ min($campaign->progressPercentage, 100) }}%
+                {{ min($campaign->progress_percentage_real, 100) }}%
             </div>
         </div>
         <div class="row col-12 m-0 p-0">
             <div class="col-6 p-0 text-start">
-                <strong>Rp {{ number_format($campaign->jumlah_donasi, 0, ',', '.') }}</strong>
+                <strong>Rp {{ $campaign->total_donasi_formatted }}</strong>
                 <small>Terkumpul</small>
             </div>
             <div class="col-6 p-0 text-end">

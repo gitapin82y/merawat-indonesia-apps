@@ -43,12 +43,12 @@
                     </div>
 
                     <!-- Validasi Dana -->
-                    <div class="alert {{ $withdrawal->amount <= $withdrawal->campaign->current_donation ? 'alert-info' : 'alert-danger' }} mb-3">
-                        <div><strong>Dana kampanye tersedia:</strong> Rp {{ number_format($withdrawal->campaign->current_donation, 0, ',', '.') }}</div>
+                    <div class="alert {{ $withdrawal->amount <= $withdrawal->campaign->current_donation_real ? 'alert-info' : 'alert-danger' }} mb-3">
+                        <div><strong>Dana kampanye tersedia:</strong> {{ $withdrawal->campaign->current_donation_formatted }}</div>
                         <div><strong>Jumlah pencairan:</strong> Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</div>
                         <div>
                             <strong>Status:</strong> 
-                            @if($withdrawal->amount <= $withdrawal->campaign->current_donation)
+                            @if($withdrawal->amount <= $withdrawal->campaign->current_donation_real)
                                 <span class="text-success">Dana mencukupi</span>
                             @else
                                 <span class="text-danger">Dana tidak mencukupi!</span>
@@ -71,7 +71,7 @@
                         </div>
 
                         <div class="mt-4">
-                            @if($withdrawal->amount <= $withdrawal->campaign->current_donation)
+                            @if($withdrawal->amount <= $withdrawal->campaign->current_donation_formatted)
                                 <button type="submit" class="btn btn-danger btn-block">
                                     <i class="fas fa-check-circle"></i> Setujui dan Kirim Bukti Transfer
                                 </button>

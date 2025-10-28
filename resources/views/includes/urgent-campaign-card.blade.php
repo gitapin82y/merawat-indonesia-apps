@@ -5,11 +5,11 @@
     <small class="my-1 p-0">{{ $urgentItem->admin->name }}  <img src="{{asset('assets/img/icon/verify.svg')}}" style="margin-top: -3px;" alt=""></small>
     <h3>{{ $urgentItem->title }}</h3>
     <div class="progress mb-2" style="height: 12px;font-size:8px;">
-        <div class="progress-bar progress-bar-striped bg-danger" role="progressbar" style="width: {{ min($urgentItem->progressPercentage, 100) }}%;" aria-valuenow="{{ min($urgentItem->progressPercentage, 100) }}" aria-valuemin="0" aria-valuemax="100">{{ min($urgentItem->progressPercentage, 100) }}%</div>
+        <div class="progress-bar progress-bar-striped bg-danger" role="progressbar" style="width: {{ min($urgentItem->progress_percentage_real, 100) }}%;" aria-valuenow="{{ min($urgentItem->progress_percentage_real, 100) }}" aria-valuemin="0" aria-valuemax="100">{{ min($urgentItem->progress_percentage_real, 100) }}%</div>
     </div>
     <div class="row col-12 m-0 p-0">
         <div class="col-6 p-0 text-start">
-            <strong>Rp {{ number_format($urgentItem->jumlah_donasi, 0, ',', '.') }}</strong>
+            <strong>Rp {{ $urgentItem->total_donasi_formatted }}</strong>
         <small>Terkumpul</small>
         </div>
         <div class="col-6 p-0 text-end">
