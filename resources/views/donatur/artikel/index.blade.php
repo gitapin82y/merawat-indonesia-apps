@@ -1,12 +1,12 @@
 @extends('layouts.public')
 
-@section('title', 'Artikel')
+@section('title', 'Salur Dana')
 
 @section('content')
   @include('includes.public.navbar')
   
 <div class="container p-3">
-    <h5 class="mb-3">Artikel Terbaru</h5>
+    <h5 class="mb-3">Salur Dana Terbaru</h5>
     @forelse($articles as $article)
    <a href="{{ url('artikel/'. $article->slug) }}" class="col-12 row mt-2">
     <div class="foto col-6 col-sm-6 col-md-4 align-items-center position-relative">

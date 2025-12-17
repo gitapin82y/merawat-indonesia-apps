@@ -58,7 +58,7 @@ class ArticleController extends Controller
 
         Article::create($validated);
 
-        return redirect('super-admin/artikel')->with('success', 'Artikel berhasil dibuat');
+        return redirect('super-admin/artikel')->with('success', 'Salur Dana berhasil dibuat');
     }
 
     public function edit($id)
@@ -84,7 +84,7 @@ class ArticleController extends Controller
 
         $article->update($validated);
 
-        return redirect('super-admin/artikel')->with('success', 'Artikel berhasil diperbarui');
+        return redirect('super-admin/artikel')->with('success', 'Salur Dana berhasil diperbarui');
     }
 
     public function destroy($id)

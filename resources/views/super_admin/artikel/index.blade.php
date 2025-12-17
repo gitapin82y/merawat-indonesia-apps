@@ -1,15 +1,15 @@
 @extends('layouts.admin')
 
-@section('title', 'Manajemen Artikel')
+@section('title', 'Manajemen Salur Dana')
 
 @section('content')
     <div class="card mb-4">
         <div class="card-header bg-white py-3 align-items-center justify-content-between row m-0">
             <div class="col-12 col-sm-6 p-0">
-                <h4 class="m-0 font-weight-bold float-left text-danger">Manajemen Artikel</h4>
+                <h4 class="m-0 font-weight-bold float-left text-danger">Manajemen Salur Dana</h4>
             </div>
             <div class="col-12 col-sm-6">
-                <a href="{{ route('artikel.create') }}" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">Tambah Artikel</a>
+                <a href="{{ route('artikel.create') }}" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">Tambah Salur Dana</a>
             </div>
         </div>
         <div class="card-body">
@@ -77,7 +77,7 @@ function deleteArticle(id) {
                     if (response.success) {
                         Swal.fire({
                             icon: 'success',
-                            title: 'Artikel berhasil dihapus',
+                            title: 'Salur Dana berhasil dihapus',
                             toast: true,
                             position: 'top-end',
                             showConfirmButton: false,

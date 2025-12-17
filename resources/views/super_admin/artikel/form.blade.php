@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', isset($article) ? 'Edit Artikel' : 'Tambah Artikel')
+@section('title', isset($article) ? 'Edit Salur Dana' : 'Tambah Salur Dana')
 @push('after-style')
 <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -24,7 +24,7 @@
 @section('content')
 <div class="card mb-4">
     <div class="card-header bg-white py-3">
-        <h4 class="m-0 font-weight-bold text-danger">{{ isset($article) ? 'Edit' : 'Tambah' }} Artikel</h4>
+        <h4 class="m-0 font-weight-bold text-danger">{{ isset($article) ? 'Edit' : 'Tambah' }} Salur Dana</h4>
     </div>
     <div class="card-body">
         <form action="{{ isset($article) ? route('artikel.update', $article->id) : route('artikel.store') }}" method="POST" enctype="multipart/form-data">
