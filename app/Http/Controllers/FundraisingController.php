@@ -425,7 +425,7 @@ public function getFilteredData(Request $request)
         // Cari fundraising dengan komisi terbesar untuk dijadikan sebagai fundraising_id
         $primaryFundraising = $fundraisings->sortByDesc('commission')->first();
         
-        $admin = User::where('email', 'suport@merawatindonesia.com')->first();
+        $admin = User::where('email', 'merawatindonesia2@gmail.com')->first();
 
         // Buat entri pencairan dana
         $withdrawal = FundraisingWithdrawal::create([
@@ -447,7 +447,7 @@ public function getFilteredData(Request $request)
             ['withdrawal_id' => $withdrawal->id]
         );
 
-        Mail::to("suport@merawatindonesia.com")->send(new FundraisingWithdrawalMail($withdrawal));
+        Mail::to("merawatindonesia2@gmail.com")->queue(new FundraisingWithdrawalMail($withdrawal));
 
         DB::commit();
         

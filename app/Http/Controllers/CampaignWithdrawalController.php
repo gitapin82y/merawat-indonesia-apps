@@ -233,7 +233,7 @@ class CampaignWithdrawalController extends Controller
                     'withdrawal' => $kampanyeWithdrawal,
                     'bukti_pencairan_url' => url('storage/' . $buktiPath)
                 ];
-                Mail::to($adminUser->email)->send(new CampaignStatusMail($kampanyeWithdrawal, $emailData));
+                Mail::to($adminUser->email)->queue(new CampaignStatusMail($kampanyeWithdrawal, $emailData));
             } else {
                 // Kirim notifikasi tanpa gambar
                 $this->notificationService->createNotification(
@@ -245,7 +245,7 @@ class CampaignWithdrawalController extends Controller
                 );
                 
                 // Kirim email tanpa gambar
-                Mail::to($adminUser->email)->send(new CampaignStatusMail($kampanyeWithdrawal));
+                Mail::to($adminUser->email)->queue(new CampaignStatusMail($kampanyeWithdrawal));
             }
         } elseif ($request->status == 'ditolak') {
             $title = 'Pencairan Dana Kampanye Ditolak';
@@ -268,7 +268,7 @@ class CampaignWithdrawalController extends Controller
             );
             
             // Kirim email penolakan
-            Mail::to($adminUser->email)->send(new CampaignStatusMail($kampanyeWithdrawal));
+            Mail::to($adminUser->email)->queue(new CampaignStatusMail($kampanyeWithdrawal));
         }
     }
 

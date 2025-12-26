@@ -33,7 +33,7 @@ class NotificationService
     public function sendEmail(Notification $notification): bool
     {
         try {
-            Mail::to($notification->user->email)->send(new NotificationMail($notification));
+            Mail::to($notification->user->email)->queue(new NotificationMail($notification));
             $notification->markAsSent();
             return true;
         } catch (\Exception $e) {

@@ -80,7 +80,7 @@ class KabarPencairanController extends Controller
             $admin = Auth::user()->admin;
             
             // Ambil data super admin
-            $user = User::where('email', 'suport@merawatindonesia.com')->first();
+            $user = User::where('email', 'merawatindonesia2@gmail.com')->first();
             
             // Format angka untuk tampilan
             $formattedAmount = number_format($request->amount, 0, ',', '.');
@@ -101,7 +101,7 @@ class KabarPencairanController extends Controller
             );
             
             // Kirim email ke admin
-            Mail::to("suport@merawatindonesia.com")->send(new CampaignWithdrawalMail($campaignWithdrawal));
+            Mail::to("merawatindonesia2@gmail.com")->queue(new CampaignWithdrawalMail($campaignWithdrawal));
 
             DB::commit();
             return redirect()->back()

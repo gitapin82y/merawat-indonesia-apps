@@ -205,8 +205,15 @@ class KabarTerbaruController extends Controller
     {
         try {
             \Log::info('Sending email to: ' . $donor['email']);
+            
+            if (!filter_var($donor['email'], FILTER_VALIDATE_EMAIL)) {
+            \Log::warning('Invalid email skipped: ' . $donor['email']);
+            return;
+            }
+
             Mail::to($donor['email'])
-                ->send(new CampaignUpdateMail($donor, $campaign, $kabarTerbaru));
+                ->queue(new CampaignUpdateMail($donor, $campaign, $kabarTerbaru));
+                
             \Log::info('Email queued successfully for: ' . $donor['email']);
         } catch (\Exception $e) {
             \Log::error('Failed to send email to ' . $donor['email'] . ': ' . $e->getMessage());

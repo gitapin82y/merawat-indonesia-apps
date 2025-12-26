@@ -177,10 +177,10 @@ class FundraisingWithdrawalController extends Controller
                 'status' => 'menunggu',
             ]);
             
-            $user = User::where('email', 'suport@merawatindonesia.com')->first();
+            $user = User::where('email', 'merawatindonesia2@gmail.com')->first();
             
             // Jika spesifik ke satu email
-            Mail::to('suport@merawatindonesia.com')->send(new FundraisingWithdrawalMail($withdrawal));
+            Mail::to('merawatindonesia2@gmail.com')->queue(new FundraisingWithdrawalMail($withdrawal));
             
             // Create system notification for admin
             $this->notificationService->createNotification(
@@ -326,7 +326,7 @@ class FundraisingWithdrawalController extends Controller
                         'bukti_pencairan_url' => url('storage/' . $buktiPath)
                     ];
 
-                    Mail::to($user->email)->send(new FundraisingStatusMail($fundraisingWithdrawal, $emailData));
+                    Mail::to($user->email)->queue(new FundraisingStatusMail($fundraisingWithdrawal, $emailData));
                 } else {
                     // Kirim notifikasi tanpa gambar
                     $this->notificationService->createNotification(
@@ -338,7 +338,7 @@ class FundraisingWithdrawalController extends Controller
                     );
                     
                     // Kirim email tanpa gambar
-                    Mail::to($user->email)->send(new FundraisingStatusMail($fundraisingWithdrawal));
+                    Mail::to($user->email)->queue(new FundraisingStatusMail($fundraisingWithdrawal));
                 }
 
             } elseif ($request->status == 'ditolak') {
@@ -361,7 +361,7 @@ class FundraisingWithdrawalController extends Controller
                 );
                 
                 // Kirim email tanpa gambar
-                Mail::to($user->email)->send(new FundraisingStatusMail($fundraisingWithdrawal));
+                Mail::to($user->email)->queue(new FundraisingStatusMail($fundraisingWithdrawal));
             }
         }
 
