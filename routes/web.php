@@ -31,6 +31,17 @@ use App\Http\Controllers\SiteSettingsController;
 use App\Http\Controllers\UrgentCampaignController;
 use App\Http\Controllers\ArticleController;
 
+
+Route::get('/test-email', function () {
+ \Mail::raw('Tes email', function ($message) {
+ $message->to('merawatindonesia2@gmail.com')
+ ->subject('tes notif email from web');
+ });
+
+ return 'Email tes dikirim (jika tidak error di server).';
+});
+
+
 Route::get('/cron/check-pending-donations', [DonationController::class, 'pollPendingTransactions']);
 Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
 // Replace current routes with:
