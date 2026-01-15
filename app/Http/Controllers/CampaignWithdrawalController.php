@@ -101,22 +101,122 @@ class CampaignWithdrawalController extends Controller
         return view('super_admin.pencairan_kampanye.index');
     }
 
+public function create()
+{
+    // Get campaigns yang ada saldo donasi
+    $campaigns = Campaign::with('admin')
+        ->whereRaw('current_donation > 0')
+        ->whereIn('status', ['aktif', 'selesai'])
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    return view('super_admin.pencairan_kampanye.create', compact('campaigns'));
+}
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+  /**
+     * Store a newly created resource - Super Admin dapat langsung approve
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'admin_id' => 'required|exists:admins,id',
+            'campaign_id' => 'required|exists:campaigns,id',
+            'payment_method' => 'required|string|max:255',
+            'account_number' => 'required|string|max:255',
+            'account_name' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:1',
+            'document_rab' => 'required|mimes:pdf,doc,docx,xls,xlsx|max:5120',
+            'bukti_pencairan' => 'required|mimes:jpg,jpeg,png,pdf|max:2048',
+        ]);
+    
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $campaign = Campaign::findOrFail($request->campaign_id);
+
+        // Validasi amount tidak melebihi saldo
+        if ($request->amount > $campaign->current_donation_real) {
+            return redirect()->back()
+                ->with('error', 'Jumlah pencairan tidak boleh melebihi saldo kampanye (Rp ' . number_format($campaign->current_donation_real, 0, ',', '.') . ')')
+                ->withInput();
+        }
+    
+        DB::beginTransaction();
+        try {
+            // Upload document RAB
+            $docRabPath = $request->file('document_rab')->store('campaign_documents', 'public');
+            
+            // Upload bukti pencairan
+            $buktiPath = $request->file('bukti_pencairan')->store('bukti_pencairan', 'public');
+
+            // Create withdrawal dengan status langsung disetujui
+            $withdrawal = CampaignWithdrawal::create([
+                'campaign_id' => $request->campaign_id,
+                'admin_id' => $request->admin_id,
+                'amount' => $request->amount,
+                'payment_method' => $request->payment_method,
+                'account_number' => $request->account_number,
+                'account_name' => $request->account_name,
+                'document_rab' => $docRabPath,
+                'bukti_pencairan' => $buktiPath,
+                'status' => 'disetujui', // Langsung disetujui oleh super admin
+            ]);
+
+            // Update campaign - kurangi current_donation dan tambah jumlah_pencairan_dana
+            $campaign->current_donation -= $request->amount;
+            $campaign->jumlah_pencairan_dana += $request->amount;
+            $campaign->save();
+
+            // Create kabar pencairan dengan status disetujui
+            KabarPencairan::create([
+                'campaign_id' => $request->campaign_id,
+                'title' => 'Pencairan Dana Rp ' . number_format($request->amount, 0, ',', '.'),
+                'description' => 'Ke Rekening Bank ' . strtoupper($request->payment_method) . ' *** **** **** **** ' . substr($request->account_number, -4) . ' a/n ' . $request->account_name,
+                'total_amount' => $request->amount,
+                'document_rab' => $docRabPath,
+                'status' => 'disetujui', // Langsung disetujui
+            ]);
+
+            // Kirim notifikasi ke admin yayasan
+            $admin = $campaign->admin;
+            if ($admin && $admin->user) {
+                $formattedAmount = number_format($request->amount, 0, ',', '.');
+                
+                $this->notificationService->createNotification(
+                    $admin->user,
+                    'Pencairan Dana Kampanye Disetujui',
+                    'Pencairan dana kampanye "' . $campaign->title . '" sebesar Rp ' . $formattedAmount . ' telah disetujui oleh super admin.',
+                    'campaign_withdraw_approved',
+                    [
+                        'campaign_id' => $campaign->id,
+                        'campaign_title' => $campaign->title,
+                        'withdrawal_id' => $withdrawal->id,
+                        'amount' => $request->amount,
+                        'bukti_pencairan' => $buktiPath
+                    ]
+                );
+                
+                // Kirim email notifikasi
+                Mail::to($admin->email)->queue(new CampaignStatusMail($withdrawal, [
+                    'status' => 'disetujui',
+                    'bukti_pencairan' => $buktiPath
+                ]));
+            }
+
+            DB::commit();
+            return redirect()->route('pencairan-kampanye.index')
+                ->with('success', 'Pencairan dana berhasil ditambahkan dan disetujui!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Gagal menambahkan pencairan dana: ' . $e->getMessage())
+                ->withInput();
+        }
     }
+
 
     /**
      * Display the specified resource.

@@ -14,6 +14,11 @@
             <div class="col-12 col-sm-6 p-0">
                 <h4 class="m-0 font-weight-bold float-left text-danger">Kabar Terbaru Kampanye</h4>
             </div>
+            <div class="col-12 col-sm-6 p-0 text-right">
+                <a href="{{ route('kabar-terbaru.create') }}" class="btn btn-danger btn-sm">
+                    <i class="fas fa-plus"></i> Tambah Kabar Terbaru
+                </a>
+            </div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -39,6 +44,26 @@
 
 @push('after-script')
 <script>
+    @if(session('success'))
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: '{{ session('success') }}',
+        timer: 3000,
+        showConfirmButton: false
+    });
+@endif
+
+@if(session('error'))
+    Swal.fire({
+        icon: 'error',
+        title: 'Gagal!',
+        text: '{{ session('error') }}',
+        timer: 3000,
+        showConfirmButton: false
+    });
+@endif
+
 $(function () {
     var table = $('.yajra-datatable').DataTable({
         processing: true,
