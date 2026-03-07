@@ -247,7 +247,7 @@ if (isset($paymentDetail['payment_method'])) {
                                         </div>
                                     @endif
 
-                                    <form action="{{ route('donations.process-manual-payment') }}" method="POST" enctype="multipart/form-data" class="mt-3">
+                                    <form action="{{ route('donations.process-manual-payment') }}" method="POST" enctype="multipart/form-data" class="mt-3"  id="manualPaymentForm">
                                         @csrf
                                         <input type="hidden" name="donation_id" value="{{ $donation->id }}">
                                         <input type="hidden" name="payment_type" value="manual">
@@ -256,8 +256,10 @@ if (isset($paymentDetail['payment_method'])) {
                                             <label for="payment_proof" class="form-label">Upload Bukti Transfer <span class="text-danger">*</span></label>
                                             <input type="file" class="form-control" id="payment_proof" name="payment_proof" required accept="image/*">
                                             <div class="form-text">Format: JPG, PNG, JPEG (Maks. 2MB)</div>
+
+                                            <div id="fileError" class="alert alert-danger mt-2 d-none"></div>
                                         </div>
-                                        <button type="submit" class="btn btn-danger btn-lg">
+                                        <button type="submit" class="btn btn-danger btn-lg" id="submitPaymentBtn">
                                             <i class="fa fa-upload me-1"></i> Kirim Bukti Pembayaran
                                         </button>
                                     </form>
@@ -663,6 +665,8 @@ $(document).ready(function() {
             });
         }, 3000); // Check every 3 seconds
     @endif
+
+ 
     
     // Manual check status button
     $('#checkStatus').click(function(e) {
@@ -757,5 +761,22 @@ window.copyToClipboard = function(text, button) {
         console.error('Gagal menyalin: ', err);
     });
 };
+
+   document.getElementById('payment_proof').addEventListener('change', function() {
+    const file = this.files[0];
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    const fileError = document.getElementById('fileError');
+    const submitBtn = document.getElementById('submitPaymentBtn');
+    
+    if (file && file.size > maxSize) {
+        fileError.textContent = 'File terlalu besar! Maksimal 2MB. File Anda: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB';
+        fileError.classList.remove('d-none');
+        submitBtn.disabled = true;
+        this.value = ''; // reset input
+    } else {
+        fileError.classList.add('d-none');
+        submitBtn.disabled = false;
+    }
+});
 </script>
 @endpush
