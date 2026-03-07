@@ -172,16 +172,16 @@
                     <hr class="flex-grow-1">
                 </div>
 
-                <button class="btn btn-primary btn-social py-3">
-                    <a href="{{ route('social.login', ['provider' => 'facebook']) }}" class="text-white text-decoration-none d-flex align-items-center justify-content-center w-100">
-                        <img src="{{asset('assets/img/icon/login-facebook.svg')}}" alt="fb" width="20" class="me-2">
-                        Masuk Dengan Facebook
-                    </a>
-                </button>
                 <button class="btn btn-light btn-social py-3 shadow">
                     <a href="{{ route('social.login', ['provider' => 'google']) }}" class="text-dark text-decoration-none d-flex align-items-center justify-content-center w-100">
                         <img src="{{asset('assets/img/icon/login-google.svg')}}" alt="google" width="20" class="me-2">
                         Masuk Dengan Google
+                    </a>
+                </button>
+                <button class="btn btn-primary btn-social py-3">
+                    <a href="{{ route('social.login', ['provider' => 'facebook']) }}" class="text-white text-decoration-none d-flex align-items-center justify-content-center w-100">
+                        <img src="{{asset('assets/img/icon/login-facebook.svg')}}" alt="fb" width="20" class="me-2">
+                        Masuk Dengan Facebook
                     </a>
                 </button>
                 {{-- <button class="btn btn-dark btn-social py-3">
