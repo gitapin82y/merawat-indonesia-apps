@@ -62,7 +62,7 @@
             </div>
         </div>
 
-         <a href="{{ route('artikel.index') }}" class="nav-item nav-link {{ Request::is('super-admin/artikel') ? 'active' : '' }}">Artikel</a>
+         <a href="{{ route('artikel.index') }}" class="nav-item nav-link {{ Request::is('super-admin/artikel') ? 'active' : '' }}">Salur Dana</a>
     </div>
 
 

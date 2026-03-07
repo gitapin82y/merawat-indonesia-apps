@@ -31,6 +31,8 @@ class CampaignUpdateMail extends Mailable
         $this->donor = $donor;
         $this->campaign = $campaign;
         $this->kabarTerbaru = $kabarTerbaru;
+
+         $this->delay(now()->addSeconds(rand(10, 30)));
     }
 
     /**

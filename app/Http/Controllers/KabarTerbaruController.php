@@ -98,6 +98,17 @@ class KabarTerbaruController extends Controller
         return view('super_admin.kabar_terbaru.index');
     }
 
+        public function create()
+    {
+        // Get all active campaigns
+        $campaigns = Campaign::with('admin')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return view('super_admin.kabar_terbaru.create', compact('campaigns'));
+    }
+
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -118,8 +129,17 @@ class KabarTerbaruController extends Controller
             $campaign = Campaign::findOrFail($request->campaign_id);
             $this->notifyDonors($kabarTerbaru, $campaign);
             DB::commit();
-            return redirect('admin/kampanye/' . $kabarTerbaru->campaign->slug . '/kabar-terbaru')
-                ->with('success', 'Kabar Terbaru berhasil ditambahkan');
+
+            // Check user role and redirect accordingly
+  if (auth()->user()->role === 'super_admin') {
+      return redirect()->route('kabar-terbaru.index')
+          ->with('success', 'Kabar Terbaru berhasil ditambahkan');
+  } else {
+      // For yayasan role
+      return redirect('admin/kampanye/' . $kabarTerbaru->campaign->slug . '/kabar-terbaru')
+          ->with('success', 'Kabar Terbaru berhasil ditambahkan');
+  }
+  
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
@@ -205,8 +225,15 @@ class KabarTerbaruController extends Controller
     {
         try {
             \Log::info('Sending email to: ' . $donor['email']);
+            
+            if (!filter_var($donor['email'], FILTER_VALIDATE_EMAIL)) {
+            \Log::warning('Invalid email skipped: ' . $donor['email']);
+            return;
+            }
+
             Mail::to($donor['email'])
-                ->send(new CampaignUpdateMail($donor, $campaign, $kabarTerbaru));
+                ->queue(new CampaignUpdateMail($donor, $campaign, $kabarTerbaru));
+                
             \Log::info('Email queued successfully for: ' . $donor['email']);
         } catch (\Exception $e) {
             \Log::error('Failed to send email to ' . $donor['email'] . ': ' . $e->getMessage());

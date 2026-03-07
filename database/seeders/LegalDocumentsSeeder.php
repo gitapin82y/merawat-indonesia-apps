@@ -66,7 +66,7 @@ class LegalDocumentsSeeder extends Seeder
         <p>Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Kami akan memberi tahu Anda tentang perubahan signifikan melalui email atau pemberitahuan di platform kami.</p>
         
         <h2 class="h4 mt-4">9. Hubungi Kami</h2>
-        <p>Jika Anda memiliki pertanyaan tentang Kebijakan Privasi kami, silakan hubungi kami di: <a href="mailto:suport@merawatindonesia.com">suport@merawatindonesia.com</a></p>';
+        <p>Jika Anda memiliki pertanyaan tentang Kebijakan Privasi kami, silakan hubungi kami di: <a href="mailto:merawatindonesia2@gmail.com">merawatindonesia2@gmail.com</a></p>';
 
         // Terms of Service initial content
         $termsOfServiceContent = '<h2 class="h4 mt-4">1. Penerimaan Syarat</h2>
@@ -131,7 +131,7 @@ class LegalDocumentsSeeder extends Seeder
         <p>Syarat dan Ketentuan ini diatur oleh hukum Republik Indonesia.</p>
         
         <h2 class="h4 mt-4">12. Hubungi Kami</h2>
-        <p>Jika Anda memiliki pertanyaan tentang Syarat dan Ketentuan kami, silakan hubungi kami di: <a href="mailto:suport@merawatindonesia.com">suport@merawatindonesia.com</a></p>';
+        <p>Jika Anda memiliki pertanyaan tentang Syarat dan Ketentuan kami, silakan hubungi kami di: <a href="mailto:merawatindonesia2@gmail.com">merawatindonesia2@gmail.com</a></p>';
 
         // Create privacy policy document
         LegalDocument::create([

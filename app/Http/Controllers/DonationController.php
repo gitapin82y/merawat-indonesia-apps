@@ -82,7 +82,7 @@ class DonationController extends Controller
                     }
                 } else {
                     // Jika tidak login, kirim email langsung
-                    Mail::to($donation->email)->send(new DonationSuccessMail($donation));
+                    Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
                 }
             }
             
@@ -354,7 +354,7 @@ class DonationController extends Controller
         }
         $donation->save();
 
-        $user = User::where('email', 'suport@merawatindonesia.com')->first();
+        $user = User::where('email', 'merawatindonesia2@gmail.com')->first();
         if ($user) {
             $notificationData = [
                 'donation_id' => $donation->id,
@@ -539,7 +539,7 @@ private function processSuccessfulPayment($donation)
     
     // Kirim notifikasi dan track konversi
     try {
-        Mail::to($donation->email)->send(new DonationSuccessMail($donation));
+        Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
         // Log::info('Donation success email sent to donor: ' . $donation->email);
     } catch (\Exception $e) {
         Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
@@ -548,7 +548,7 @@ private function processSuccessfulPayment($donation)
     try {
         $campaign = Campaign::with('admin')->find($donation->campaign_id);
         if ($campaign && $campaign->admin && $campaign->admin->email) {
-            Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
+            Mail::to($campaign->admin->email)->queue(new CampaignDonationMail($donation));
             // Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
         } else {
             Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
@@ -1309,7 +1309,7 @@ public function exportCeklis(Request $request)
                 }
 
                 try {
-                    Mail::to($donation->email)->send(new DonationSuccessMail($donation));
+                    Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
                     // Log::info('Donation success email sent to donor: ' . $donation->email);
                 } catch (\Exception $e) {
                     Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
@@ -1318,7 +1318,7 @@ public function exportCeklis(Request $request)
                 try {
                     $campaign = Campaign::with('admin')->find($donation->campaign_id);
                     if ($campaign && $campaign->admin && $campaign->admin->email) {
-                        Mail::to($campaign->admin->email)->send(new CampaignDonationMail($donation));
+                        Mail::to($campaign->admin->email)->queue(new CampaignDonationMail($donation));
                         // Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
                     } else {
                         Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);

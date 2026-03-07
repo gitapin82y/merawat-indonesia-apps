@@ -128,41 +128,41 @@
                             
                             <!-- Form Data Diri -->
                             <div class="row container m-0 pb-5">
-                                <h3>Isi Data Diri</h3>
-                                <div class="form-floating mb-3">
+                                <h3 class="p-0">Isi Data Diri</h3>
+                                <div class="form-floating p-0 mb-3">
                                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="full_name" name="name" placeholder="Nama Lengkap" value="{{ auth()->check() ? auth()->user()->name : old('name') }}" required>
                                     <label for="full_name">Nama Lengkap</label>
                                     @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                                 </div>
-                                <div class="d-flex mb-3">
+                                <div class="d-flex p-0 mb-3">
                                     <label class="form-check-label ms-0" for="is_anonymous">Tampilkan Sebagai anonim "Sahabat Baik"?</label>
                                     <div class="form-check form-switch mx-2">
                                         <input class="form-check-input" type="checkbox" id="is_anonymous" name="is_anonymous">
                                     </div>
                                 </div>
                                 
-                                <div class="form-floating mb-3">
+                                <div class="form-floating p-0 mb-3">
                                     <input type="text" class="form-control @error('phone') is-invalid @enderror" id="whatsapp" name="phone" placeholder="Nomor Whatsapp" value="{{ auth()->check() && auth()->user()->phone ? auth()->user()->phone : old('phone') }}" required>
                                     <label for="whatsapp">Nomor Whatsapp</label>
                                     @error('phone')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                                 </div>
-                                <div class="form-floating mb-3">
+                                <div class="form-floating p-0 mb-3">
                                     <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" placeholder="name@example.com" value="{{ auth()->check() ? auth()->user()->email : old('email') }}" required>
                                     <label for="email">Email</label>
                                     @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                                 </div>
-                                <div class="form-floating">
+                                <div class="form-floating p-0">
                                     <textarea class="form-control" placeholder="Leave a comment here" id="pesan_doa" name="doa" style="height: 100px"></textarea>
                                     <label for="pesan_doa">Tulis Pesan atau doa (optional)</label>
                                 </div>
 
-                                      <div class="form-check my-2 ms-2">
+                                      <div class="form-check my-2">
                                   <input class="form-check-input" type="checkbox" id="contact_agree" name="contact_agree" {{ old('contact_agree') ? 'checked' : '' }} checked>
                                 <label class="form-check-label m-0 pt-1" for="contact_agree">Saya bersedia dihubungi</label>
                                 </div>
@@ -171,24 +171,25 @@
 
                          
                              <div class="row container m-0 pb-4">
-                                <h3>Pilih Metode Pembayaran</h3>
+                                <h3 class="p-0">Pilih Metode Pembayaran</h3>
 
                                 <ul class="nav nav-tabs payment-type-tabs mb-3" id="paymentTypeTabs" role="tablist">
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link active" id="gateway-tab" data-bs-toggle="tab" data-bs-target="#gateway-content" type="button" role="tab" aria-controls="gateway-content" aria-selected="true">
-                                            <i class="fa-solid fa-credit-card me-1"></i> Pembayaran Otomatis
+                                            <i class="fa-solid fa-credit-card me-1"></i> Otomatis
                                         </button>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual-content" type="button" role="tab" aria-controls="manual-content" aria-selected="false">
-                                            <i class="fa-solid fa-money-bill-transfer me-1"></i> Pembayaran Manual
+                                            <i class="fa-solid fa-money-bill-transfer me-1"></i> Manual
                                         </button>
                                     </li>
                                 </ul>
 
                                 <div class="tab-content" id="paymentTypeTabsContent">
                                     <div class="tab-pane fade show active" id="gateway-content" role="tabpanel" aria-labelledby="gateway-tab">
-                                        <div class="payment-methods">
+                                        <h3 class="pb-5">Mohon maaf pembayaran otomatis sedang maintenance <br><br> Sementara anda bisa menggunakan pembayaran transfer manual</h3>
+                                        {{-- <div class="payment-methods">
                                             @foreach($channels as $channel)
                                             <div class="payment-method-card card mb-3" data-method="{{ $channel['code'] }}" data-type="payment_gateway">
                                                 <div class="card-body d-flex justify-content-between align-items-center py-2">
@@ -207,7 +208,7 @@
                                                 </div>
                                             </div>
                                             @endforeach
-                                        </div>
+                                        </div> --}}
                                     </div>
 
                                     <div class="tab-pane fade" id="manual-content" role="tabpanel" aria-labelledby="manual-tab">

@@ -32,8 +32,8 @@ public function processDeletionRequest(Request $request)
     
     try {
         // Kirim email ke admin
-        Mail::to('suport@merawatindonesia.com')
-            ->send(new DataDeletionRequestMail($validated));
+        Mail::to('merawatindonesia2@gmail.com')
+            ->queue(new DataDeletionRequestMail($validated));
         
         // Log permintaan
         \Log::info('Data deletion request received', [

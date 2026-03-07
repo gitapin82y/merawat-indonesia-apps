@@ -31,6 +31,101 @@ use App\Http\Controllers\SiteSettingsController;
 use App\Http\Controllers\UrgentCampaignController;
 use App\Http\Controllers\ArticleController;
 
+// Route test email biasa (sudah ada dan berfungsi)
+Route::get('/test-email', function () {
+    \Mail::raw('Tes email', function ($message) {
+        $message->to('merawatindonesia2@gmail.com')
+                ->subject('tes notif email from web');
+    });
+    return 'Email tes dikirim (jika tidak error di server).';
+});
+
+// Route test email DENGAN QUEUE
+Route::get('/test-email-queue', function () {
+    try {
+        // Kirim email ke queue (bukan langsung)
+        \Mail::raw('Tes email DARI QUEUE - ' . now(), function ($message) {
+            $message->to('merawatindonesia2@gmail.com')
+                    ->subject('Test Email dari Queue System');
+        });
+        
+        // Cek berapa email di queue
+        $jobsCount = \DB::table('jobs')->count();
+        
+        return "Email berhasil masuk ke QUEUE! <br>" .
+               "Total jobs di queue sekarang: {$jobsCount} <br>" .
+               "Email akan terkirim dalam beberapa detik oleh queue worker.<br><br>" .
+               "Cek inbox Anda dalam 10-30 detik.";
+               
+    } catch (\Exception $e) {
+        return 'ERROR: ' . $e->getMessage();
+    }
+});
+
+// Route test email DENGAN DELAY (versi perbaikan)
+Route::get('/test-email-delay', function () {
+    try {
+        $delaySeconds = 30;
+        
+        // Kirim email ke queue dengan delay
+        \Mail::raw('Email ini dikirim ' . $delaySeconds . ' detik setelah request. Waktu request: ' . now(), function ($message) use ($delaySeconds) {
+            $message->to('merawatindonesia2@gmail.com')
+                    ->subject('Test Email dengan Delay ' . $delaySeconds . ' Detik');
+        });
+        
+        $jobsCount = \DB::table('jobs')->count();
+        
+        return "Email dengan DELAY {$delaySeconds} detik berhasil masuk queue! <br>" .
+               "Total jobs di queue: {$jobsCount} <br>" .
+               "Email akan terkirim dalam {$delaySeconds} detik.<br>" .
+               "Waktu sekarang: " . now() . "<br>" .
+               "Email akan dikirim sekitar: " . now()->addSeconds($delaySeconds);
+               
+    } catch (\Exception $e) {
+        return 'ERROR: ' . $e->getMessage();
+    }
+});
+
+// Route untuk CEK QUEUE STATUS
+Route::get('/check-queue', function () {
+    $pendingJobs = \DB::table('jobs')->count();
+    $failedJobs = \DB::table('failed_jobs')->count();
+    
+    $recentJobs = \DB::table('jobs')
+        ->select('id', 'queue', 'created_at', 'available_at')
+        ->orderBy('id', 'desc')
+        ->limit(10)
+        ->get();
+    
+    $failedJobsList = \DB::table('failed_jobs')
+        ->select('id', 'connection', 'queue', 'failed_at')
+        ->orderBy('id', 'desc')
+        ->limit(5)
+        ->get();
+    
+    return response()->json([
+        'status' => 'OK',
+        'pending_jobs' => $pendingJobs,
+        'failed_jobs' => $failedJobs,
+        'recent_jobs' => $recentJobs,
+        'recent_failed_jobs' => $failedJobsList,
+        'timestamp' => now()
+    ], 200, [], JSON_PRETTY_PRINT);
+});
+
+// Route untuk CLEAR QUEUE (berguna saat testing)
+Route::get('/clear-queue', function () {
+    try {
+        $deletedJobs = \DB::table('jobs')->count();
+        \DB::table('jobs')->truncate();
+        
+        return "Berhasil menghapus {$deletedJobs} jobs dari queue.<br>" .
+               "Queue sekarang kosong.";
+    } catch (\Exception $e) {
+        return 'ERROR: ' . $e->getMessage();
+    }
+});
+
 Route::get('/cron/check-pending-donations', [DonationController::class, 'pollPendingTransactions']);
 Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCampaignWithReferral'])->name('campaign.referral');
 // Replace current routes with:

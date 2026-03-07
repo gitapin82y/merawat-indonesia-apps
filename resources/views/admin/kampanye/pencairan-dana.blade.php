@@ -117,9 +117,9 @@
                 
           <div class="mb-3 position-relative">
             <div class="form-floating">
-                <input type="text" class="form-control bg-white" id="laporanRAB" placeholder="Laporan RAB"
+                <input type="text" class="form-control bg-white" id="laporanRAB" placeholder="Rincian Penggunaan Dana"
                     style="padding-right: 120px; pointer-events: none;" readonly>
-                <label for="laporanRAB">Laporan RAB</label>
+                <label for="laporanRAB">Rincian Penggunaan Dana</label>
             </div>
             <input type="file" id="fileRAB" name="document_rab" class="d-none @error('document_rab') is-invalid @enderror" onchange="updateInput('laporanRAB', this)">
             <button type="button"  class="btn btn-upload position-absolute"

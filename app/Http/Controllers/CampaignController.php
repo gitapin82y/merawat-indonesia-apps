@@ -165,7 +165,7 @@ public function __construct(NotificationService $notificationService)
             if(Auth::user()->role == 'super_admin'){
                 try {
                     if ($campaign->admin) {
-                        Mail::to($campaign->admin->email)->send(new CampaignStatusUpdateMail($campaign, 'validasi'));
+                        Mail::to($campaign->admin->email)->queue(new CampaignStatusUpdateMail($campaign, 'validasi'));
                         
                         // Create system notification for admin
                         $this->notificationService->createNotification(
@@ -181,11 +181,11 @@ public function __construct(NotificationService $notificationService)
                 }
             }else{
                 try {
-                    Mail::to('suport@merawatindonesia.com')->send(new NewCampaignNotificationMail($campaign));
+                    Mail::to('merawatindonesia2@gmail.com')->queue(new NewCampaignNotificationMail($campaign));
                     
                     // Send notification to campaign admin
                     if ($campaign->admin) {
-                        Mail::to($campaign->admin->email)->send(new CampaignStatusUpdateMail($campaign, 'validasi'));
+                        Mail::to($campaign->admin->email)->queue(new CampaignStatusUpdateMail($campaign, 'validasi'));
                         
                         // Create system notification for admin
                         $this->notificationService->createNotification(
@@ -354,7 +354,7 @@ public function __construct(NotificationService $notificationService)
                 try {
                     // Send email to campaign admin
                     if ($kampanye->admin) {
-                        Mail::to($kampanye->admin->email)->send(new CampaignStatusUpdateMail($kampanye, $kampanyeData['status']));
+                        Mail::to($kampanye->admin->email)->queue(new CampaignStatusUpdateMail($kampanye, $kampanyeData['status']));
                         
                         // Create system notification
                         $statusMessage = '';
@@ -669,7 +669,7 @@ public function __construct(NotificationService $notificationService)
             if ($oldStatus !== $newStatus && $campaign->admin) {
                 try {
                     // Kirim email ke admin kampanye menggunakan CampaignStatusUpdateMail bukan CampaignStatusMail
-                    Mail::to($campaign->admin->email)->send(new CampaignStatusUpdateMail($campaign, $request->status));
+                    Mail::to($campaign->admin->email)->queue(new CampaignStatusUpdateMail($campaign, $request->status));
                     
                     // Buat notifikasi sistem untuk admin
                     $statusMessage = '';

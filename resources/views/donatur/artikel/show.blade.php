@@ -94,7 +94,7 @@
 @endpush
 
 @section('content')
-    @include('includes.public.navbar-back', ['title' => 'Detail Artikel'])
+    @include('includes.public.navbar-back', ['title' => 'Detail Salur Dana'])
      
 <div class="container p-3">
     <h1 class="fw-bold mb-2">{{ $article->title }}</h1>
@@ -108,7 +108,7 @@
     
     <!-- Share Section -->
     <div class="share-section text-center">
-        <h5 class="mb-3">Bagikan Artikel</h5>
+        <h5 class="mb-3">Bagikan Salur Dana</h5>
         <div class="share-horizontal d-flex justify-content-center align-items-center">
             <a href="#" class="share-btn share-whatsapp" onclick="shareToWhatsApp()" title="Share ke WhatsApp">
                 <i class="fab fa-whatsapp"></i>

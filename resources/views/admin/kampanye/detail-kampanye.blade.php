@@ -182,7 +182,7 @@
 
             <div class="row mx-0 col-12">
                 <a href="{{ asset('storage/' . $campaign->document_rab) }}" target="_blank" class="button my-3 w-100 text-center"><i class="fa-solid fa-download"></i> &nbsp;
-                    Unduh Laporan RAB</a>
+                    Rincian Penggunaan Dana</a>
             </div>
 
             <div class="line-spacing"></div>
