@@ -178,17 +178,14 @@ if (isset($paymentDetail['payment_method'])) {
 }
 @endphp
 
-@if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'] && $isEwallet)
-    <div id="checkout-button-container" class="text-center mt-3 mb-3">
-        <div class="alert alert-info">
-            <p class="mb-0"><i class="fa fa-info-circle me-1"></i> Pembayaran menggunakan {{ $paymentDetail['payment_method'] }} memerlukan redirect ke aplikasi atau layanan pihak ketiga</p>
-        </div>
-        <a href="{{ $paymentDetail['checkout_url'] }}" target="_blank" class="btn btn-success btn-lg">
-            <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran {{ $paymentDetail['payment_method'] }}
+@if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
+    <div class="text-center mt-3 mb-3">
+        <a href="{{ $paymentDetail['checkout_url'] }}" target="_blank" class="btn btn-danger btn-lg">
+            <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran
         </a>
-        <p class="mt-2 text-muted">Klik tombol di atas untuk melanjutkan pembayaran</p>
     </div>
 @endif
+
                                     
                                     <div class="text-center mt-3">
                                         <p class="text-muted">Metode: {{ $paymentDetail['payment_method'] }}</p>

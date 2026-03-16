@@ -52,11 +52,14 @@ return [
         'redirect' => env('APPLE_REDIRECT_URI'),
     ],
 
-    'tripay' => [
-        'api_key' => env('TRIPAY_API_KEY', '738ktbs6qGsDWCz6y43l97GYETsEblbMNVaSD4QN'),
-        'private_key' => env('TRIPAY_PRIVATE_KEY', 'DjCiT-tVIsX-9AFLb-WuW0F-o4P4E'),
-        'merchant_code' => env('TRIPAY_MERCHANT_CODE', 'T31062'),
-        'api_url' => env('TRIPAY_API_URL', 'https://tripay.co.id/api/'),
-    ],
+'espay' => [
+    'merchant_code' => env('ESPAY_MERCHANT_CODE'),
+    'api_key' => env('ESPAY_API_KEY'),
+    'signature_key' => env('ESPAY_SIGNATURE_KEY'),
+
+    'merchant_api_url' => env('ESPAY_MERCHANT_API_URL', 'https://sandbox.espay.id'),
+
+    'snap_api_url' => env('ESPAY_SNAP_API_URL', 'https://sandbox-api.espay.id'),
+],
 
 ];

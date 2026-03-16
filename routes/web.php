@@ -31,6 +31,20 @@ use App\Http\Controllers\SiteSettingsController;
 use App\Http\Controllers\UrgentCampaignController;
 use App\Http\Controllers\ArticleController;
 
+use App\Http\Controllers\EspayPaymentMethodController;
+use App\Http\Controllers\EspayCallbackController;
+
+Route::post('/api/espay/callback', [EspayCallbackController::class, 'handleCallback'])
+    ->name('espay.callback');
+
+    // Espay inquiry endpoint (dipanggil Espay sebelum user bayar)
+Route::post('/api/espay/inquiry', [EspayCallbackController::class, 'handleInquiry'])
+    ->name('espay.inquiry');
+
+// Espay payment notification (dipanggil Espay setelah user bayar)  
+Route::post('/api/espay/payment', [EspayCallbackController::class, 'handlePayment'])
+    ->name('espay.payment');
+
 // Route test email biasa (sudah ada dan berfungsi)
 Route::get('/test-email', function () {
     \Mail::raw('Tes email', function ($message) {
@@ -267,6 +281,19 @@ Route::post('/upload-image', [CampaignController::class, 'upload'])->name('image
 // ->middleware(['auth', 'superadmin'])
 Route::post('kampanye/toggle-save', [CampaignController::class, 'toggleSave'])->name('campaign.toggle-save');
 Route::middleware(['checkRole:super_admin'])->prefix('super-admin')->group(function () {
+        // Espay Payment Methods Management
+    Route::get('/espay-payment-methods', [EspayPaymentMethodController::class, 'index'])
+        ->name('espay-payment-methods.index');
+    
+    Route::get('/espay-payment-methods/fetch', [EspayPaymentMethodController::class, 'fetchFromEspay'])
+        ->name('espay-payment-methods.fetch');
+    
+    Route::post('/espay-payment-methods/sync', [EspayPaymentMethodController::class, 'syncPaymentMethods'])
+        ->name('espay-payment-methods.sync');
+    
+    Route::post('/espay-payment-methods/toggle-status', [EspayPaymentMethodController::class, 'toggleStatus'])
+        ->name('espay-payment-methods.toggle-status');
+
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
 
     Route::get('/commission', [CommissionController::class, 'getCommission'])

@@ -44,11 +44,9 @@
                 Pembayaran Manual
             </a>
         </div>
-        <div class="col-12 my-2 col-md-2 col-lg-2">
-            <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#manageTripayModal">
-                Pembayaran Tripay
-            </a>
-        </div>
+       <a class="btn btn-danger" data-toggle="modal" data-target="#manageEspayModal">
+    Pembayaran Espay
+</a>
         <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" href="{{ route('legal-documents.index') }}">
                 Dokumen Legal
@@ -87,29 +85,43 @@
     </div>
   </div>
 
-  <!-- Modal Untuk Manajemen Metode Pembayaran Tripay -->
-<div class="modal fade" id="manageTripayModal" tabindex="-1" aria-labelledby="tripayLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+
+<div class="modal fade" id="manageEspayModal" tabindex="-1" aria-labelledby="espayLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
       <div class="modal-content">
         <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title" id="tripayLabel">Manage Metode Pembayaran Tripay</h5>
+          <h5 class="modal-title" id="espayLabel">
+              <i class="fas fa-credit-card mr-2"></i>
+              Manage Metode Pembayaran Espay
+          </h5>
           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
+          <!-- Control Buttons -->
           <div class="d-flex justify-content-between mb-3">
-            <button type="button" id="btnSyncTripay" class="btn btn-primary">
-              <i class="fas fa-sync-alt mr-1"></i> Sinkronisasi dari Tripay
+            <button type="button" id="btnSyncEspay" class="btn btn-primary">
+              <i class="fas fa-sync-alt mr-1"></i> Sinkronisasi dari Espay
             </button>
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="toggleAllMethods">
               <label class="form-check-label" for="toggleAllMethods">Aktifkan Semua</label>
             </div>
           </div>
+
+          <!-- Info Alert -->
+          <div class="alert alert-info d-flex align-items-center" role="alert">
+            <i class="fas fa-info-circle mr-2"></i>
+            <div>
+              <strong>Informasi:</strong> 
+              Pilih metode pembayaran yang akan ditampilkan kepada donatur. 
+              Klik "Sinkronisasi" untuk mendapatkan metode pembayaran terbaru dari Espay.
+            </div>
+          </div>
   
           <!-- Loading indicator -->
-          <div id="tripayLoading" class="text-center py-3">
+          <div id="espayLoading" class="text-center py-3" style="display:none;">
             <div class="spinner-border text-danger" role="status">
               <span class="sr-only">Loading...</span>
             </div>
@@ -117,87 +129,44 @@
           </div>
   
           <!-- Payment methods error -->
-          <div id="tripayError" class="alert alert-danger d-none">
+          <div id="espayError" class="alert alert-danger d-none">
             <i class="fas fa-exclamation-circle mr-1"></i>
-            <span id="tripayErrorMessage">Terjadi kesalahan saat memuat metode pembayaran.</span>
+            <span id="espayErrorMessage">Terjadi kesalahan saat memuat metode pembayaran.</span>
           </div>
   
           <!-- Payment methods container -->
-          <div id="tripayMethodsList" class="row">
-            <!-- Will be filled with payment methods -->
+          <div id="espayMethodsList" class="row">
+            <!-- Will be filled with payment methods via AJAX -->
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-          <button type="button" id="btnSaveTripaySettings" class="btn btn-danger">Simpan Perubahan</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal Form Tambah/Edit Metode Pembayaran -->
-  <div class="modal fade" id="paymentFormModal" tabindex="-1" aria-labelledby="paymentFormModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title" id="paymentFormModalLabel">Tambah Metode Pembayaran</h5>
-          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+              <i class="fas fa-times mr-1"></i> Tutup
+          </button>
+          <button type="button" id="btnSaveEspaySettings" class="btn btn-danger">
+              <i class="fas fa-save mr-1"></i> Simpan Perubahan
           </button>
         </div>
-        <div class="modal-body">
-          <form id="paymentForm" enctype="multipart/form-data">
-            <input type="hidden" id="payment_id" name="payment_id">
-            
-            <div class="form-group mb-3">
-              <label for="payment_name">Nama Bank/E-Wallet <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="payment_name" name="name" required>
-              <div id="error-name" class="invalid-feedback"></div>
-            </div>
-            
-            <div class="form-group mb-3">
-              <label for="account_number">Nomor Rekening/ID <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="account_number" name="account_number" required>
-              <div id="error-account_number" class="invalid-feedback"></div>
-            </div>
-            
-            <div class="form-group mb-3">
-              <label for="account_name">Atas Nama <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="account_name" name="account_name" required>
-              <div id="error-account_name" class="invalid-feedback"></div>
-            </div>
-            
-            <div class="form-group mb-3">
-              <label for="instructions">Instruksi Tambahan</label>
-              <textarea class="form-control" id="instructions" name="instructions" rows="3"></textarea>
-              <div id="error-instructions" class="invalid-feedback"></div>
-            </div>
-            
-            <div class="form-group mb-3">
-              <label for="payment_icon">Logo/Icon</label>
-              <input type="file" class="form-control" id="payment_icon" name="icon" accept="image/*">
-              <small class="form-text text-muted">Format: JPG, PNG, GIF (Max. 2MB)</small>
-              <div id="error-icon" class="invalid-feedback"></div>
-            </div>
-            
-            <div class="form-group mb-3" id="icon_preview_container">
-              <img id="icon_preview" src="" alt="Preview" class="img-thumbnail mt-2" style="max-height: 100px; display: none;">
-            </div>
-            
-            <div class="form-group form-check mb-3">
-              <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
-              <label class="form-check-label" for="is_active">Aktif</label>
-            </div>
-            
-            <div class="text-end">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-              <button type="submit" class="btn btn-danger">Simpan</button>
-            </div>
-          </form>
-        </div>
       </div>
     </div>
-  </div>
+</div>
+
+<!-- Penjelasan Kategori Metode Pembayaran -->
+<style>
+.badge-info-category {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.payment-method-card {
+    transition: all 0.3s ease;
+}
+
+.payment-method-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+</style>
 
   @include('modal_dashboard.adsense')
 @include('modal_dashboard.social_media')
@@ -1615,4 +1584,225 @@ $(document).on('click', '#cropKategoriButton', function() {
      });
    });
      </script>
+
+     /**
+ * JavaScript untuk Manage Espay Payment Methods
+ * 
+ * Script ini menggantikan script Tripay yang ada di dashboard admin
+ * Ganti script Tripay di file dashboard view Anda dengan script ini
+ */
+
+<script>
+$(document).ready(function() {
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    // Load Espay payment methods when modal is opened
+    $('#manageEspayModal').on('show.bs.modal', function() {
+        loadEspayMethods();
+    });
+
+    // Function to load Espay payment methods
+    function loadEspayMethods() {
+        $('#espayLoading').show();
+        $('#espayMethodsList').empty();
+        $('#espayError').addClass('d-none');
+
+        $.ajax({
+            url: '/super-admin/espay-payment-methods',
+            method: 'GET',
+            success: function(response) {
+                renderPaymentMethods(response);
+                $('#espayLoading').hide();
+            },
+            error: function(xhr) {
+                $('#espayLoading').hide();
+                $('#espayError').removeClass('d-none');
+                $('#espayErrorMessage').text('Gagal memuat metode pembayaran: ' + (xhr.responseJSON?.error || 'Terjadi kesalahan sistem'));
+            }
+        });
+    }
+
+    // Function to render payment methods
+    function renderPaymentMethods(methods) {
+        if (methods.length === 0) {
+            $('#espayMethodsList').html('<div class="col-12"><div class="alert alert-info">Belum ada metode pembayaran yang tersedia. Klik tombol Sinkronisasi untuk mengambil data dari Espay.</div></div>');
+            return;
+        }
+
+        // Group methods by category
+        const groupedMethods = {};
+        methods.forEach(method => {
+            const category = method.category || 'other';
+            if (!groupedMethods[category]) {
+                groupedMethods[category] = [];
+            }
+            groupedMethods[category].push(method);
+        });
+
+        let html = '';
+        
+        // Category labels
+        const categoryLabels = {
+            'virtual_account': 'Virtual Account',
+            'qris': 'QRIS',
+            'ewallet': 'E-Wallet',
+            'bank_transfer': 'Bank Transfer',
+            'credit_card': 'Credit Card',
+            'other': 'Lainnya'
+        };
+
+        // Render by category
+        Object.keys(groupedMethods).forEach(category => {
+            html += `<div class="col-12 mt-3"><h6 class="text-muted">${categoryLabels[category] || category}</h6></div>`;
+            
+            groupedMethods[category].forEach(method => {
+                const badgeClass = method.is_active ? 'badge-success' : 'badge-secondary';
+                const badgeText = method.is_active ? 'Aktif' : 'Nonaktif';
+                
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        ${method.icon_url ? `<img src="${method.icon_url}" alt="${method.name}" class="mr-2" style="height: 30px;">` : ''}
+                                        <div>
+                                            <h6 class="mb-0">${method.name}</h6>
+                                            <small class="text-muted">${method.pay_method} - ${method.pay_option}</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge ${badgeClass} mr-2">${badgeText}</span>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input toggle-method" 
+                                                id="method-${method.id}" 
+                                                data-code="${method.code}" 
+                                                ${method.is_active ? 'checked' : ''}>
+                                            <label class="custom-control-label" for="method-${method.id}"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                ${method.fee_amount > 0 ? `
+                                    <div class="mt-2">
+                                        <small class="text-muted">Biaya: Rp ${Number(method.fee_amount).toLocaleString('id-ID')}</small>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        $('#espayMethodsList').html(html);
+    }
+
+    // Toggle all payment methods
+    $('#toggleAllMethods').change(function() {
+        const isChecked = $(this).prop('checked');
+        $('.toggle-method').prop('checked', isChecked);
+    });
+
+    // Sync payment methods from Espay
+    $('#btnSyncEspay').click(function() {
+        Swal.fire({
+            title: 'Sinkronisasi Metode Pembayaran',
+            text: 'Yakin ingin menyinkronkan metode pembayaran dari Espay?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Sinkronkan',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $('#espayLoading').show();
+                $('#espayMethodsList').empty();
+                
+                $.ajax({
+                    url: '/super-admin/espay-payment-methods/sync',
+                    method: 'POST',
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Metode pembayaran berhasil disinkronkan.',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        
+                        loadEspayMethods();
+                    },
+                    error: function(xhr) {
+                        $('#espayLoading').hide();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Gagal menyinkronkan metode pembayaran: ' + (xhr.responseJSON?.error || 'Terjadi kesalahan sistem'),
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Save changes to payment methods
+    $('#btnSaveEspaySettings').click(function() {
+        const savingPromises = [];
+        
+        $('.toggle-method').each(function() {
+            const code = $(this).data('code');
+            const isActive = $(this).prop('checked') ? 1 : 0;
+            
+            const promise = $.ajax({
+                url: '/super-admin/espay-payment-methods/toggle-status',
+                method: 'POST',
+                data: {
+                    code: code,
+                    is_active: isActive,
+                    _token: $('meta[name="csrf-token"]').attr('content') 
+                }
+            });
+            
+            savingPromises.push(promise);
+        });
+        
+        Promise.all(savingPromises)
+            .then(function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Pengaturan metode pembayaran berhasil disimpan.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    loadEspayMethods();
+                });
+            })
+            .catch(function(error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Gagal menyimpan pengaturan: ' + (error.responseJSON?.error || 'Terjadi kesalahan sistem'),
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            });
+    });
+});
+</script>
 @endpush
