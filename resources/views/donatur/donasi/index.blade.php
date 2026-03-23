@@ -202,7 +202,8 @@
                                 <!-- REPLACE bagian tab-content dengan kode ini -->
 <div class="tab-content" id="paymentTypeTabsContent">
     <!-- PAYMENT GATEWAY (ESPAY) TAB -->
-    <div class="tab-pane fade show active" id="gateway-content" role="tabpanel" aria-labelledby="gateway-tab">
+<h3 class="pb-5">Mohon maaf pembayaran otomatis sedang maintenance <br><br> Sementara anda bisa menggunakan pembayaran transfer manual</h3>
+    {{-- <div class="tab-pane fade show active" id="gateway-content" role="tabpanel" aria-labelledby="gateway-tab">
         @if(count($channels) > 0)
             <!-- Group channels by category -->
             @php
@@ -292,7 +293,7 @@
                 Metode pembayaran otomatis sedang tidak tersedia. Silakan gunakan pembayaran manual atau hubungi admin.
             </div>
         @endif
-    </div>
+    </div> --}}
 
     <!-- MANUAL PAYMENT TAB -->
     <div class="tab-pane fade" id="manual-content" role="tabpanel" aria-labelledby="manual-tab">
