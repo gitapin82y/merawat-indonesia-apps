@@ -422,75 +422,66 @@ private function generateSimpleSignature($method, $endpoint, $requestBody, $time
      * Check payment status menggunakan Inquiry Status
      * Dokumentasi: https://docs.espay.id/api-opsional/snap/inquiry-status/
      */
-    public function checkPaymentStatus($partnerReferenceNo)
-    {
-        try {
-            // Get access token
-            $tokenResponse = $this->getB2B2CAccessToken();
-            
-            if (!$tokenResponse['success']) {
-                return [
-                    'success' => false,
-                    'message' => 'Failed to get access token'
-                ];
-            }
-            
-            $accessToken = $tokenResponse['accessToken'];
-            $timestamp = $this->generateTimestamp();
-            $externalId = $this->generateExternalId();
-            
-            $requestBody = [
-                'partnerReferenceNo' => $partnerReferenceNo,
-                'merchantId' => $this->merchantCode
+public function checkPaymentStatus($orderId)
+{
+    try {
+        $timestamp   = $this->generateTimestamp();
+        $uuid        = $this->generateExternalId();
+        $rqDatetime  = now('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        // Formula signature: SHA256(UPPERCASE("##KEY##rq_datetime##order_id##CHECKSTATUS##"))
+        $rawString = '##' . $this->signatureKey . '##' . $rqDatetime . '##' . $orderId . '##CHECKSTATUS##';
+        $signature = hash('sha256', strtoupper($rawString));
+
+        $url = $this->apiUrl . '/rest/merchant/status';
+
+        $response = Http::asForm()->post($url, [
+            'uuid'             => $uuid,
+            'rq_datetime'      => $rqDatetime,
+            'comm_code'        => $this->merchantCode,
+            'order_id'         => $orderId,
+            'is_paymentnotif'  => 'Y', // Trigger payment notif ke server kita
+            'signature'        => $signature,
+        ]);
+
+        Log::info('Espay Check Status Response', [
+            'status'   => $response->status(),
+            'response' => $response->json(),
+        ]);
+
+        if ($response->successful()) {
+            $data     = $response->json();
+            $txStatus = $data['tx_status'] ?? 'IP';
+
+            // Map tx_status ke format yang dipakai controller
+            $statusMap = [
+                'S'  => '00', // Success
+                'F'  => '02', // Failed
+                'EX' => '03', // Expired
+                'IP' => '01', // In Process
+                'SP' => '01', // Suspect → treat as pending
+                'WC' => '01', // Waiting Correction
             ];
-            
-            $requestBodyJson = json_encode($requestBody);
-            $endpoint = '/api/v1.0/debit/status';
-            
-            // Generate signature
-            $signature = $this->generateAsymmetricSignature(
-                'POST',
-                $endpoint,
-                $accessToken,
-                $requestBodyJson,
-                $timestamp
-            );
-            
-            $url = $this->apiUrl . $endpoint;
-            
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'X-TIMESTAMP' => $timestamp,
-                'X-SIGNATURE' => $signature,
-                'X-EXTERNAL-ID' => $externalId,
-                'X-PARTNER-ID' => $this->merchantCode,
-                'CHANNEL-ID' => config('espay.channel_id'),
-                'Authorization' => 'Bearer ' . $accessToken
-            ])->post($url, $requestBody);
-            
-            $responseData = $response->json();
-            
-            Log::info('Espay Inquiry Status Response', ['response' => $responseData]);
-            
-            if ($response->successful() && isset($responseData['responseCode'])) {
-                return [
-                    'success' => true,
-                    'data' => $responseData
-                ];
-            }
-            
+
             return [
-                'success' => false,
-                'message' => $responseData['responseMessage'] ?? 'Failed to check payment status'
-            ];
-        } catch (\Exception $e) {
-            Log::error('Error checking Espay payment status: ' . $e->getMessage());
-            return [
-                'success' => false,
-                'message' => $e->getMessage()
+                'success' => true,
+                'data'    => [
+                    'transactionStatusCode' => $statusMap[$txStatus] ?? '01',
+                    'tx_status'             => $txStatus,
+                    'order_id'              => $data['order_id'] ?? $orderId,
+                    'amount'                => $data['amount'] ?? null,
+                    'raw'                   => $data,
+                ],
             ];
         }
+
+        return ['success' => false, 'message' => 'Failed to check status: ' . $response->body()];
+
+    } catch (\Exception $e) {
+        Log::error('Espay checkPaymentStatus error: ' . $e->getMessage());
+        return ['success' => false, 'message' => $e->getMessage()];
     }
+}
 
     /**
      * Create status token untuk validasi halaman status

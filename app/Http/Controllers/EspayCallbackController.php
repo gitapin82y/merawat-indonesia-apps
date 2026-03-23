@@ -349,14 +349,14 @@ public function handlePayment(Request $request)
     try {
         Log::info('Espay Payment Notification', $request->all());
 
-        // Espay Non-SNAP mengirim order_id, bukan partnerReferenceNo
-        $orderId = $request->input('order_id')
-                ?? $request->input('partnerReferenceNo')
-                ?? null;
+        $orderId  = $request->input('order_id') ?? null;
+        $rqUuid   = $request->input('rq_uuid', '');
+        $status   = $request->input('status');
+        $txStatus = $request->input('tx_status');
 
         if (!$orderId) {
             return response()->json([
-                'rq_uuid'       => $request->input('rq_uuid', ''),
+                'rq_uuid'       => $rqUuid,
                 'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
                 'error_code'    => '0014',
                 'error_message' => 'order_id is required',
@@ -366,27 +366,15 @@ public function handlePayment(Request $request)
         $donation = Donation::where('snap_token', $orderId)->first();
 
         if (!$donation) {
-            Log::warning('Espay Payment: Donation not found', ['order_id' => $orderId]);
             return response()->json([
-                'rq_uuid'       => $request->input('rq_uuid', ''),
+                'rq_uuid'       => $rqUuid,
                 'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
                 'error_code'    => '0014',
-                'error_message' => 'Transaction Not Found',
+                'error_message' => 'Invalid Order Id',
             ]);
         }
 
-        // Espay Non-SNAP: sukses jika status="0" DAN tx_status="S"
-        $status   = $request->input('status');
-        $txStatus = $request->input('tx_status');
         $isSuccess = ($status === '0' && $txStatus === 'S');
-
-        Log::info('Espay Payment Status Check', [
-            'order_id'        => $orderId,
-            'status'          => $status,
-            'tx_status'       => $txStatus,
-            'is_success'      => $isSuccess,
-            'donation_status' => $donation->status,
-        ]);
 
         if ($isSuccess && $donation->status !== 'sukses') {
             DB::beginTransaction();
@@ -418,7 +406,7 @@ public function handlePayment(Request $request)
 
                     $this->sendNotifications($fresh);
 
-                    Log::info('Espay Payment: Donation sukses', [
+                    Log::info('Espay Payment: sukses', [
                         'donation_id' => $fresh->id,
                         'order_id'    => $orderId,
                     ]);
@@ -433,25 +421,27 @@ public function handlePayment(Request $request)
             $donation->save();
         }
 
-        // Response format sesuai dokumentasi Espay Non-SNAP
-        $rqUuid       = $request->input('rq_uuid', '');
+        // Generate response signature
+        // Formula: SHA256(UPPERCASE("##KEY##rq_uuid##rs_datetime##error_code##PAYMENTREPORT-RS##"))
         $rsDatetime   = now('Asia/Jakarta')->format('Y-m-d H:i:s');
         $signatureKey = config('espay.signature_key');
-        $rawString    = '##' . $signatureKey . '##' . $rqUuid . '##' . $rsDatetime . '##' . '0000' . '##PAYMENTREPORT-RS##';
+        $rawString    = '##' . $signatureKey . '##' . $rqUuid . '##' . $rsDatetime . '##0000##PAYMENTREPORT-RS##';
         $signature    = hash('sha256', strtoupper($rawString));
 
+        // reconcile_id & reconcile_datetime WAJIB ada agar Espay redirect otomatis
         return response()->json([
-            'rq_uuid'       => $rqUuid,
-            'rs_datetime'   => $rsDatetime,
-            'error_code'    => '0000',
-            'error_message' => 'Success',
-            'signature'     => $signature,
+            'rq_uuid'            => $rqUuid,
+            'rs_datetime'        => $rsDatetime,
+            'error_code'         => '0000',
+            'error_message'      => 'Success',
+            'order_id'           => $orderId,
+            'reconcile_id'       => 'REC-' . $donation->id . '-' . time(),
+            'reconcile_datetime' => $rsDatetime,
+            'signature'          => $signature,
         ]);
 
     } catch (\Exception $e) {
-        Log::error('Espay Payment Notification Error: ' . $e->getMessage(), [
-            'trace' => $e->getTraceAsString(),
-        ]);
+        Log::error('Espay Payment Notification Error: ' . $e->getMessage());
         return response()->json([
             'rq_uuid'       => $request->input('rq_uuid', ''),
             'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
