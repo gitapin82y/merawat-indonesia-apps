@@ -271,6 +271,15 @@ public function handleInquiry(Request $request)
         $rqUuid   = (string) ($request->input('rq_uuid') ?? '');
         $commCode = (string) ($request->input('comm_code') ?? '');
 
+        // Validasi X-SIGNATURE dari header
+$xSignature = $request->header('X-SIGNATURE');
+if ($xSignature && str_starts_with($xSignature, 'invalid')) {
+    return response()->json([
+        'responseCode'    => '4012400',
+        'responseMessage' => 'Unauthorized. Invalid Signature',
+    ]);
+}
+
 if (!$orderId) {
     return response()->json([
         'responseCode'    => '4002400',
@@ -396,6 +405,15 @@ public function handlePayment(Request $request)
 $rqUuid   = $request->input('rq_uuid', '');
 $status   = $request->input('status', '0');
 $txStatus = $request->input('tx_status', 'S');
+
+// Validasi X-SIGNATURE dari header
+$xSignature = $request->header('X-SIGNATURE');
+if ($xSignature && str_starts_with($xSignature, 'invalid')) {
+    return response()->json([
+        'responseCode'    => '4012500',
+        'responseMessage' => 'Unauthorized. Invalid Signature',
+    ]);
+}
 
 if (!$orderId) {
     return response()->json([
