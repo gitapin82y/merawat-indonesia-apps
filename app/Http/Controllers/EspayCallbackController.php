@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DonationSuccessMail;
 use App\Mail\CampaignDonationMail;
+use Illuminate\Support\Facades\Cache;
 
 class EspayCallbackController extends Controller
 {
@@ -301,6 +302,19 @@ if (!preg_match('/^[a-zA-Z0-9\-]+$/', $virtualAccountNo)) {
     ]);
 }
 
+// Validasi duplikasi X-EXTERNAL-ID
+$xExternalId = $request->header('X-EXTERNAL-ID');
+if ($xExternalId) {
+    $cacheKey = 'external_id_inquiry_' . $xExternalId;
+    if (Cache::has($cacheKey)) {
+        return response()->json([
+            'responseCode'    => '4092400',
+            'responseMessage' => 'Conflict - X-EXTERNAL-ID already used',
+        ]);
+    }
+    Cache::put($cacheKey, true, now()->addHours(24));
+}
+
 if (!$orderId) {
     return response()->json([
         'responseCode'    => '4002400',
@@ -457,12 +471,26 @@ if (!preg_match('/^[a-zA-Z0-9\-]+$/', $virtualAccountNo)) {
     ]);
 }
 
+// Validasi duplikasi X-EXTERNAL-ID
+$xExternalId = $request->header('X-EXTERNAL-ID');
+if ($xExternalId) {
+    $cacheKey = 'external_id_payment_' . $xExternalId;
+    if (Cache::has($cacheKey)) {
+        return response()->json([
+            'responseCode'    => '4092500',
+            'responseMessage' => 'Conflict - X-EXTERNAL-ID already used',
+        ]);
+    }
+    Cache::put($cacheKey, true, now()->addHours(24));
+}
+
 if (!$orderId) {
     return response()->json([
         'responseCode'    => '4002500',
         'responseMessage' => 'Bad Request - order_id is required',
     ]);
 }
+
 
         $donation = Donation::where('snap_token', $orderId)->first();
 
