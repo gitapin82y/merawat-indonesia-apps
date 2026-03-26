@@ -262,9 +262,12 @@ public function handleInquiry(Request $request)
     try {
         Log::info('Espay Inquiry Request', $request->all());
 
-        $orderId  = $request->input('order_id') 
-                 ?? $request->input('partnerReferenceNo') 
-                 ?? null;
+        $orderId = $request->input('order_id') 
+        ?? $request->input('partnerReferenceNo')
+        ?? $request->input('virtualAccountNo')
+        ?? $request->input('inquiryRequestId')
+        ?? null;
+        
         $rqUuid   = (string) ($request->input('rq_uuid') ?? '');
         $commCode = (string) ($request->input('comm_code') ?? '');
 
