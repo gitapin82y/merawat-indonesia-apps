@@ -413,6 +413,17 @@ if (!$orderId) {
     ]);
 }
 
+// Validasi amount
+$paidAmount = (float) ($request->input('paidAmount.value') ?? $request->input('paidAmount')['value'] ?? 0);
+$expectedAmount = (float) $donation->amount;
+
+if ($paidAmount > 0 && $paidAmount !== $expectedAmount) {
+    return response()->json([
+        'responseCode'    => '4042513',
+        'responseMessage' => 'Invalid Amount',
+    ]);
+}
+
         $isSuccess = ($status === '0' && $txStatus === 'S');
 
         if ($isSuccess && $donation->status !== 'sukses') {
