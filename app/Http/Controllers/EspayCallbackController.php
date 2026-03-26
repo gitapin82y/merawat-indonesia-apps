@@ -293,6 +293,14 @@ if (!$virtualAccountNo || !$partnerServiceId || !$customerNo) {
     ]);
 }
 
+// Validasi format field - hanya boleh alphanumeric dan dash
+if (!preg_match('/^[a-zA-Z0-9\-]+$/', $virtualAccountNo)) {
+    return response()->json([
+        'responseCode'    => '4002401',
+        'responseMessage' => 'Invalid Field Format virtualAccountNo',
+    ]);
+}
+
 if (!$orderId) {
     return response()->json([
         'responseCode'    => '4002400',
@@ -438,6 +446,14 @@ if (!$virtualAccountNo || !$partnerServiceId || !$customerNo) {
     return response()->json([
         'responseCode'    => '4002502',
         'responseMessage' => 'Missing Mandatory Field ' . $missingField,
+    ]);
+}
+
+// Validasi format field - hanya boleh alphanumeric dan dash
+if (!preg_match('/^[a-zA-Z0-9\-]+$/', $virtualAccountNo)) {
+    return response()->json([
+        'responseCode'    => '4002501',
+        'responseMessage' => 'Invalid Field Format virtualAccountNo',
     ]);
 }
 
