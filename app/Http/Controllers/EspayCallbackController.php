@@ -312,23 +312,51 @@ public function handleInquiry(Request $request)
         $signature = hash('sha256', strtoupper($rawString));
 
         $responseData = [
-            'rq_uuid'       => $rqUuid,
-            'rs_datetime'   => $rsDatetime,
-            'error_code'    => $errorCode,
-            'error_message' => 'Success',
-            'signature'     => $signature,  // ← nama field yang benar adalah "signature"
-            'order_id'      => $orderId,
-            'amount'        => $amount,
-            'ccy'           => 'IDR',
-            'description'   => 'Donasi - ' . ($donation->campaign->title ?? 'Campaign'),
-            'trx_date'      => $donation->created_at->format('Y-m-d H:i:s'),
-            'customer_details' => [
-                'firstname'    => $donation->name,
-                'lastname'     => '',
-                'phone_number' => $donation->phone,
-                'email'        => $donation->email,
-            ],
-        ];
+    // Format SNAP untuk portal ASPI
+    'responseCode'    => '2002400',
+    'responseMessage' => 'Success',
+    'virtualAccountData' => [
+        'partnerServiceId'  => $request->input('partnerServiceId', ''),
+        'customerNo'        => $request->input('customerNo', ''),
+        'virtualAccountNo'  => $orderId,
+        'inquiryRequestId'  => $request->input('inquiryRequestId', ''),
+        'totalAmount'       => [
+            'value'    => $amount,
+            'currency' => 'IDR',
+        ],
+        'billDetails' => [[
+            'billDescription' => [
+                'english'   => 'Donation - ' . ($donation->campaign->title ?? 'Campaign'),
+                'indonesia' => 'Donasi - ' . ($donation->campaign->title ?? 'Campaign'),
+            ]
+        ]],
+        'additionalInfo' => [
+            'transactionDate' => $donation->created_at->format('Y-m-d H:i:s'),
+            'customerName'    => $donation->name,
+            'customerEmail'   => $donation->email,
+            'customerPhone'   => $donation->phone,
+        ],
+    ],
+    // Format non-SNAP untuk Espay sandbox (tetap ada)
+    'rq_uuid'       => $rqUuid,
+    'rs_datetime'   => $rsDatetime,
+    'error_code'    => $errorCode,
+    'error_message' => 'Success',
+    'signature'     => $signature,
+    'order_id'      => $orderId,
+    'amount'        => $amount,
+    'ccy'           => 'IDR',
+    'description'   => 'Donasi - ' . ($donation->campaign->title ?? 'Campaign'),
+    'trx_date'      => $donation->created_at->format('Y-m-d H:i:s'),
+    'customer_details' => [
+        'firstname'    => $donation->name,
+        'lastname'     => '',
+        'phone_number' => $donation->phone,
+        'email'        => $donation->email,
+    ],
+];
+
+        
 
         Log::info('Espay Inquiry Response Sent', $responseData);
 
