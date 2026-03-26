@@ -389,30 +389,29 @@ public function handlePayment(Request $request)
     try {
         Log::info('Espay Payment Notification', $request->all());
 
-        $orderId  = $request->input('order_id') ?? null;
-        $rqUuid   = $request->input('rq_uuid', '');
-        $status   = $request->input('status');
-        $txStatus = $request->input('tx_status');
+        $orderId = $request->input('order_id')
+        ?? $request->input('virtualAccountNo')
+        ?? $request->input('partnerReferenceNo')
+        ?? null;
+$rqUuid   = $request->input('rq_uuid', '');
+$status   = $request->input('status', '0');
+$txStatus = $request->input('tx_status', 'S');
 
-        if (!$orderId) {
-            return response()->json([
-                'rq_uuid'       => $rqUuid,
-                'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                'error_code'    => '0014',
-                'error_message' => 'order_id is required',
-            ]);
-        }
+if (!$orderId) {
+    return response()->json([
+        'responseCode'    => '4002500',
+        'responseMessage' => 'Bad Request - order_id is required',
+    ]);
+}
 
         $donation = Donation::where('snap_token', $orderId)->first();
 
-        if (!$donation) {
-            return response()->json([
-                'rq_uuid'       => $rqUuid,
-                'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                'error_code'    => '0014',
-                'error_message' => 'Invalid Order Id',
-            ]);
-        }
+ if (!$donation) {
+    return response()->json([
+        'responseCode'    => '4042512',
+        'responseMessage' => 'Bill not found',
+    ]);
+}
 
         $isSuccess = ($status === '0' && $txStatus === 'S');
 
@@ -468,17 +467,33 @@ public function handlePayment(Request $request)
         $rawString    = '##' . $signatureKey . '##' . $rqUuid . '##' . $rsDatetime . '##0000##PAYMENTREPORT-RS##';
         $signature    = hash('sha256', strtoupper($rawString));
 
-        // reconcile_id & reconcile_datetime WAJIB ada agar Espay redirect otomatis
-        return response()->json([
-            'rq_uuid'            => $rqUuid,
-            'rs_datetime'        => $rsDatetime,
-            'error_code'         => '0000',
-            'error_message'      => 'Success',
-            'order_id'           => $orderId,
-            'reconcile_id'       => 'REC-' . $donation->id . '-' . time(),
-            'reconcile_datetime' => $rsDatetime,
-            'signature'          => $signature,
-        ]);
+return response()->json([
+    'responseCode'    => '2002500',
+    'responseMessage' => 'Success',
+    'virtualAccountData' => [
+        'partnerServiceId'  => $request->input('partnerServiceId', ''),
+        'customerNo'        => $request->input('customerNo', ''),
+        'virtualAccountNo'  => $orderId,
+        'paymentRequestId'  => $request->input('paymentRequestId', ''),
+        'paidAmount'        => [
+            'value'    => number_format((float)$donation->amount, 2, '.', ''),
+            'currency' => 'IDR',
+        ],
+        'totalAmount'       => [
+            'value'    => number_format((float)$donation->amount, 2, '.', ''),
+            'currency' => 'IDR',
+        ],
+    ],
+    // non-SNAP tetap ada
+    'rq_uuid'            => $rqUuid,
+    'rs_datetime'        => $rsDatetime,
+    'error_code'         => '0000',
+    'error_message'      => 'Success',
+    'order_id'           => $orderId,
+    'reconcile_id'       => 'REC-' . $donation->id . '-' . time(),
+    'reconcile_datetime' => $rsDatetime,
+    'signature'          => $signature,
+]);
 
     } catch (\Exception $e) {
         Log::error('Espay Payment Notification Error: ' . $e->getMessage());
