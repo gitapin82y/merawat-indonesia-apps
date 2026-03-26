@@ -44,9 +44,9 @@
                 Pembayaran Manual
             </a>
         </div>
-       <a class="btn btn-danger" data-toggle="modal" data-target="#manageEspayModal">
+       {{-- <a class="btn btn-danger" data-toggle="modal" data-target="#manageEspayModal">
     Pembayaran Espay
-</a>
+</a> --}}
         <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" href="{{ route('legal-documents.index') }}">
                 Dokumen Legal
@@ -1585,13 +1585,7 @@ $(document).on('click', '#cropKategoriButton', function() {
    });
      </script>
 
-     /**
- * JavaScript untuk Manage Espay Payment Methods
- * 
- * Script ini menggantikan script Tripay yang ada di dashboard admin
- * Ganti script Tripay di file dashboard view Anda dengan script ini
- */
-
+   
 <script>
 $(document).ready(function() {
     $.ajaxSetup({
