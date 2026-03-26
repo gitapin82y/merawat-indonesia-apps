@@ -271,26 +271,36 @@ public function handleInquiry(Request $request)
         $rqUuid   = (string) ($request->input('rq_uuid') ?? '');
         $commCode = (string) ($request->input('comm_code') ?? '');
 
-        if (!$orderId) {
-            return response()->json([
-                'rq_uuid'       => $rqUuid,
-                'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                'error_code'    => '0014',
-                'error_message' => 'order_id is required',
-            ]);
-        }
+if (!$orderId) {
+    return response()->json([
+        'responseCode'    => '4002400',
+        'responseMessage' => 'Bad Request - order_id is required',
+    ]);
+}
 
         $donation = Donation::where('snap_token', $orderId)->first();
 
-        if (!$donation) {
-            Log::warning('Espay Inquiry: Not found', ['order_id' => $orderId]);
-            return response()->json([
-                'rq_uuid'       => $rqUuid,
-                'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                'error_code'    => '0014',
-                'error_message' => 'Invalid Order Id',
-            ]);
-        }
+if (!$donation) {
+    return response()->json([
+        'responseCode'    => '4042412',
+        'responseMessage' => 'Bill not found',
+    ]);
+}
+
+
+        if ($donation->status === 'sukses') {
+    return response()->json([
+        'responseCode'    => '4042414',
+        'responseMessage' => 'Bill has been paid',
+    ]);
+}
+
+if ($donation->status === 'gagal') {
+    return response()->json([
+        'responseCode'    => '4042419',
+        'responseMessage' => 'Bill expired',
+    ]);
+}
 
         if ($donation->status !== 'pending') {
             return response()->json([
@@ -366,12 +376,11 @@ public function handleInquiry(Request $request)
         Log::error('Espay Inquiry Error: ' . $e->getMessage(), [
             'trace' => $e->getTraceAsString(),
         ]);
+
         return response()->json([
-            'rq_uuid'       => $rqUuid ?? '',
-            'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'error_code'    => '9999',
-            'error_message' => 'Internal Server Error',
-        ]);
+    'responseCode'    => '5002400',
+    'responseMessage' => 'Internal Server Error',
+]);
     }
 }
 
