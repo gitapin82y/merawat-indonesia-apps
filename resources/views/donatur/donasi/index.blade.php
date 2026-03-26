@@ -205,9 +205,9 @@
     <div class="tab-pane fade show active" id="gateway-content" role="tabpanel" aria-labelledby="gateway-tab">
          <div class="alert alert-warning">
                 <i class="fa-solid fa-exclamation-triangle me-2"></i>
-                Metode pembayaran otomatis sedang maintenance. Silakan gunakan pembayaran manual.
+                JANGAN GUNAKAN!! Metode pembayaran otomatis sedang maintenance. Silakan gunakan pembayaran manual.
             </div>
-{{--         
+        
         @if(count($channels) > 0)
             <!-- Group channels by category -->
             @php
@@ -296,7 +296,7 @@
                 <i class="fa-solid fa-exclamation-triangle me-2"></i>
                 Metode pembayaran otomatis sedang tidak tersedia. Silakan gunakan pembayaran manual atau hubungi admin.
             </div>
-        @endif --}}
+        @endif
     </div>
 
     <!-- MANUAL PAYMENT TAB -->
