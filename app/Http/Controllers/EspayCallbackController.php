@@ -280,6 +280,19 @@ if ($xSignature && str_starts_with($xSignature, 'invalid')) {
     ]);
 }
 
+// Validasi mandatory field SNAP
+$virtualAccountNo = $request->input('virtualAccountNo');
+$partnerServiceId = $request->input('partnerServiceId');
+$customerNo = $request->input('customerNo');
+
+if (!$virtualAccountNo || !$partnerServiceId || !$customerNo) {
+    $missingField = !$partnerServiceId ? 'partnerServiceId' : (!$customerNo ? 'customerNo' : 'virtualAccountNo');
+    return response()->json([
+        'responseCode'    => '4002402',
+        'responseMessage' => 'Missing Mandatory Field ' . $missingField,
+    ]);
+}
+
 if (!$orderId) {
     return response()->json([
         'responseCode'    => '4002400',
@@ -412,6 +425,19 @@ if ($xSignature && str_starts_with($xSignature, 'invalid')) {
     return response()->json([
         'responseCode'    => '4012500',
         'responseMessage' => 'Unauthorized. Invalid Signature',
+    ]);
+}
+
+// Validasi mandatory field SNAP
+$virtualAccountNo = $request->input('virtualAccountNo');
+$partnerServiceId = $request->input('partnerServiceId');
+$customerNo = $request->input('customerNo');
+
+if (!$virtualAccountNo || !$partnerServiceId || !$customerNo) {
+    $missingField = !$partnerServiceId ? 'partnerServiceId' : (!$customerNo ? 'customerNo' : 'virtualAccountNo');
+    return response()->json([
+        'responseCode'    => '4002502',
+        'responseMessage' => 'Missing Mandatory Field ' . $missingField,
     ]);
 }
 
