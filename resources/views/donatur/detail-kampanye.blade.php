@@ -173,6 +173,32 @@
                 </div>
                 <div class="col d-flex justify-content-end p-0 section-deadline">
                     <strong class="position-deadline">
+    @if($campaign->deadline)
+        @if($campaign->remainingDays < 0)
+            {{-- kosong, teks ada di small --}}
+        @elseif($campaign->remainingDays == 0)
+            {{ floor($campaign->remainingTime) }}
+        @else
+            {{ $campaign->remainingDays }}
+        @endif
+    @else
+        <i class="fas fa-infinity"></i>
+    @endif
+</strong>
+<small>
+    @if($campaign->deadline)
+        @if($campaign->remainingDays < 0)
+            Sudah Berakhir
+        @elseif($campaign->remainingDays == 0)
+            Jam Lagi
+        @else
+            Hari Lagi
+        @endif
+    @else
+        Tanpa Batas Waktu
+    @endif
+</small>
+                    {{-- <strong class="position-deadline">
                         @if($campaign->deadline)
                             @if($campaign->remainingDays < 0)
                                 0
@@ -197,7 +223,7 @@
                         @else
                             Tanpa Batas Waktu
                         @endif
-                    </small>
+                    </small> --}}
                 </div>
             </div>
 
@@ -412,14 +438,29 @@
         @endif
     </div>
         
-    <div class="footer">
+    {{-- <div class="footer">
         <div class="main-menu row col-12 mx-0 justify-content-between d-flex">
             <a href="#" class="col-2 me-2" style="border-radius: 6px;border:1px solid #FF4747; padding:10px;" data-bs-toggle="modal" data-bs-target="#bagikanModal">
                 <i class="fa-solid fa-share"></i>
             </a>
                 <a href="{{url('kampanye/'.$campaign->slug.'/donasi')}}" class="button col-10"><i class="fa-solid fa-hand-holding-heart"></i> Donasi</a>
         </div>
+    </div> --}}
+
+    <div class="footer">
+    <div class="main-menu row col-12 mx-0 justify-content-between d-flex">
+        <a href="#" class="col-2 me-2" style="border-radius: 6px;border:1px solid #FF4747; padding:10px;" data-bs-toggle="modal" data-bs-target="#bagikanModal">
+            <i class="fa-solid fa-share"></i>
+        </a>
+        @if($campaign->deadline && $campaign->remainingDays < 0)
+            <button class="button col-10" disabled style="background-color:#adb5bd; border-color:#adb5bd; cursor:not-allowed;">
+                <i class="fa-solid fa-lock"></i> Kampanye Berakhir
+            </button>
+        @else
+            <a href="{{url('kampanye/'.$campaign->slug.'/donasi')}}" class="button col-10"><i class="fa-solid fa-hand-holding-heart"></i> Donasi</a>
+        @endif
     </div>
+</div>
 
     <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg">

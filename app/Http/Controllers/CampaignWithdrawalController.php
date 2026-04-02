@@ -413,20 +413,44 @@ public function create()
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(CampaignWithdrawal $pencairanKampanye)
-    {
-        DB::beginTransaction();
-        try {
-            // Menghapus data donasi
-            $pencairanKampanye->delete();
+    // public function destroy(CampaignWithdrawal $pencairanKampanye)
+    // {
+    //     DB::beginTransaction();
+    //     try {
+    //         // Menghapus data donasi
+    //         $pencairanKampanye->delete();
     
-            DB::commit();
-            return response()->json(['status' => 'success', 'message' => 'Pencairan Kampanye berhasil dihapus']);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['status' => 'error', 'message' => 'Gagal menghapus pencairan kampanye: ' . $e->getMessage()], 500);
+    //         DB::commit();
+    //         return response()->json(['status' => 'success', 'message' => 'Pencairan Kampanye berhasil dihapus']);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json(['status' => 'error', 'message' => 'Gagal menghapus pencairan kampanye: ' . $e->getMessage()], 500);
+    //     }
+    // }
+
+    public function destroy(CampaignWithdrawal $pencairanKampanye)
+{
+    DB::beginTransaction();
+    try {
+        // Hapus KabarPencairan yang terkait via document_rab
+        KabarPencairan::where('document_rab', $pencairanKampanye->document_rab)->delete();
+
+        // Hapus file document_rab dari storage jika ada
+        // (opsional, tapi direkomendasikan agar tidak ada file orphan)
+        if ($pencairanKampanye->document_rab) {
+            Storage::disk('public')->delete($pencairanKampanye->document_rab);
         }
+
+        // Hapus CampaignWithdrawal
+        $pencairanKampanye->delete();
+
+        DB::commit();
+        return response()->json(['status' => 'success', 'message' => 'Pencairan Kampanye berhasil dihapus']);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['status' => 'error', 'message' => 'Gagal menghapus pencairan kampanye: ' . $e->getMessage()], 500);
     }
+}
 
      /**
      * Show approve form

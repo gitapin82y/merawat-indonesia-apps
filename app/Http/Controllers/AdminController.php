@@ -255,7 +255,7 @@ public function __construct(NotificationService $notificationService)
             $campaignsByStatus = [
                 'semua' => $campaign,
                 'aktif' => $campaign->where('status', 'aktif'),
-                'berakhir' => $campaign->where('status', 'berakhir'),
+                'selesai' => $campaign->where('status', 'selesai'),
                 'validasi' => $campaign->where('status', 'validasi'),
                 'ditolak' => $campaign->where('status', 'ditolak')
             ];
@@ -318,7 +318,7 @@ public function __construct(NotificationService $notificationService)
             $campaignsByStatus = [
                 'semua' => $campaign,
                 'aktif' => $campaign->where('status', 'aktif'),
-                'berakhir' => $campaign->where('status', 'berakhir'),
+                'selesai' => $campaign->where('status', 'selesai'),
                 'validasi' => $campaign->where('status', 'validasi'),
                 'ditolak' => $campaign->where('status', 'ditolak')
             ];

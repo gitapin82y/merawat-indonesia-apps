@@ -352,13 +352,13 @@
         </div>
 
         <div id="contentBerakhir" class="donation-history mt-3 d-none">
-            @if($campaignsByStatus['berakhir']->count() == 0)
+            @if($campaignsByStatus['selesai']->count() == 0)
             <div class="text-center">
                 <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
                 <p>Kampanye Tidak Ditemukan</p>
             </div>
         @else
-            @foreach($campaignsByStatus['berakhir'] as $campaign)
+            @foreach($campaignsByStatus['selesai'] as $campaign)
                 @include('includes.manage-campaign-card', ['campaign' => $campaign])
             @endforeach
         @endif

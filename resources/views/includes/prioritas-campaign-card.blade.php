@@ -14,7 +14,7 @@
         <small>Terkumpul</small>
         </div>
         <div class="col-6 p-0 text-end">
-            <strong>
+            {{-- <strong>
                 @if($campaign->deadline)
                     @if($campaign->remainingDays < 0)
                         0
@@ -39,7 +39,33 @@
                 @else
                     Tanpa Batas Waktu
                 @endif
-            </small>
+            </small> --}}
+            <strong>
+    @if($campaign->deadline)
+        @if($campaign->remainingDays < 0)
+            <span class="text-secondary" style="font-size:11px;">Sudah Berakhir</span>
+        @elseif($campaign->remainingDays == 0)
+            {{ $campaign->remainingTime }}
+        @else
+            {{ $campaign->remainingDays }}
+        @endif
+    @else
+        <i class="fas fa-infinity"></i>
+    @endif
+</strong>
+<small>
+    @if($campaign->deadline)
+        @if($campaign->remainingDays < 0)
+            {{-- kosong karena sudah ada teks di strong --}}
+        @elseif($campaign->remainingDays == 0)
+            Jam Lagi
+        @else
+            Hari Lagi
+        @endif
+    @else
+        Tanpa Batas Waktu
+    @endif
+</small>
         </div>
     </div>
 </a>

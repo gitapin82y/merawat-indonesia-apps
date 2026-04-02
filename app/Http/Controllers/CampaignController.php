@@ -616,7 +616,7 @@ public function __construct(NotificationService $notificationService)
             ], 404);
         }
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:disetujui,ditolak,validasi,aktif,berakhir'
+            'status' => 'required|in:disetujui,ditolak,validasi,aktif,selesai'
         ]);
 
         if ($validator->fails()) {
@@ -656,8 +656,8 @@ public function __construct(NotificationService $notificationService)
                         $statusMessage = 'ditolak';
                     } elseif ($request->status === 'validasi') {
                         $statusMessage = 'sedang divalidasi';
-                    } elseif ($request->status === 'berakhir') {
-                        $statusMessage = 'berakhir';
+                    } elseif ($request->status === 'selesai') {
+                        $statusMessage = 'selesai';
                     } else {
                         $statusMessage = $newStatus;
                     }

@@ -103,7 +103,7 @@
                             <option value="selesai" {{ old('status', $kampanye->status ?? '') == 'selesai' ? 'selected' : '' }}>Selesai</option>
                             <option value="ditolak" {{ old('status', $kampanye->status ?? '') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                             <option value="validasi" {{ old('status', $kampanye->status ?? '') == 'validasi' ? 'selected' : '' }}>Validasi</option>
-                            <option value="berakhir" {{ old('status', $kampanye->status ?? '') == 'berakhir' ? 'selected' : '' }}>Berakhir</option>
+                            {{-- <option value="berakhir" {{ old('status', $kampanye->status ?? '') == 'berakhir' ? 'selected' : '' }}>Berakhir</option> --}}
                         </select>
                         @error('status')
                             <div class="invalid-feedback">{{ $message }}</div>
