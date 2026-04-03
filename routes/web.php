@@ -145,6 +145,7 @@ Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCa
 // Replace current routes with:
 Route::get('/privacy-policy', [LegalDocumentController::class, 'showPrivacyPolicy'])->name('privacy.policy');
 Route::get('/terms-of-service', [LegalDocumentController::class, 'showTermsOfService'])->name('terms.service');
+Route::get('/tentang-kami', [LegalDocumentController::class, 'showTentangKami'])->name('tentang.kami');
 Route::get('/data-deletion', [LegalController::class, 'dataDeletion'])->name('data.deletion');
 Route::post('/data-deletion-request', [LegalController::class, 'processDeletionRequest'])->name('data.deletion.request');
 Route::get('/test-error/{code}', function ($code) {
@@ -314,6 +315,8 @@ Route::post('/site-settings/social-media', [SiteSettingsController::class, 'upda
 
     Route::resource('prioritas-kampanye', PrioritasCampaignController::class);
     Route::resource('urgent-kampanye', UrgentCampaignController::class);
+    Route::post('kampanye/{id}/toggle-home-visibility', [CampaignController::class, 'toggleHomeVisibility'])
+    ->name('kampanye.toggle-home-visibility');
     Route::get('fundraising-campaign/{campaign}', [FundraisingController::class, 'campaignDetail'])->name('fundraising.campaign.detail');
     Route::delete('fundraising-campaign/{campaign}', [FundraisingController::class, 'destroyByCampaign'])->name('fundraising.campaign.destroy');
     Route::resource('fundraising', FundraisingController::class);

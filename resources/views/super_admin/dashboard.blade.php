@@ -3,6 +3,8 @@
 @section('title', 'Dashboard')
 
 @push('after-style')
+@push('after-style')
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 @endpush
@@ -54,6 +56,12 @@
         </div>
         
         <div class="col-12 my-2 col-md-2 col-lg-2">
+    <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#tentangKamiModal">
+        Tentang Kami
+    </a>
+</div>
+        
+        <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#socialMediaModal">
                 Media Sosial
             </a>
@@ -85,6 +93,32 @@
     </div>
   </div>
 
+
+  <!-- Modal Tentang Kami -->
+<div class="modal fade" id="tentangKamiModal" tabindex="-1" aria-labelledby="tentangKamiLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="tentangKamiLabel">Edit Tentang Kami</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="tentangKamiForm">
+                    <input type="hidden" id="tentang_kami_type" value="tentang_kami">
+                    <div class="form-group">
+                        <textarea id="tentang_kami_content" name="content" class="form-control summernote-tentang"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-danger" id="saveTentangKamiBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="manageEspayModal" tabindex="-1" aria-labelledby="espayLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
@@ -322,6 +356,7 @@
 @endsection
 
 @push('after-script')
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
 <script>
 var ctx = document.getElementById("donasiChart").getContext("2d");
 var myBarChart = new Chart(ctx, {
@@ -1541,6 +1576,8 @@ $(document).on('click', '#cropKategoriButton', function() {
             });
     });
 });
+
+
 </script>
   
 <script>
@@ -1567,6 +1604,7 @@ $(document).on('click', '#cropKategoriButton', function() {
              $('#instagram_url').val(socialMedia.instagram || '');
              $('#youtube_url').val(socialMedia.youtube || '');
              $('#tiktok_url').val(socialMedia.tiktok || '');
+             $('#whatsapp_url').val(socialMedia.whatsapp || '');
            }
          },
          error: function() {
@@ -1595,6 +1633,7 @@ $(document).on('click', '#cropKategoriButton', function() {
          instagram: $('#instagram_url').val(),
          youtube: $('#youtube_url').val(),
          tiktok: $('#tiktok_url').val(),
+         whatsapp: $('#whatsapp_url').val(),
        };
        
        console.log('Attempting to save social media data:', data);
@@ -1860,6 +1899,71 @@ $(document).ready(function() {
                     timer: 2000
                 });
             });
+    });
+
+    $('#tentangKamiModal').on('shown.bs.modal', function() {
+        if (!$('.summernote-tentang').hasClass('note-editor')) {
+            $('.summernote-tentang').summernote({
+                height: 400,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'italic', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['fullscreen', 'codeview']]
+                ]
+            });
+        }
+
+        // Load konten dari server
+        $.ajax({
+            url: '/super-admin/legal-documents/tentang_kami',
+            method: 'GET',
+            success: function(response) {
+                if (response.document && response.document.content) {
+                    $('.summernote-tentang').summernote('code', response.document.content);
+                }
+            }
+        });
+    });
+
+
+    $('#tentangKamiModal').on('hidden.bs.modal', function() {
+        if ($('.summernote-tentang').hasClass('note-editor')) {
+            $('.summernote-tentang').summernote('destroy');
+        }
+    });
+
+
+    $('#saveTentangKamiBtn').on('click', function() {
+        const content = $('.summernote-tentang').summernote('code');
+
+        $.ajax({
+            url: '/super-admin/legal-documents/tentang_kami',
+            method: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                content: content
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Tentang Kami berhasil diperbarui.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
+                    $('#tentangKamiModal').modal('hide');
+                }
+            },
+            error: function() {
+                Swal.fire('Gagal!', 'Terjadi kesalahan saat menyimpan.', 'error');
+            }
+        });
     });
 });
 </script>

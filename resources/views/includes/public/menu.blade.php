@@ -3,7 +3,7 @@
     <hr>
     <div class="row mt-5 pb-5 mb-3">
         <span class="text-center">
-            <a href="{{ url('/') }}">Tentang Kami</a> | 
+            <a href="{{ route('tentang.kami') }}">Tentang Kami</a> | 
             <a href="{{ route('terms.service') }}">Syarat & Ketentuan</a> | 
             <a href="{{ route('privacy.policy') }}">Kebijakan Privasi</a>
         </span>
@@ -36,6 +36,14 @@
             <div class="social-icon d-flex align-items-center justify-content-center">
                 <a href="{{ $socialMedia['tiktok'] }}" target="_blank">
                     <img src="{{asset('assets/img/icon/tiktok.svg')}}" alt="TikTok" class="img-fluid">
+                </a>
+            </div>
+            @endif
+
+            @if(isset($socialMedia['whatsapp']))
+            <div class="social-icon d-flex align-items-center justify-content-center">
+                <a href="{{ $socialMedia['whatsapp'] }}" target="_blank">
+                    <img src="{{asset('assets/img/icon/whatsapp.svg')}}" alt="WhatsApp" class="img-fluid">
                 </a>
             </div>
             @endif

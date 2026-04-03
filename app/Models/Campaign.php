@@ -17,7 +17,7 @@ class Campaign extends Model
         'status', 'deadline', 'total_donatur', 'total_kabar_terbaru', 
         'total_pencairan_dana', 'jumlah_pencarian', 'current_donation', 
         'jumlah_donasi', 'jumlah_target_donasi', 'document_rab', 
-        'bukti_pencairan_dana'
+        'bukti_pencairan_dana','is_hidden_from_home'
     ];
 
     protected $casts = [

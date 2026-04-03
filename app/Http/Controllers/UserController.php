@@ -51,7 +51,7 @@ class UserController extends Controller
         $oneWeekFromNow = $today->copy()->addWeek();
 
         // Gunakan paginate untuk pagination biasa
-        $campaigns = Campaign::where('status', 'aktif')->orderBy('created_at', 'desc')->paginate(6); // Perhatikan jumlah item per halaman
+        $campaigns = Campaign::where('status', 'aktif')->where('is_hidden_from_home', false)->orderBy('created_at', 'desc')->paginate(6); // Perhatikan jumlah item per halaman
 
         // $prioritasCampaigns = prioritasCampaign::with(['campaign'])
         // ->orderBy('prioritas', 'asc')
@@ -64,6 +64,7 @@ class UserController extends Controller
         $prioritasCampaigns = PrioritasCampaign::with(['campaign'])
     ->whereHas('campaign', function($q) {
         $q->where('status', 'aktif')
+        ->where('is_hidden_from_home', false)
           ->where(function($q2) {
               $q2->whereNull('deadline')
                  ->orWhereDate('deadline', '>=', now()->toDateString());
@@ -75,6 +76,7 @@ class UserController extends Controller
 $urgentCampaigns = UrgentCampaign::with(['campaign'])
     ->whereHas('campaign', function($q) {
         $q->where('status', 'aktif')
+        ->where('is_hidden_from_home', false)
           ->where(function($q2) {
               $q2->whereNull('deadline')
                  ->orWhereDate('deadline', '>=', now()->toDateString());

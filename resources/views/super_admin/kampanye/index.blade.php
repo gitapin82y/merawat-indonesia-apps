@@ -182,5 +182,45 @@ function deleteCampaign(id) {
         }
     });
 }
+
+function toggleHomeVisibility(id, btn) {
+    const isCurrentlyHidden = $(btn).data('hidden') == 1;
+    const actionText = isCurrentlyHidden ? 'tampilkan di halaman utama' : 'sembunyikan dari halaman utama';
+
+    Swal.fire({
+        title: 'Konfirmasi',
+        text: 'Apakah Anda yakin ingin ' + actionText + ' kampanye ini?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Ya',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/super-admin/kampanye/' + id + '/toggle-home-visibility',
+                type: 'POST',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: response.message,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2500
+                        });
+                        $('.yajra-datatable').DataTable().ajax.reload(null, false);
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error!', 'Gagal mengubah visibilitas kampanye.', 'error');
+                }
+            });
+        }
+    });
+}
 </script>
 @endpush
