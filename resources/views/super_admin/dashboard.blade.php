@@ -168,6 +168,70 @@
 }
 </style>
 
+  <!-- Modal Form Tambah/Edit Metode Pembayaran -->
+  <div class="modal fade" id="paymentFormModal" tabindex="-1" aria-labelledby="paymentFormModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="paymentFormModalLabel">Tambah Metode Pembayaran</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="paymentForm" enctype="multipart/form-data">
+            <input type="hidden" id="payment_id" name="payment_id">
+            
+            <div class="form-group mb-3">
+              <label for="payment_name">Nama Bank/E-Wallet <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="payment_name" name="name" required>
+              <div id="error-name" class="invalid-feedback"></div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label for="account_number">Nomor Rekening/ID <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="account_number" name="account_number" required>
+              <div id="error-account_number" class="invalid-feedback"></div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label for="account_name">Atas Nama <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="account_name" name="account_name" required>
+              <div id="error-account_name" class="invalid-feedback"></div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label for="instructions">Instruksi Tambahan</label>
+              <textarea class="form-control" id="instructions" name="instructions" rows="3"></textarea>
+              <div id="error-instructions" class="invalid-feedback"></div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label for="payment_icon">Logo/Icon</label>
+              <input type="file" class="form-control" id="payment_icon" name="icon" accept="image/*">
+              <small class="form-text text-muted">Format: JPG, PNG, GIF (Max. 2MB)</small>
+              <div id="error-icon" class="invalid-feedback"></div>
+            </div>
+            
+            <div class="form-group mb-3" id="icon_preview_container">
+              <img id="icon_preview" src="" alt="Preview" class="img-thumbnail mt-2" style="max-height: 100px; display: none;">
+            </div>
+            
+            <div class="form-group form-check mb-3">
+              <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
+              <label class="form-check-label" for="is_active">Aktif</label>
+            </div>
+            
+            <div class="text-end">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-danger">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   @include('modal_dashboard.adsense')
 @include('modal_dashboard.social_media')
 @include('modal_dashboard.kategori')
