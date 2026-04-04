@@ -61,8 +61,11 @@
                 <a class="dropdown-item" href="{{ route('pencairan-fundraising.index') }}">Fundraising</a>
             </div>
         </div>
+        
 
          <a href="{{ route('artikel.index') }}" class="nav-item nav-link {{ Request::is('super-admin/artikel') ? 'active' : '' }}">Salur Dana</a>
+
+
     </div>
 
 

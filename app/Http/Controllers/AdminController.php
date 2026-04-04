@@ -58,7 +58,8 @@ public function __construct(NotificationService $notificationService)
             </a>
             <a href="/galang-dana/'.$row->name.'" class="btn btn-info btn-sm" target="_blank"><i class="fa-solid fa-eye text-white"></i></a>
             <a href="'.route('admin.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
-            <button onclick="deleteAdmin('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>';
+            <button onclick="deleteAdmin('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+            <a href="'.route('statistik-pencairan.show', $row->id).'" class="btn btn-success btn-sm" title="Statistik Pencairan"><i class="fa-solid fa-chart-line"></i></a>';
     
   
     

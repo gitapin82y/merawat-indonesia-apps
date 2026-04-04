@@ -34,6 +34,8 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\EspayPaymentMethodController;
 use App\Http\Controllers\EspayCallbackController;
 
+use App\Http\Controllers\StatistikPencairanController;
+
 Route::post('/api/espay/callback', [EspayCallbackController::class, 'handleCallback'])
     ->name('espay.callback');
 
@@ -359,6 +361,10 @@ Route::get('/tripay-payment-methods', [TripayPaymentMethodController::class, 'in
 Route::get('/tripay-payment-methods/fetch', [TripayPaymentMethodController::class, 'fetchFromTripay'])->name('tripay-payment-methods.fetch');
 Route::post('/tripay-payment-methods/sync', [TripayPaymentMethodController::class, 'syncPaymentMethods'])->name('tripay-payment-methods.sync');
 Route::post('/tripay-payment-methods/toggle-status', [TripayPaymentMethodController::class, 'toggleStatus'])->name('tripay-payment-methods.toggle-status');
+
+Route::get('/statistik-pencairan', [StatistikPencairanController::class, 'index'])->name('statistik-pencairan.index');
+Route::get('/statistik-pencairan/{id}', [StatistikPencairanController::class, 'show'])->name('statistik-pencairan.show');
+
 });
 
 // custom route

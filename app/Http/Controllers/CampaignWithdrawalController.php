@@ -106,7 +106,7 @@ public function create()
     // Get campaigns yang ada saldo donasi
     $campaigns = Campaign::with('admin')
         ->whereRaw('current_donation > 0')
-        ->whereIn('status', ['aktif', 'selesai'])
+        ->whereIn('status', ['aktif', 'selesai','berakhir'])
         ->orderBy('created_at', 'desc')
         ->get();
     
