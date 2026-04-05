@@ -209,6 +209,9 @@ public function __construct(NotificationService $notificationService)
                             'campaign_status_update',
                             ['campaign_id' => $campaign->id, 'status' => 'validasi']
                         );
+
+                            return redirect()->route('kampanye.index')
+        ->with('success', 'Kampanye berhasil ditambahkan');
                     }
                 } catch (\Exception $e) {
                     Log::error('Gagal mengirim notifikasi kampanye baru: ' . $e->getMessage());
