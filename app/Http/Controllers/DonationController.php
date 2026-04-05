@@ -1063,44 +1063,62 @@ public function ceklis(Request $request)
                 return '<span class="badge bg-'.$statusColor[$row->status].' text-white">'.ucfirst($row->status).'</span>';
             })
             ->addColumn('action', function($row) {
-                $whatsappUrl = "https://wa.me/". $row->phone;
-                
-                $actionBtn = '<div class="btn-group" role="group">';
-            
-                // Jika status masih pending, tampilkan tombol ceklis & silang lebih dulu
-                if ($row->status == 'pending' && $row->payment_type == 'manual') {
-                        if ($row->payment_proof) {
-                        $actionBtn .= '
-                    <a href="'.asset('storage/'.$row->payment_proof).'" target="_blank" class="btn btn-info text-white btn-sm">
-                        <i class="fas fa-file"></i>
-                    </a>';
-                                        } else {
-                        $actionBtn .= '
-                    <button onclick="noPaymentProofAlert()" class="btn btn-info text-white btn-sm">
-                        <i class="fas fa-file"></i>
-                    </button>';
-                    }
-                    $actionBtn .= '
-                        <button onclick="updateStatus('.$row->id.', \'sukses\')" class="btn btn-primary btn-sm">
-                            <i class="fas fa-check"></i>
-                        </button>
-                        <button onclick="updateStatus('.$row->id.', \'gagal\')" class="btn btn-warning text-white btn-sm">
-                            <i class="fas fa-times"></i>
-                        </button>';
-                }
-            
-                // Tambahkan tombol WhatsApp & Hapus setelahnya
-                $actionBtn .= '
-                    <a href="'.$whatsappUrl.'" target="_blank" class="btn btn-success btn-sm">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>
-                    <button onclick="deleteDonasi('.$row->id.')" class="btn btn-danger btn-sm">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>'; // Tutup div.btn-group
-            
-                return $actionBtn;
-            })               
+    $whatsappUrl = "https://wa.me/". $row->phone;
+    
+    $actionBtn = '<div class="btn-group" role="group">';
+
+    // Tampilkan tombol file, approve, reject untuk semua donasi manual
+    if ($row->payment_type == 'manual') {
+        // Tombol file bukti pembayaran
+        if ($row->payment_proof) {
+            $actionBtn .= '
+        <a href="'.asset('storage/'.$row->payment_proof).'" target="_blank" class="btn btn-info text-white btn-sm" title="Lihat Bukti">
+            <i class="fas fa-file"></i>
+        </a>';
+        } else {
+            $actionBtn .= '
+        <button onclick="noPaymentProofAlert()" class="btn btn-info text-white btn-sm" title="Belum ada bukti">
+            <i class="fas fa-file"></i>
+        </button>';
+        }
+
+        // Tombol approve (ceklis) — selalu tampil kecuali sudah sukses
+        if ($row->status != 'sukses') {
+            $actionBtn .= '
+        <button onclick="updateStatus('.$row->id.', \'sukses\')" class="btn btn-primary btn-sm" title="Approve">
+            <i class="fas fa-check"></i>
+        </button>';
+        }
+
+        // Tombol reject (silang) — selalu tampil kecuali sudah gagal
+        if ($row->status != 'gagal') {
+            $actionBtn .= '
+        <button onclick="updateStatus('.$row->id.', \'gagal\')" class="btn btn-warning text-white btn-sm" title="Reject">
+            <i class="fas fa-times"></i>
+        </button>';
+        }
+
+        // Tombol unchecklist (kembalikan ke pending) — tampil jika sudah sukses atau gagal
+        if (in_array($row->status, ['sukses', 'gagal'])) {
+            $actionBtn .= '
+        <button onclick="updateStatus('.$row->id.', \'pending\')" class="btn btn-secondary btn-sm" title="Kembalikan ke Pending">
+            <i class="fas fa-undo"></i>
+        </button>';
+        }
+    }
+
+    // Tambahkan tombol WhatsApp & Hapus setelahnya
+    $actionBtn .= '
+        <a href="'.$whatsappUrl.'" target="_blank" class="btn btn-success btn-sm">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+        <button onclick="deleteDonasi('.$row->id.')" class="btn btn-danger btn-sm">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    </div>';
+
+    return $actionBtn;
+})
             ->rawColumns(['amount','status','method','created_at','action'])
             // Remove this line that's causing the error:
             // ->orderColumn('DT_RowIndex', false)
@@ -1173,94 +1191,140 @@ public function exportCeklis(Request $request)
 }
 
     public function updateStatus(Request $request)
-    {
-        $donation = Donation::find($request->id);
-        
-        if (!$donation) {
-            return response()->json(['success' => false, 'message' => 'Donasi tidak ditemukan']);
+{
+    $donation = Donation::find($request->id);
+    
+    if (!$donation) {
+        return response()->json(['success' => false, 'message' => 'Donasi tidak ditemukan']);
+    }
+
+    $oldStatus = $donation->status;
+    $newStatus = $request->status;
+
+    // Jika tidak ada perubahan status, skip
+    if ($oldStatus === $newStatus) {
+        return response()->json(['success' => true, 'message' => 'Status tidak berubah']);
+    }
+
+    DB::beginTransaction();
+    try {
+        // ── REVERSE: jika sebelumnya sukses dan sekarang dikembalikan ke pending/gagal
+        // → kembalikan statistik campaign
+        if ($oldStatus == 'sukses' && $donation->payment_type == 'manual') {
+            $campaign = $donation->campaign;
+            $campaign->jumlah_donasi = max(0, $campaign->jumlah_donasi - $donation->amount);
+            $campaign->current_donation = max(0, $campaign->current_donation - $donation->amount);
+            $campaign->total_donatur = max(0, $campaign->total_donatur - 1);
+            $campaign->save();
+
+            // Reverse donation source statistics
+            if ($donation->donation_source_id) {
+                $source = DonationSource::find($donation->donation_source_id);
+                if ($source) {
+                    $source->total_donations = max(0, $source->total_donations - 1);
+                    $source->total_amount = max(0, $source->total_amount - $donation->amount);
+                    $source->save();
+                }
+            }
+
+            // Reverse fundraising commission
+            if ($donation->referral_code) {
+                $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
+                if ($fundraising) {
+                    $commissionSetting = Commission::first();
+                    $commissionPercent = $commissionSetting->amount ?? 0;
+                    $commission = ($donation->amount * $commissionPercent) / 100;
+
+                    $fundraising->total_donatur = max(0, $fundraising->total_donatur - 1);
+                    $fundraising->jumlah_donasi = max(0, $fundraising->jumlah_donasi - $donation->amount);
+                    $fundraising->commission = max(0, $fundraising->commission - $commission);
+
+                    // Hapus entry dari donations array
+                    $donations = json_decode($fundraising->donations, true) ?: [];
+                    $donations = array_filter($donations, fn($d) => $d['donation_id'] != $donation->id);
+                    $fundraising->donations = json_encode(array_values($donations));
+                    $fundraising->save();
+                }
+            }
         }
 
-        if($request->status == 'sukses' && $donation->payment_type == 'manual'){
+        // ── FORWARD: jika status baru adalah sukses
+        if ($newStatus == 'sukses' && $donation->payment_type == 'manual') {
+            $this->trackServerSideConversion($donation);
 
-                $this->trackServerSideConversion($donation);
-                
-                // Update campaign statistics
-                $campaign = $donation->campaign;
-                $campaign->jumlah_donasi += $donation->amount;
-                $campaign->current_donation += $donation->amount;
-                $campaign->total_donatur += 1;
-                
-                $campaign->save();
+            $campaign = $donation->campaign;
+            $campaign->jumlah_donasi += $donation->amount;
+            $campaign->current_donation += $donation->amount;
+            $campaign->total_donatur += 1;
+            $campaign->save();
 
-                 // Update donation source statistics
-                if ($donation->donation_source_id) {
-                    $source = DonationSource::find($donation->donation_source_id);
-                    if ($source) {
-                        $source->total_donations += 1;
-                        $source->total_amount += $donation->amount;
-                        $source->save();
-                    }
+            // Update donation source statistics
+            if ($donation->donation_source_id) {
+                $source = DonationSource::find($donation->donation_source_id);
+                if ($source) {
+                    $source->total_donations += 1;
+                    $source->total_amount += $donation->amount;
+                    $source->save();
                 }
-                
-                if ($donation->referral_code) {
-                    $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
-                    
-                    if ($fundraising) {
-                        $commissionSetting = Commission::first();
-                        $commissionPercent = $commissionSetting->amount ?? 0;
-                        
-                        // Calculate commission based on percentage from database
-                        $commission = ($donation->amount * $commissionPercent) / 100;
-                        
-                        // Update fundraising data
-                        $fundraising->total_donatur += 1;
-                        $fundraising->jumlah_donasi += $donation->amount;
-                        $fundraising->commission += $commission;
-                        
-                        // Update donations array
-                        $donations = json_decode($fundraising->donations, true) ?: [];
-                        $donations[] = [
-                            'donation_id' => $donation->id,
-                            'amount' => $donation->amount,
-                            'commission' => $commission,
-                            'user_name' => $donation->user ? $donation->user->name : null,
-                            'user_email' => $donation->user ? $donation->user->email : null,
-                            'created_at' => now()->format('Y-m-d H:i:s')
-                        ];
-                        $fundraising->donations = json_encode($donations);
-                        
-                        $fundraising->save();
-                    }
-                }
+            }
 
-                try {
-                    Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
-                    // Log::info('Donation success email sent to donor: ' . $donation->email);
-                } catch (\Exception $e) {
-                    Log::error('Failed to send donation success email to donor: ' . $e->getMessage());
-                }
+            if ($donation->referral_code) {
+                $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
+                if ($fundraising) {
+                    $commissionSetting = Commission::first();
+                    $commissionPercent = $commissionSetting->amount ?? 0;
+                    $commission = ($donation->amount * $commissionPercent) / 100;
 
-                try {
-                    $campaign = Campaign::with('admin')->find($donation->campaign_id);
-                    if ($campaign && $campaign->admin && $campaign->admin->email) {
-                        Mail::to($campaign->admin->email)->queue(new CampaignDonationMail($donation));
-                        // Log::info('Campaign donation email sent to admin: ' . $campaign->admin->email);
-                    } else {
-                        Log::warning('Admin email not found for campaign ID: ' . $donation->campaign_id);
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Failed to send campaign donation email to admin: ' . $e->getMessage());
-                }
+                    $fundraising->total_donatur += 1;
+                    $fundraising->jumlah_donasi += $donation->amount;
+                    $fundraising->commission += $commission;
 
-                $this->clearDonationSessions();
+                    $donations = json_decode($fundraising->donations, true) ?: [];
+                    $donations[] = [
+                        'donation_id' => $donation->id,
+                        'amount' => $donation->amount,
+                        'commission' => $commission,
+                        'user_name' => $donation->user ? $donation->user->name : null,
+                        'user_email' => $donation->user ? $donation->user->email : null,
+                        'created_at' => now()->format('Y-m-d H:i:s')
+                    ];
+                    $fundraising->donations = json_encode($donations);
+                    $fundraising->save();
+                }
+            }
+
+            // Kirim email notifikasi
+            try {
+                Mail::to($donation->email)->queue(new DonationSuccessMail($donation));
+            } catch (\Exception $e) {
+                Log::error('Failed to send donation success email: ' . $e->getMessage());
+            }
+
+            try {
+                $campaign = Campaign::with('admin')->find($donation->campaign_id);
+                if ($campaign && $campaign->admin && $campaign->admin->email) {
+                    Mail::to($campaign->admin->email)->queue(new CampaignDonationMail($donation));
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send campaign donation email: ' . $e->getMessage());
+            }
+
+            $this->clearDonationSessions();
         }
 
         $donation->updated_at = now();
-        $donation->status = $request->status;
+        $donation->status = $newStatus;
         $donation->save();
 
+        DB::commit();
         return response()->json(['success' => true, 'message' => 'Status donasi berhasil diperbarui']);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Error updating donation status: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Gagal memperbarui status: ' . $e->getMessage()], 500);
     }
+}
 
 
 
