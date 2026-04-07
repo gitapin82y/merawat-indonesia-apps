@@ -40,10 +40,7 @@ Route::post('/api/espay/callback', [EspayCallbackController::class, 'handleCallb
     ->name('espay.callback');
 
     // Espay inquiry endpoint (dipanggil Espay sebelum user bayar)
-// Route::post('/api/espay/inquiry', [EspayCallbackController::class, 'handleInquiry'])
-//     ->name('espay.inquiry');
-
-    Route::post('/api/espay/inquiry-invalid', [EspayCallbackController::class, 'handleInquiry'])
+Route::post('/api/espay/inquiry', [EspayCallbackController::class, 'handleInquiry'])
     ->name('espay.inquiry');
 
 // Espay payment notification (dipanggil Espay setelah user bayar)  

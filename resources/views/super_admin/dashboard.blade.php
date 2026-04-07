@@ -46,9 +46,9 @@
                 Pembayaran Manual
             </a>
         </div>
-       {{-- <a class="btn btn-danger" data-toggle="modal" data-target="#manageEspayModal">
+       <a class="btn btn-danger d-none" data-toggle="modal" data-target="#manageEspayModal">
     Pembayaran Espay
-</a> --}}
+</a>
         <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" href="{{ route('legal-documents.index') }}">
                 Dokumen Legal
