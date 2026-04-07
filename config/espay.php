@@ -30,7 +30,7 @@ return [
     'merchant_code' => env('ESPAY_MERCHANT_CODE', 'SGWYAYASANBINAMULIA'),
     'merchant_name' => env('ESPAY_MERCHANT_NAME', 'YAYASAN BINA MULIA'),
     'api_key' => env('ESPAY_API_KEY', '478e6640ee7aab15364bf42569559a35'),
-    'signature_key' => env('ESPAY_SIGNATURE_KEY', 'lb6k6q63lb0zn0hj'),
+    'signature_key' => env('ESPAY_SIGNATURE_KEY', 'faillb6k6q63lb0zn0hj'),
     'password' => env('ESPAY_PASSWORD', 'Ybm123456!'),
 
     /*
