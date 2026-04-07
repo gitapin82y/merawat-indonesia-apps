@@ -444,10 +444,10 @@ public function checkPaymentStatus($orderId)
             'signature'        => $signature,
         ]);
 
-        Log::info('Espay Check Status Response', [
-            'status'   => $response->status(),
-            'response' => $response->json(),
-        ]);
+        // Log::info('Espay Check Status Response', [
+        //     'status'   => $response->status(),
+        //     'response' => $response->json(),
+        // ]);
 
         if ($response->successful()) {
             $data     = $response->json();

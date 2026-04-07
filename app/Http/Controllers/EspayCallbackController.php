@@ -272,6 +272,17 @@ public function handleInquiry(Request $request)
         $rqUuid   = (string) ($request->input('rq_uuid') ?? '');
         $commCode = (string) ($request->input('comm_code') ?? '');
 
+        // Validasi password dari Espay
+$espayPassword = $request->input('password');
+if ($espayPassword && $espayPassword !== config('espay.password')) {
+    return response()->json([
+        'rq_uuid'       => $rqUuid,
+        'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+        'error_code'    => '0012',
+        'error_message' => 'Invalid Password',
+    ]);
+}
+
         // Validasi X-SIGNATURE dari header
 $xSignature = $request->header('X-SIGNATURE');
 if ($xSignature && str_starts_with($xSignature, 'invalid')) {
