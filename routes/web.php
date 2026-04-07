@@ -44,7 +44,7 @@ Route::post('/api/espay/inquiry', [EspayCallbackController::class, 'handleInquir
     ->name('espay.inquiry');
 
 // Espay payment notification (dipanggil Espay setelah user bayar)  
-Route::post('/api/espay/payment', [EspayCallbackController::class, 'handlePayment'])
+Route::post('/api/espay/payment-disabled', [EspayCallbackController::class, 'handlePayment'])
     ->name('espay.payment');
 
 // Route test email biasa (sudah ada dan berfungsi)
