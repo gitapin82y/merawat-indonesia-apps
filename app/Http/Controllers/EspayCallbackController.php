@@ -295,14 +295,25 @@ if ($password !== null && $password !== config('espay.password')) {
     ]);
 }
 
-        // Validasi X-SIGNATURE dari header
+// Validasi X-SIGNATURE dari header
 $xSignature = $request->header('X-SIGNATURE');
 if ($xSignature && str_starts_with($xSignature, 'invalid')) {
     return response()->json([
-        'responseCode'    => '4012400',
-        'responseMessage' => 'Unauthorized. Invalid Signature',
+        'rq_uuid'       => $rqUuid,
+        'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+        'error_code'    => '0031',
+        'error_message' => 'Rejected, Error komunikasi dengan mitra',
     ]);
 }
+
+        // Validasi X-SIGNATURE dari header
+// $xSignature = $request->header('X-SIGNATURE');
+// if ($xSignature && str_starts_with($xSignature, 'invalid')) {
+//     return response()->json([
+//         'responseCode'    => '4012400',
+//         'responseMessage' => 'Unauthorized. Invalid Signature',
+//     ]);
+// }
 
 // Validasi mandatory field SNAP
 $virtualAccountNo = $request->input('virtualAccountNo');
