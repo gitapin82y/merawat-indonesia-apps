@@ -590,8 +590,8 @@ return response()->json([
     // non-SNAP tetap ada
     'rq_uuid'            => $rqUuid,
     'rs_datetime'        => $rsDatetime,
-    'error_code'         => '0000',
-    'error_message'      => 'Success',
+    'error_code'         => '0099',
+    'error_message'      => 'Invalid Signature Key',
     'order_id'           => $orderId,
     'reconcile_id'       => 'REC-' . $donation->id . '-' . time(),
     'reconcile_datetime' => $rsDatetime,
