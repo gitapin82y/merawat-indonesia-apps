@@ -272,6 +272,29 @@ public function handleInquiry(Request $request)
         $rqUuid   = (string) ($request->input('rq_uuid') ?? '');
         $commCode = (string) ($request->input('comm_code') ?? '');
 
+
+// Validasi API Key (Gambar 3)
+$apiKey = $request->input('api_key') ?? null;
+if ($apiKey !== null && $apiKey !== config('espay.api_key')) {
+    return response()->json([
+        'rq_uuid'       => $rqUuid,
+        'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+        'error_code'    => '0031',
+        'error_message' => 'Rejected, Error komunikasi dengan mitra',
+    ]);
+}
+
+// Validasi Password (Gambar 4)
+$password = $request->input('password') ?? null;
+if ($password !== null && $password !== config('espay.password')) {
+    return response()->json([
+        'rq_uuid'       => $rqUuid,
+        'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+        'error_code'    => '0031',
+        'error_message' => 'Rejected, Error komunikasi dengan mitra',
+    ]);
+}
+
         // Validasi X-SIGNATURE dari header
 $xSignature = $request->header('X-SIGNATURE');
 if ($xSignature && str_starts_with($xSignature, 'invalid')) {
@@ -431,6 +454,46 @@ public function handlePayment(Request $request)
 {
     try {
         Log::info('Espay Payment Notification', $request->all());
+
+               // Validasi Password dari Espay (Gambar 11)
+$password = $request->input('password') ?? null;
+if ($password !== null && $password !== config('espay.password')) {
+    return response()->json([
+        'rq_uuid'       => $request->input('rq_uuid', ''),
+        'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+        'error_code'    => '0031',
+        'error_message' => 'Rejected, Error komunikasi dengan mitra',
+    ]);
+}
+
+// Validasi Signature dari Espay (Gambar 10, 12)
+$espaySignature = $request->input('signature') ?? null;
+$commCode       = $request->input('comm_code') ?? '';
+$orderId        = $request->input('order_id') ?? '';
+$rqUuidVal      = $request->input('rq_uuid', '');
+$rqDatetime     = $request->input('rq_datetime', '');
+$amount         = $request->input('amount', '');
+
+if ($espaySignature !== null) {
+    // Formula: SHA256(UPPERCASE("##KEY##comm_code##order_id##amount##rq_datetime##PAYMENTREPORT##"))
+    $expectedSig = hash('sha256', strtoupper(
+        '##' . config('espay.signature_key') . 
+        '##' . $commCode . 
+        '##' . $orderId . 
+        '##' . $amount . 
+        '##' . $rqDatetime . 
+        '##PAYMENTREPORT##'
+    ));
+
+    if ($espaySignature !== $expectedSig) {
+        return response()->json([
+            'rq_uuid'       => $rqUuidVal,
+            'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+            'error_code'    => '0031',
+            'error_message' => 'Rejected, Invalid Signature Key',
+        ]);
+    }
+}
 
         $paymentRef = $request->input('additionalInfo.paymentRef') 
            ?? $request->input('payment_ref') 
