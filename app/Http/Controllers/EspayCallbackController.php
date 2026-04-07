@@ -502,7 +502,9 @@ if (!$orderId) {
 }
 
 // Validasi amount
-$paidAmount = (float) ($request->input('paidAmount.value') ?? $request->input('paidAmount')['value'] ?? 0);
+$paidAmount = (float) ($request->input('totalAmount.value') 
+           ?? $request->input('paidAmount.value') 
+           ?? 0);
 $expectedAmount = (float) $donation->amount;
 
 if ($paidAmount > 0 && $paidAmount !== $expectedAmount) {
@@ -512,7 +514,8 @@ if ($paidAmount > 0 && $paidAmount !== $expectedAmount) {
     ]);
 }
 
-        $isSuccess = ($status === '0' && $txStatus === 'S');
+        $transactionStatus = $request->input('additionalInfo.transactionStatus');
+$isSuccess = ($transactionStatus === 'S') || ($status === '0' && $txStatus === 'S');
 
         if ($isSuccess && $donation->status !== 'sukses') {
             DB::beginTransaction();
