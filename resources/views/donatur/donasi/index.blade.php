@@ -207,7 +207,10 @@
                 <i class="fa-solid fa-exclamation-triangle me-2"></i>
                 JANGAN GUNAKAN!! Metode pembayaran otomatis sedang maintenance. Silakan gunakan pembayaran manual.
             </div>
-{{--         
+
+
+            <div class="d-none">
+      
         @if(count($channels) > 0)
             <!-- Group channels by category -->
             @php
@@ -297,7 +300,9 @@
                 Metode pembayaran otomatis sedang tidak tersedia. Silakan gunakan pembayaran manual atau hubungi admin.
             </div>
         @endif
-    </div> --}}
+    </div>
+            </div>
+  
 
     <!-- MANUAL PAYMENT TAB -->
     <div class="tab-pane fade" id="manual-content" role="tabpanel" aria-labelledby="manual-tab">
