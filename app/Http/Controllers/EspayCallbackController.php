@@ -380,14 +380,14 @@ if ($donation->status === 'gagal') {
     ]);
 }
 
-        if ($donation->status !== 'pending') {
-            return response()->json([
-                'rq_uuid'       => $rqUuid,
-                'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                'error_code'    => '0014',
-                'error_message' => 'Transaction Already Processed',
-            ]);
-        }
+        // if ($donation->status !== 'pending') {
+        //     return response()->json([
+        //         'rq_uuid'       => $rqUuid,
+        //         'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+        //         'error_code'    => '0014',
+        //         'error_message' => 'Transaction Already Processed',
+        //     ]);
+        // }
 
         $rsDatetime   = now('Asia/Jakarta')->format('Y-m-d H:i:s');
         $amount       = number_format((float) $donation->amount, 2, '.', '');
@@ -461,83 +461,77 @@ if ($donation->status === 'gagal') {
 ]);
     }
 }
+
 public function handlePayment(Request $request)
 {
     try {
         Log::info('Espay Payment Notification', $request->all());
 
-               // Validasi Password dari Espay (Gambar 11)
-$password = $request->input('password') ?? null;
-if ($password !== null && $password !== config('espay.password')) {
-    return response()->json([
-        'rq_uuid'       => $request->input('rq_uuid', ''),
-        'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
-        'error_code'    => '0031',
-        'error_message' => 'Rejected, Error komunikasi dengan mitra',
-    ]);
-}
-
-// Validasi Signature dari Espay (Gambar 10, 12)
-$espaySignature = $request->input('signature') ?? null;
-$commCode       = $request->input('comm_code') ?? '';
-$orderId        = $request->input('order_id') ?? '';
-$rqUuidVal      = $request->input('rq_uuid', '');
-$rqDatetime     = $request->input('rq_datetime', '');
-$amount         = $request->input('amount', '');
-
-if ($espaySignature !== null) {
-    // Formula: SHA256(UPPERCASE("##KEY##comm_code##order_id##amount##rq_datetime##PAYMENTREPORT##"))
-    $expectedSig = hash('sha256', strtoupper(
-        '##' . config('espay.signature_key') . 
-        '##' . $commCode . 
-        '##' . $orderId . 
-        '##' . $amount . 
-        '##' . $rqDatetime . 
-        '##PAYMENTREPORT##'
-    ));
-
-    if ($espaySignature !== $expectedSig) {
-        return response()->json([
-            'rq_uuid'       => $rqUuidVal,
-            'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'error_code'    => '0031',
-            'error_message' => 'Rejected, Invalid Signature Key',
-        ]);
-    }
-}
-
-        $paymentRef = $request->input('additionalInfo.paymentRef') 
-           ?? $request->input('payment_ref') 
-           ?? null;
-
-if ($paymentRef) {
-    $cacheKey = 'payment_ref_' . $paymentRef;
-    if (Cache::has($cacheKey)) {
-        return response()->json([
-            'rq_uuid'       => $request->input('rq_uuid', ''),
-            'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'error_code'    => '0001',
-            'error_message' => 'double payment',
-        ]);
-    }
-    Cache::put($cacheKey, true, now()->addHours(24));
-}
-
-        $orderId = $request->input('order_id')
-        ?? $request->input('virtualAccountNo')
-        ?? $request->input('partnerReferenceNo')
-        ?? null;
-        
+        // Definisi variabel utama
         $rqUuid   = $request->input('rq_uuid', '');
         $status   = $request->input('status', '0');
         $txStatus = $request->input('tx_status', 'S');
+        $orderId  = $request->input('order_id')
+                 ?? $request->input('virtualAccountNo')
+                 ?? $request->input('partnerReferenceNo')
+                 ?? null;
+        $commCode    = $request->input('comm_code', '');
+        $rqDatetime  = $request->input('rq_datetime', '');
+        $amount      = $request->input('amount', '');
 
-    
+        // Validasi Password (Gambar 11)
+        $password = $request->input('password') ?? null;
+        if ($password !== null && $password !== config('espay.password')) {
+            return response()->json([
+                'rq_uuid'       => $rqUuid,
+                'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                'error_code'    => '0031',
+                'error_message' => 'Rejected, Error komunikasi dengan mitra',
+            ]);
+        }
+
+        // Validasi Signature (Gambar 10, 12)
+        $espaySignature = $request->input('signature') ?? null;
+        if ($espaySignature !== null) {
+            $expectedSig = hash('sha256', strtoupper(
+                '##' . config('espay.signature_key') .
+                '##' . $commCode .
+                '##' . $orderId .
+                '##' . $amount .
+                '##' . $rqDatetime .
+                '##PAYMENTREPORT##'
+            ));
+            if ($espaySignature !== $expectedSig) {
+                return response()->json([
+                    'rq_uuid'       => $rqUuid,
+                    'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                    'error_code'    => '0031',
+                    'error_message' => 'Rejected, Invalid Signature Key',
+                ]);
+            }
+        }
+
+        // Validasi double payment (Gambar 14)
+        $paymentRef = $request->input('additionalInfo.paymentRef')
+                   ?? $request->input('payment_ref')
+                   ?? null;
+        if ($paymentRef) {
+            $cacheKey = 'payment_ref_' . $paymentRef;
+            if (Cache::has($cacheKey)) {
+                return response()->json([
+                    'rq_uuid'       => $rqUuid,
+                    'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                    'error_code'    => '0001',
+                    'error_message' => 'double payment',
+                ]);
+            }
+            Cache::put($cacheKey, true, now()->addHours(24));
+        }
 
         // Validasi mandatory field SNAP
         $virtualAccountNo = $request->input('virtualAccountNo');
         $partnerServiceId = $request->input('partnerServiceId');
-        $customerNo = $request->input('customerNo');
+        $customerNo       = $request->input('customerNo');
 
         if (!$virtualAccountNo || !$partnerServiceId || !$customerNo) {
             $missingField = !$partnerServiceId ? 'partnerServiceId' : (!$customerNo ? 'customerNo' : 'virtualAccountNo');
@@ -576,7 +570,6 @@ if ($paymentRef) {
         }
 
         $donation = Donation::where('snap_token', $orderId)->first();
-
         if (!$donation) {
             return response()->json([
                 'responseCode'    => '4042512',
@@ -585,11 +578,8 @@ if ($paymentRef) {
         }
 
         // Validasi amount
-        $paidAmount = (float) ($request->input('totalAmount.value') 
-                   ?? $request->input('paidAmount.value') 
-                   ?? 0);
+        $paidAmount     = (float) ($request->input('totalAmount.value') ?? $request->input('paidAmount.value') ?? 0);
         $expectedAmount = (float) $donation->amount;
-
         if ($paidAmount > 0 && $paidAmount !== $expectedAmount) {
             return response()->json([
                 'responseCode'    => '4042513',
