@@ -14,8 +14,7 @@ class VerifyCsrfToken
      * @var array
      */
     protected $except = [
-        'api/tripay/callback',
-        'api/tripay/*'
+        '/api/espay/*',
     ];
 
     /**

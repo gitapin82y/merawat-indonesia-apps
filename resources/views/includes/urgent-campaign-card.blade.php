@@ -13,7 +13,7 @@
         <small>Terkumpul</small>
         </div>
         <div class="col-6 p-0 text-end">
-            <strong>
+            {{-- <strong>
                 @if($urgentItem->deadline)
                     @if($urgentItem->remainingDays < 0)
                         0
@@ -38,7 +38,34 @@
                 @else
                     Tanpa Batas Waktu
                 @endif
-            </small>
+            </small> --}}
+            {{-- SESUDAH --}}
+<strong>
+    @if($urgentItem->deadline)
+        @if($urgentItem->remainingDays < 0)
+            <span class="text-secondary" style="font-size:11px;">Sudah Berakhir</span>
+        @elseif($urgentItem->remainingDays == 0)
+            {{ $urgentItem->remainingTime }}
+        @else
+            {{ $urgentItem->remainingDays }}
+        @endif
+    @else
+        <i class="fas fa-infinity"></i>
+    @endif
+</strong>
+<small>
+    @if($urgentItem->deadline)
+        @if($urgentItem->remainingDays < 0)
+            {{-- kosong --}}
+        @elseif($urgentItem->remainingDays == 0)
+            Jam Lagi
+        @else
+            Hari Lagi
+        @endif
+    @else
+        Tanpa Batas Waktu
+    @endif
+</small>
         </div>
     </div>
 </a>

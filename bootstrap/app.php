@@ -31,9 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'checkAuth' => \App\Http\Middleware\CheckAuth::class,
             'tripay.ip' => \App\Http\Middleware\TripayIpMiddleware::class,
         ]);
-        $middleware->validateCsrfTokens(except: [
-            'api/tripay/callback'
-        ]);        
+         $middleware->validateCsrfTokens(except: [
+        'api/espay/*',
+    ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // 404 - Akses ditolak

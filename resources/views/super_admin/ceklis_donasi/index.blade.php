@@ -385,53 +385,61 @@ $(function () {
 });
 
 function updateStatus(id, status) {
-    // Menggunakan SweetAlert untuk konfirmasi
+    let title, text, confirmText, icon;
+
+    if (status === 'sukses') {
+        title = 'Approve Donasi?';
+        text = 'Dana akan ditambahkan ke statistik kampanye.';
+        confirmText = 'Ya, Approve!';
+        icon = 'question';
+    } else if (status === 'gagal') {
+        title = 'Reject Donasi?';
+        text = 'Donasi akan ditandai sebagai gagal.';
+        confirmText = 'Ya, Reject!';
+        icon = 'warning';
+    } else if (status === 'pending') {
+        title = 'Kembalikan ke Pending?';
+        text = 'Status akan dikembalikan ke pending. Statistik kampanye akan disesuaikan kembali jika sebelumnya sudah diapprove.';
+        confirmText = 'Ya, Kembalikan!';
+        icon = 'info';
+    }
+
     Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: "Anda ingin mengubah status menjadi " + status + "?",
-        icon: 'warning',
+        title: title,
+        text: text,
+        icon: icon,
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya, Ubah!',
+        confirmButtonText: confirmText,
         cancelButtonText: 'Batal'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Kirim AJAX jika konfirmasi diterima
             $.ajax({
-                url: "{{ route('donasi.updateStatus') }}",  // Pastikan route sudah benar
-                type: "POST",
+                url: '{{ route('donasi.updateStatus') }}',
+                type: 'POST',
                 data: {
-                    _token: "{{ csrf_token() }}",
+                    _token: '{{ csrf_token() }}',
                     id: id,
                     status: status
                 },
                 success: function(response) {
                     if (response.success) {
-                        // Tampilkan pesan sukses menggunakan SweetAlert
-                        Swal.fire(
-                            'Status Diubah!',
-                            response.message,
-                            'success'
-                        );
-                        // Reload data tabel
+                        Swal.fire({
+                            icon: 'success',
+                            title: response.message,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
                         $('.yajra-datatable').DataTable().ajax.reload();
                     } else {
-                        // Tampilkan pesan error jika gagal
-                        Swal.fire(
-                            'Gagal!',
-                            "Gagal mengupdate status.",
-                            'error'
-                        );
+                        Swal.fire('Gagal!', response.message || 'Gagal mengupdate status.', 'error');
                     }
                 },
                 error: function() {
-                    // Tampilkan pesan error jika terjadi kesalahan
-                    Swal.fire(
-                        'Terjadi Kesalahan!',
-                        'Tidak dapat mengupdate status.',
-                        'error'
-                    );
+                    Swal.fire('Terjadi Kesalahan!', 'Tidak dapat mengupdate status.', 'error');
                 }
             });
         }

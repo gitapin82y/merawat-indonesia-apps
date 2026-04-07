@@ -31,6 +31,22 @@ use App\Http\Controllers\SiteSettingsController;
 use App\Http\Controllers\UrgentCampaignController;
 use App\Http\Controllers\ArticleController;
 
+use App\Http\Controllers\EspayPaymentMethodController;
+use App\Http\Controllers\EspayCallbackController;
+
+use App\Http\Controllers\StatistikPencairanController;
+
+Route::post('/api/espay/callback', [EspayCallbackController::class, 'handleCallback'])
+    ->name('espay.callback');
+
+    // Espay inquiry endpoint (dipanggil Espay sebelum user bayar)
+Route::post('/api/espay/inquiry', [EspayCallbackController::class, 'handleInquiry'])
+    ->name('espay.inquiry');
+
+// Espay payment notification (dipanggil Espay setelah user bayar)  
+Route::post('/api/espay/payment', [EspayCallbackController::class, 'handlePayment'])
+    ->name('espay.payment');
+
 // Route test email biasa (sudah ada dan berfungsi)
 Route::get('/test-email', function () {
     \Mail::raw('Tes email', function ($message) {
@@ -131,6 +147,7 @@ Route::get('/kampanye/{slug}/ref/{code}', [FundraisingController::class, 'showCa
 // Replace current routes with:
 Route::get('/privacy-policy', [LegalDocumentController::class, 'showPrivacyPolicy'])->name('privacy.policy');
 Route::get('/terms-of-service', [LegalDocumentController::class, 'showTermsOfService'])->name('terms.service');
+Route::get('/tentang-kami', [LegalDocumentController::class, 'showTentangKami'])->name('tentang.kami');
 Route::get('/data-deletion', [LegalController::class, 'dataDeletion'])->name('data.deletion');
 Route::post('/data-deletion-request', [LegalController::class, 'processDeletionRequest'])->name('data.deletion.request');
 Route::get('/test-error/{code}', function ($code) {
@@ -267,6 +284,19 @@ Route::post('/upload-image', [CampaignController::class, 'upload'])->name('image
 // ->middleware(['auth', 'superadmin'])
 Route::post('kampanye/toggle-save', [CampaignController::class, 'toggleSave'])->name('campaign.toggle-save');
 Route::middleware(['checkRole:super_admin'])->prefix('super-admin')->group(function () {
+        // Espay Payment Methods Management
+    Route::get('/espay-payment-methods', [EspayPaymentMethodController::class, 'index'])
+        ->name('espay-payment-methods.index');
+    
+    Route::get('/espay-payment-methods/fetch', [EspayPaymentMethodController::class, 'fetchFromEspay'])
+        ->name('espay-payment-methods.fetch');
+    
+    Route::post('/espay-payment-methods/sync', [EspayPaymentMethodController::class, 'syncPaymentMethods'])
+        ->name('espay-payment-methods.sync');
+    
+    Route::post('/espay-payment-methods/toggle-status', [EspayPaymentMethodController::class, 'toggleStatus'])
+        ->name('espay-payment-methods.toggle-status');
+
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
 
     Route::get('/commission', [CommissionController::class, 'getCommission'])
@@ -287,6 +317,8 @@ Route::post('/site-settings/social-media', [SiteSettingsController::class, 'upda
 
     Route::resource('prioritas-kampanye', PrioritasCampaignController::class);
     Route::resource('urgent-kampanye', UrgentCampaignController::class);
+    Route::post('kampanye/{id}/toggle-home-visibility', [CampaignController::class, 'toggleHomeVisibility'])
+    ->name('kampanye.toggle-home-visibility');
     Route::get('fundraising-campaign/{campaign}', [FundraisingController::class, 'campaignDetail'])->name('fundraising.campaign.detail');
     Route::delete('fundraising-campaign/{campaign}', [FundraisingController::class, 'destroyByCampaign'])->name('fundraising.campaign.destroy');
     Route::resource('fundraising', FundraisingController::class);
@@ -329,6 +361,10 @@ Route::get('/tripay-payment-methods', [TripayPaymentMethodController::class, 'in
 Route::get('/tripay-payment-methods/fetch', [TripayPaymentMethodController::class, 'fetchFromTripay'])->name('tripay-payment-methods.fetch');
 Route::post('/tripay-payment-methods/sync', [TripayPaymentMethodController::class, 'syncPaymentMethods'])->name('tripay-payment-methods.sync');
 Route::post('/tripay-payment-methods/toggle-status', [TripayPaymentMethodController::class, 'toggleStatus'])->name('tripay-payment-methods.toggle-status');
+
+Route::get('/statistik-pencairan', [StatistikPencairanController::class, 'index'])->name('statistik-pencairan.index');
+Route::get('/statistik-pencairan/{id}', [StatistikPencairanController::class, 'show'])->name('statistik-pencairan.show');
+
 });
 
 // custom route

@@ -51,15 +51,39 @@ class UserController extends Controller
         $oneWeekFromNow = $today->copy()->addWeek();
 
         // Gunakan paginate untuk pagination biasa
-        $campaigns = Campaign::where('status', 'aktif')->orderBy('created_at', 'desc')->paginate(6); // Perhatikan jumlah item per halaman
+        $campaigns = Campaign::where('status', 'aktif')->where('is_hidden_from_home', false)->orderBy('created_at', 'desc')->paginate(6); // Perhatikan jumlah item per halaman
 
-        $prioritasCampaigns = prioritasCampaign::with(['campaign'])
-        ->orderBy('prioritas', 'asc')
-        ->get();
+        // $prioritasCampaigns = prioritasCampaign::with(['campaign'])
+        // ->orderBy('prioritas', 'asc')
+        // ->get();
 
-        $urgentCampaigns = UrgentCampaign::with(['campaign'])
-        ->orderBy('prioritas', 'asc')
-        ->get();
+        // $urgentCampaigns = UrgentCampaign::with(['campaign'])
+        // ->orderBy('prioritas', 'asc')
+        // ->get();
+
+        $prioritasCampaigns = PrioritasCampaign::with(['campaign'])
+    ->whereHas('campaign', function($q) {
+        $q->where('status', 'aktif')
+        ->where('is_hidden_from_home', false)
+          ->where(function($q2) {
+              $q2->whereNull('deadline')
+                 ->orWhereDate('deadline', '>=', now()->toDateString());
+          });
+    })
+    ->orderBy('prioritas', 'asc')
+    ->get();
+
+$urgentCampaigns = UrgentCampaign::with(['campaign'])
+    ->whereHas('campaign', function($q) {
+        $q->where('status', 'aktif')
+        ->where('is_hidden_from_home', false)
+          ->where(function($q2) {
+              $q2->whereNull('deadline')
+                 ->orWhereDate('deadline', '>=', now()->toDateString());
+          });
+    })
+    ->orderBy('prioritas', 'asc')
+    ->get();
 
 
         $banners = Banner::get();
@@ -113,9 +137,20 @@ class UserController extends Controller
             ->limit(10)
             ->get();
 
-        $prioritasCampaigns = prioritasCampaign::with(['campaign'])
-        ->orderBy('prioritas', 'asc')
-        ->get();
+        // $prioritasCampaigns = prioritasCampaign::with(['campaign'])
+        // ->orderBy('prioritas', 'asc')
+        // ->get();
+
+        $prioritasCampaigns = PrioritasCampaign::with(['campaign'])
+    ->whereHas('campaign', function($q) {
+        $q->where('status', 'aktif')
+          ->where(function($q2) {
+              $q2->whereNull('deadline')
+                 ->orWhereDate('deadline', '>=', now()->toDateString());
+          });
+    })
+    ->orderBy('prioritas', 'asc')
+    ->get();
 
         // Untuk permintaan AJAX, hanya kirim data kampanye dan status pagination
         if ($request->ajax()) {
@@ -134,7 +169,7 @@ class UserController extends Controller
 
     public function result(Request $request)
 {
-    $query = Campaign::with('category')->where('status', 'aktif');
+    $query = Campaign::with('category')->whereIn('status', ['aktif', 'selesai']);
     $hasFilters = false;
 
     // Filter berdasarkan kategori (multiple)

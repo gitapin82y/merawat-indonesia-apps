@@ -29,6 +29,20 @@ class LegalDocumentController extends Controller
         return view('super_admin.legal_documents.index', compact('privacyPolicy', 'termsOfService'));
     }
 
+    public function showTentangKami()
+{
+    $document = LegalDocument::getByType('tentang_kami');
+    $content = $document ? $document->content : null;
+
+    $lastUpdated = null;
+    if ($document && $document->last_updated) {
+        $lastUpdated = $document->last_updated instanceof Carbon
+            ? $document->last_updated
+            : Carbon::parse($document->last_updated);
+    }
+
+    return view('legal.tentang_kami', compact('content', 'lastUpdated'));
+}
     /**
      * Edit the specified legal document.
      */

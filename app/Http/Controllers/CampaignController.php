@@ -46,24 +46,58 @@ public function __construct(NotificationService $notificationService)
             
             return DataTables::of($query)
                 ->addIndexColumn()
+                // ->addColumn('action', function($row) {
+                //     $actionBtn = '<div class="btn-group" role="group">';
+                    
+                //     // Add approval/rejection buttons for campaigns in validation status
+                //     if($row->status === 'validasi') {
+                //         $actionBtn .= '
+                //             <button onclick="changeStatus('.$row->id.', \'disetujui\')" class="btn btn-success btn-sm action-btn" title="Approve"><i class="fa-solid fa-check"></i></button>
+                //             <button onclick="changeStatus('.$row->id.', \'ditolak\')" class="btn btn-warning text-white btn-sm action-btn" title="Reject"><i class="fa-solid fa-times"></i></button>';
+                //     }
+                    
+                //     $actionBtn .= '
+                //         <a href="/kampanye/'.$row->slug.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
+                //         <a href="'.route('kampanye.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
+                //         <button onclick="deleteCampaign('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                //     </div>';
+                    
+                //     return $actionBtn;
+                // })
+
                 ->addColumn('action', function($row) {
-                    $actionBtn = '<div class="btn-group" role="group">';
-                    
-                    // Add approval/rejection buttons for campaigns in validation status
-                    if($row->status === 'validasi') {
-                        $actionBtn .= '
-                            <button onclick="changeStatus('.$row->id.', \'disetujui\')" class="btn btn-success btn-sm action-btn" title="Approve"><i class="fa-solid fa-check"></i></button>
-                            <button onclick="changeStatus('.$row->id.', \'ditolak\')" class="btn btn-warning text-white btn-sm action-btn" title="Reject"><i class="fa-solid fa-times"></i></button>';
-                    }
-                    
-                    $actionBtn .= '
-                        <a href="/kampanye/'.$row->slug.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
-                        <a href="'.route('kampanye.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
-                        <button onclick="deleteCampaign('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
-                    </div>';
-                    
-                    return $actionBtn;
-                })
+    $actionBtn = '<div class="btn-group" role="group">';
+    
+    // Tombol approve/reject untuk status validasi
+    if($row->status === 'validasi') {
+        $actionBtn .= '
+            <button onclick="changeStatus('.$row->id.', \'disetujui\')" class="btn btn-success btn-sm action-btn" title="Approve"><i class="fa-solid fa-check"></i></button>
+            <button onclick="changeStatus('.$row->id.', \'ditolak\')" class="btn btn-warning text-white btn-sm action-btn" title="Reject"><i class="fa-solid fa-times"></i></button>';
+    }
+
+    // Tombol toggle hide/unhide dari halaman home
+    $isHidden = $row->is_hidden_from_home;
+    $toggleColor = $isHidden ? 'btn-secondary' : 'btn-success';
+    $toggleTitle = $isHidden ? 'Hidden dari Home' : 'Tampil di Home';
+    // $toggleIcon = $isHidden ? 'fa-eye-slash' : 'fa-eye';
+    $toggleIcon = $isHidden ? 'fa-toggle-off' : 'fa-toggle-on';
+    $actionBtn .= '
+        <button onclick="toggleHomeVisibility('.$row->id.', this)" 
+            class="btn '.$toggleColor.' btn-sm" 
+            data-hidden="'.($isHidden ? '1' : '0').'"
+            title="'.$toggleTitle.'">
+            <i class="fa-solid '.$toggleIcon.'"></i>
+        </button>';
+
+    // Tombol lainnya yang sudah ada
+    $actionBtn .= '
+        <a href="/kampanye/'.$row->slug.'" class="btn btn-info btn-sm"><i class="fa-solid fa-eye text-white"></i></a>
+        <a href="'.route('kampanye.edit', $row->id).'" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i></a>
+        <button onclick="deleteCampaign('.$row->id.')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+    </div>';
+    
+    return $actionBtn;
+})
                 ->addColumn('category', function($row) {
                     return $row->category->name ?? 'N/A'; 
                 })
@@ -175,6 +209,9 @@ public function __construct(NotificationService $notificationService)
                             'campaign_status_update',
                             ['campaign_id' => $campaign->id, 'status' => 'validasi']
                         );
+
+                            return redirect()->route('kampanye.index')
+        ->with('success', 'Kampanye berhasil ditambahkan');
                     }
                 } catch (\Exception $e) {
                     Log::error('Gagal mengirim notifikasi kampanye baru: ' . $e->getMessage());
@@ -639,7 +676,7 @@ public function __construct(NotificationService $notificationService)
             ], 404);
         }
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:disetujui,ditolak,validasi,aktif,berakhir'
+            'status' => 'required|in:disetujui,ditolak,validasi,aktif,selesai'
         ]);
 
         if ($validator->fails()) {
@@ -679,8 +716,8 @@ public function __construct(NotificationService $notificationService)
                         $statusMessage = 'ditolak';
                     } elseif ($request->status === 'validasi') {
                         $statusMessage = 'sedang divalidasi';
-                    } elseif ($request->status === 'berakhir') {
-                        $statusMessage = 'berakhir';
+                    } elseif ($request->status === 'selesai') {
+                        $statusMessage = 'selesai';
                     } else {
                         $statusMessage = $newStatus;
                     }
@@ -753,4 +790,19 @@ public function __construct(NotificationService $notificationService)
                 : 'Kampanye berhasil dihapus dari daftar simpanan!'
         ]);
     }
+
+    public function toggleHomeVisibility($id)
+{
+    $campaign = Campaign::findOrFail($id);
+    $campaign->is_hidden_from_home = !$campaign->is_hidden_from_home;
+    $campaign->save();
+
+    return response()->json([
+        'status' => 'success',
+        'is_hidden' => $campaign->is_hidden_from_home,
+        'message' => $campaign->is_hidden_from_home
+            ? 'Kampanye disembunyikan dari halaman utama'
+            : 'Kampanye ditampilkan di halaman utama'
+    ]);
+}
 }

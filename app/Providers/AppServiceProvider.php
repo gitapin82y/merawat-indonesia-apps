@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider; 
 use App\Models\SiteSetting;
 
 class AppServiceProvider extends ServiceProvider
@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+      
     }
 
     /**
@@ -29,5 +29,7 @@ class AppServiceProvider extends ServiceProvider
             $socialMedia = SiteSetting::getSocialMedia();
             $view->with('socialMedia', $socialMedia);
         });
+
+        
     }
 }

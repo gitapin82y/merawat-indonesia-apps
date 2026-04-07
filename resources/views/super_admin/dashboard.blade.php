@@ -3,6 +3,8 @@
 @section('title', 'Dashboard')
 
 @push('after-style')
+@push('after-style')
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 @endpush
@@ -44,16 +46,20 @@
                 Pembayaran Manual
             </a>
         </div>
-        <div class="col-12 my-2 col-md-2 col-lg-2">
-            <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#manageTripayModal">
-                Pembayaran Tripay
-            </a>
-        </div>
+       <a class="btn btn-danger d-none" data-toggle="modal" data-target="#manageEspayModal">
+    Pembayaran Espay
+</a>
         <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" href="{{ route('legal-documents.index') }}">
                 Dokumen Legal
             </a>
         </div>
+        
+        <div class="col-12 my-2 col-md-2 col-lg-2">
+    <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#tentangKamiModal">
+        Tentang Kami
+    </a>
+</div>
         
         <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" data-toggle="modal" data-target="#socialMediaModal">
@@ -87,29 +93,69 @@
     </div>
   </div>
 
-  <!-- Modal Untuk Manajemen Metode Pembayaran Tripay -->
-<div class="modal fade" id="manageTripayModal" tabindex="-1" aria-labelledby="tripayLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+
+  <!-- Modal Tentang Kami -->
+<div class="modal fade" id="tentangKamiModal" tabindex="-1" aria-labelledby="tentangKamiLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="tentangKamiLabel">Edit Tentang Kami</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="tentangKamiForm">
+                    <input type="hidden" id="tentang_kami_type" value="tentang_kami">
+                    <div class="form-group">
+                        <textarea id="tentang_kami_content" name="content" class="form-control summernote-tentang"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-danger" id="saveTentangKamiBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="manageEspayModal" tabindex="-1" aria-labelledby="espayLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
       <div class="modal-content">
         <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title" id="tripayLabel">Manage Metode Pembayaran Tripay</h5>
+          <h5 class="modal-title" id="espayLabel">
+              <i class="fas fa-credit-card mr-2"></i>
+              Manage Metode Pembayaran Espay
+          </h5>
           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
+          <!-- Control Buttons -->
           <div class="d-flex justify-content-between mb-3">
-            <button type="button" id="btnSyncTripay" class="btn btn-primary">
-              <i class="fas fa-sync-alt mr-1"></i> Sinkronisasi dari Tripay
+            <button type="button" id="btnSyncEspay" class="btn btn-primary">
+              <i class="fas fa-sync-alt mr-1"></i> Sinkronisasi dari Espay
             </button>
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="toggleAllMethods">
               <label class="form-check-label" for="toggleAllMethods">Aktifkan Semua</label>
             </div>
           </div>
+
+          <!-- Info Alert -->
+          <div class="alert alert-info d-flex align-items-center" role="alert">
+            <i class="fas fa-info-circle mr-2"></i>
+            <div>
+              <strong>Informasi:</strong> 
+              Pilih metode pembayaran yang akan ditampilkan kepada donatur. 
+              Klik "Sinkronisasi" untuk mendapatkan metode pembayaran terbaru dari Espay.
+            </div>
+          </div>
   
           <!-- Loading indicator -->
-          <div id="tripayLoading" class="text-center py-3">
+          <div id="espayLoading" class="text-center py-3" style="display:none;">
             <div class="spinner-border text-danger" role="status">
               <span class="sr-only">Loading...</span>
             </div>
@@ -117,24 +163,45 @@
           </div>
   
           <!-- Payment methods error -->
-          <div id="tripayError" class="alert alert-danger d-none">
+          <div id="espayError" class="alert alert-danger d-none">
             <i class="fas fa-exclamation-circle mr-1"></i>
-            <span id="tripayErrorMessage">Terjadi kesalahan saat memuat metode pembayaran.</span>
+            <span id="espayErrorMessage">Terjadi kesalahan saat memuat metode pembayaran.</span>
           </div>
   
           <!-- Payment methods container -->
-          <div id="tripayMethodsList" class="row">
-            <!-- Will be filled with payment methods -->
+          <div id="espayMethodsList" class="row">
+            <!-- Will be filled with payment methods via AJAX -->
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-          <button type="button" id="btnSaveTripaySettings" class="btn btn-danger">Simpan Perubahan</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+              <i class="fas fa-times mr-1"></i> Tutup
+          </button>
+          <button type="button" id="btnSaveEspaySettings" class="btn btn-danger">
+              <i class="fas fa-save mr-1"></i> Simpan Perubahan
+          </button>
         </div>
       </div>
     </div>
-  </div>
-  
+</div>
+
+<!-- Penjelasan Kategori Metode Pembayaran -->
+<style>
+.badge-info-category {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.payment-method-card {
+    transition: all 0.3s ease;
+}
+
+.payment-method-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+</style>
+
   <!-- Modal Form Tambah/Edit Metode Pembayaran -->
   <div class="modal fade" id="paymentFormModal" tabindex="-1" aria-labelledby="paymentFormModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -289,6 +356,7 @@
 @endsection
 
 @push('after-script')
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
 <script>
 var ctx = document.getElementById("donasiChart").getContext("2d");
 var myBarChart = new Chart(ctx, {
@@ -1508,6 +1576,8 @@ $(document).on('click', '#cropKategoriButton', function() {
             });
     });
 });
+
+
 </script>
   
 <script>
@@ -1534,6 +1604,7 @@ $(document).on('click', '#cropKategoriButton', function() {
              $('#instagram_url').val(socialMedia.instagram || '');
              $('#youtube_url').val(socialMedia.youtube || '');
              $('#tiktok_url').val(socialMedia.tiktok || '');
+             $('#whatsapp_url').val(socialMedia.whatsapp || '');
            }
          },
          error: function() {
@@ -1562,6 +1633,7 @@ $(document).on('click', '#cropKategoriButton', function() {
          instagram: $('#instagram_url').val(),
          youtube: $('#youtube_url').val(),
          tiktok: $('#tiktok_url').val(),
+         whatsapp: $('#whatsapp_url').val(),
        };
        
        console.log('Attempting to save social media data:', data);
@@ -1615,4 +1687,284 @@ $(document).on('click', '#cropKategoriButton', function() {
      });
    });
      </script>
+
+   
+<script>
+$(document).ready(function() {
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    // Load Espay payment methods when modal is opened
+    $('#manageEspayModal').on('show.bs.modal', function() {
+        loadEspayMethods();
+    });
+
+    // Function to load Espay payment methods
+    function loadEspayMethods() {
+        $('#espayLoading').show();
+        $('#espayMethodsList').empty();
+        $('#espayError').addClass('d-none');
+
+        $.ajax({
+            url: '/super-admin/espay-payment-methods',
+            method: 'GET',
+            success: function(response) {
+                renderPaymentMethods(response);
+                $('#espayLoading').hide();
+            },
+            error: function(xhr) {
+                $('#espayLoading').hide();
+                $('#espayError').removeClass('d-none');
+                $('#espayErrorMessage').text('Gagal memuat metode pembayaran: ' + (xhr.responseJSON?.error || 'Terjadi kesalahan sistem'));
+            }
+        });
+    }
+
+    // Function to render payment methods
+    function renderPaymentMethods(methods) {
+        if (methods.length === 0) {
+            $('#espayMethodsList').html('<div class="col-12"><div class="alert alert-info">Belum ada metode pembayaran yang tersedia. Klik tombol Sinkronisasi untuk mengambil data dari Espay.</div></div>');
+            return;
+        }
+
+        // Group methods by category
+        const groupedMethods = {};
+        methods.forEach(method => {
+            const category = method.category || 'other';
+            if (!groupedMethods[category]) {
+                groupedMethods[category] = [];
+            }
+            groupedMethods[category].push(method);
+        });
+
+        let html = '';
+        
+        // Category labels
+        const categoryLabels = {
+            'virtual_account': 'Virtual Account',
+            'qris': 'QRIS',
+            'ewallet': 'E-Wallet',
+            'bank_transfer': 'Bank Transfer',
+            'credit_card': 'Credit Card',
+            'other': 'Lainnya'
+        };
+
+        // Render by category
+        Object.keys(groupedMethods).forEach(category => {
+            html += `<div class="col-12 mt-3"><h6 class="text-muted">${categoryLabels[category] || category}</h6></div>`;
+            
+            groupedMethods[category].forEach(method => {
+                const badgeClass = method.is_active ? 'badge-success' : 'badge-secondary';
+                const badgeText = method.is_active ? 'Aktif' : 'Nonaktif';
+                
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        ${method.icon_url ? `<img src="${method.icon_url}" alt="${method.name}" class="mr-2" style="height: 30px;">` : ''}
+                                        <div>
+                                            <h6 class="mb-0">${method.name}</h6>
+                                            <small class="text-muted">${method.pay_method} - ${method.pay_option}</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge ${badgeClass} mr-2">${badgeText}</span>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input toggle-method" 
+                                                id="method-${method.id}" 
+                                                data-code="${method.code}" 
+                                                ${method.is_active ? 'checked' : ''}>
+                                            <label class="custom-control-label" for="method-${method.id}"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                ${method.fee_amount > 0 ? `
+                                    <div class="mt-2">
+                                        <small class="text-muted">Biaya: Rp ${Number(method.fee_amount).toLocaleString('id-ID')}</small>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        $('#espayMethodsList').html(html);
+    }
+
+    // Toggle all payment methods
+    $('#toggleAllMethods').change(function() {
+        const isChecked = $(this).prop('checked');
+        $('.toggle-method').prop('checked', isChecked);
+    });
+
+    // Sync payment methods from Espay
+    $('#btnSyncEspay').click(function() {
+        Swal.fire({
+            title: 'Sinkronisasi Metode Pembayaran',
+            text: 'Yakin ingin menyinkronkan metode pembayaran dari Espay?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Sinkronkan',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $('#espayLoading').show();
+                $('#espayMethodsList').empty();
+                
+                $.ajax({
+                    url: '/super-admin/espay-payment-methods/sync',
+                    method: 'POST',
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Metode pembayaran berhasil disinkronkan.',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        
+                        loadEspayMethods();
+                    },
+                    error: function(xhr) {
+                        $('#espayLoading').hide();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Gagal menyinkronkan metode pembayaran: ' + (xhr.responseJSON?.error || 'Terjadi kesalahan sistem'),
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Save changes to payment methods
+    $('#btnSaveEspaySettings').click(function() {
+        const savingPromises = [];
+        
+        $('.toggle-method').each(function() {
+            const code = $(this).data('code');
+            const isActive = $(this).prop('checked') ? 1 : 0;
+            
+            const promise = $.ajax({
+                url: '/super-admin/espay-payment-methods/toggle-status',
+                method: 'POST',
+                data: {
+                    code: code,
+                    is_active: isActive,
+                    _token: $('meta[name="csrf-token"]').attr('content') 
+                }
+            });
+            
+            savingPromises.push(promise);
+        });
+        
+        Promise.all(savingPromises)
+            .then(function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Pengaturan metode pembayaran berhasil disimpan.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    loadEspayMethods();
+                });
+            })
+            .catch(function(error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Gagal menyimpan pengaturan: ' + (error.responseJSON?.error || 'Terjadi kesalahan sistem'),
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            });
+    });
+
+    $('#tentangKamiModal').on('shown.bs.modal', function() {
+        if (!$('.summernote-tentang').hasClass('note-editor')) {
+            $('.summernote-tentang').summernote({
+                height: 400,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'italic', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['fullscreen', 'codeview']]
+                ]
+            });
+        }
+
+        // Load konten dari server
+        $.ajax({
+            url: '/super-admin/legal-documents/tentang_kami',
+            method: 'GET',
+            success: function(response) {
+                if (response.document && response.document.content) {
+                    $('.summernote-tentang').summernote('code', response.document.content);
+                }
+            }
+        });
+    });
+
+
+    $('#tentangKamiModal').on('hidden.bs.modal', function() {
+        if ($('.summernote-tentang').hasClass('note-editor')) {
+            $('.summernote-tentang').summernote('destroy');
+        }
+    });
+
+
+    $('#saveTentangKamiBtn').on('click', function() {
+        const content = $('.summernote-tentang').summernote('code');
+
+        $.ajax({
+            url: '/super-admin/legal-documents/tentang_kami',
+            method: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                content: content
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Tentang Kami berhasil diperbarui.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
+                    $('#tentangKamiModal').modal('hide');
+                }
+            },
+            error: function() {
+                Swal.fire('Gagal!', 'Terjadi kesalahan saat menyimpan.', 'error');
+            }
+        });
+    });
+});
+</script>
 @endpush

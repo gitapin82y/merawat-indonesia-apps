@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         \App\Console\Commands\UpdateCampaignStatusCommand::class,
         \App\Console\Commands\GenerateSitemap::class,
+         \App\Console\Commands\GenerateEspayKeys::class,
     ];
 
     /**

@@ -14,12 +14,13 @@ class SiteSettingsController extends Controller
     public function updateSocialMedia(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'social_media' => 'required|array',
-            'social_media.facebook' => 'nullable|url',
-            'social_media.instagram' => 'nullable|url',
-            'social_media.youtube' => 'nullable|url',
-            'social_media.tiktok' => 'nullable|url',
-        ]);
+        'social_media' => 'required|array',
+        'social_media.facebook' => 'nullable|url',
+        'social_media.instagram' => 'nullable|url',
+        'social_media.youtube' => 'nullable|url',
+        'social_media.tiktok' => 'nullable|url',
+        'social_media.whatsapp' => 'nullable|url',
+    ]);
 
         if ($validator->fails()) {
             return response()->json([

@@ -32,6 +32,14 @@
               <input type="url" class="form-control" id="tiktok_url" name="social_media[tiktok]" placeholder="https://tiktok.com/@merawatindonesia">
               <div id="error-tiktok" class="invalid-feedback"></div>
             </div>
+
+            {{-- Tambahkan SEBELUM tombol Simpan, setelah field TikTok --}}
+<div class="form-group">
+  <label for="whatsapp_url">WhatsApp (Direct Link)</label>
+  <input type="url" class="form-control" id="whatsapp_url" name="social_media[whatsapp]" placeholder="https://wa.me/6281234567890">
+  <small class="form-text text-muted">Format: https://wa.me/62xxxx (tanpa tanda + atau spasi)</small>
+  <div id="error-whatsapp" class="invalid-feedback"></div>
+</div>
             
           </form>
         </div>

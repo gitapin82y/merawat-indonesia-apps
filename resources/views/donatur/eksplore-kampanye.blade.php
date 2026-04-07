@@ -88,9 +88,9 @@
        <div class="swiper mySwiper mt-2">
           <div class="swiper-wrapper">
             @if($prioritasCampaigns->isEmpty())
-                <div class="text-center">
+                <div class="text-center w-100">
                     <img src="{{ asset('assets/img/icon/success-data.svg') }}" alt="Not Found" class="mb-3" style="width: 150px; height: 150px;">
-                    <p>Anda Belum Memiliki Riwayat Donasi di Kampanye</p>
+                    <p>Belum Ada Kampanye</p>
                 </div>
             @else
                 @foreach($prioritasCampaigns as $prioritas)

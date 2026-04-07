@@ -5,6 +5,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DonationController;
 use App\Http\Middleware\TripayIpMiddleware;
 
+use App\Http\Controllers\EspayPaymentMethodController;
+use App\Http\Controllers\EspayCallbackController;
+
+Route::post('/api/espay/callback', [EspayCallbackController::class, 'handleCallback'])
+    ->name('espay.callback');
+
 // Tripay callback on api.php
 // Route::post('/tripay/callback', [DonationController::class, 'callback'])
 //     ->name('tripay.callback');

@@ -110,6 +110,17 @@
 
     <hr class="sidebar-divider my-0">
 
+    <!-- Salur Dana -->
+<li class="nav-item {{ Request::is('super-admin/artikel') ? 'active' : '' }}">
+    <a class="nav-link" href="{{ route('artikel.index') }}">
+        <i class="fas fa-hand-holding-heart"></i>
+        <span class="text-white">Salur Dana</span>
+    </a>
+</li>
+
+
+    <hr class="sidebar-divider my-0">
+
     <!-- Sidebar Toggler -->
     <div class="text-center d-none d-md-inline">
         <button class="rounded-circle border-0" id="sidebarToggle"></button>

@@ -4,6 +4,19 @@
 
 @push('after-style')
 <style>
+    .payment-category-header {
+    border-bottom: 2px solid #f8f9fa;
+    padding-bottom: 8px;
+}
+
+.payment-category-header h6 {
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
     .donation-amount-card {
         cursor: pointer;
         transition: all 0.3s ease;
@@ -186,69 +199,149 @@
                                     </li>
                                 </ul>
 
-                                <div class="tab-content" id="paymentTypeTabsContent">
-                                    <div class="tab-pane fade show active" id="gateway-content" role="tabpanel" aria-labelledby="gateway-tab">
-                                        <h3 class="pb-5">Mohon maaf pembayaran otomatis sedang maintenance <br><br> Sementara anda bisa menggunakan pembayaran transfer manual</h3>
-                                        {{-- <div class="payment-methods">
-                                            @foreach($channels as $channel)
-                                            <div class="payment-method-card card mb-3" data-method="{{ $channel['code'] }}" data-type="payment_gateway">
-                                                <div class="card-body d-flex justify-content-between align-items-center py-2">
-                                                    <div class="d-flex align-items-center">
-                                                        @if(isset($channel['icon_url']) && $channel['icon_url'])
-                                                            <img src="{{ $channel['icon_url'] }}" alt="{{ $channel['name'] }}" height="30" class="me-3">
-                                                        @endif
-                                                        <div>
-                                                            <h6 class="mb-0">{{ $channel['name'] }}</h6>
-                                                            @if(isset($channel['fee_merchant']['flat']))
-                                                                <small class="text-muted">Biaya: Rp {{ number_format($channel['fee_merchant']['flat']) }}</small>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                    <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
-                                                </div>
-                                            </div>
-                                            @endforeach
-                                        </div> --}}
+                                <!-- REPLACE bagian tab-content dengan kode ini -->
+<div class="tab-content" id="paymentTypeTabsContent">
+    <!-- PAYMENT GATEWAY (ESPAY) TAB -->
+    <div class="tab-pane fade show active" id="gateway-content" role="tabpanel" aria-labelledby="gateway-tab">
+         <div class="alert alert-warning">
+                <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                JANGAN GUNAKAN!! Metode pembayaran otomatis sedang maintenance. Silakan gunakan pembayaran manual.
+            </div>
+
+
+            <div class="d-none">
+      
+        @if(count($channels) > 0)
+            <!-- Group channels by category -->
+            @php
+                $groupedChannels = collect($channels)->groupBy('category');
+                $categoryLabels = [
+                    'virtual_account' => 'Virtual Account',
+                    'qris' => 'QRIS',
+                    'ewallet' => 'E-Wallet',
+                    'credit_card' => 'Kartu Kredit',
+                    'bank_transfer' => 'Transfer Bank',
+                    'other' => 'Lainnya'
+                ];
+            @endphp
+
+            @foreach($groupedChannels as $category => $methods)
+                <!-- Category Header -->
+                <div class="payment-category-header mb-2 mt-4">
+                    <h6 class="text-muted mb-0">
+                        <i class="fa-solid 
+                            @if($category == 'virtual_account') fa-building-columns
+                            @elseif($category == 'qris') fa-qrcode
+                            @elseif($category == 'ewallet') fa-wallet
+                            @elseif($category == 'credit_card') fa-credit-card
+                            @elseif($category == 'bank_transfer') fa-money-bill-transfer
+                            @else fa-money-bill
+                            @endif me-2"></i>
+                        {{ $categoryLabels[$category] ?? ucfirst($category) }}
+                    </h6>
+                </div>
+
+                <!-- Payment Methods in this category -->
+                <div class="payment-methods-group mb-3">
+                    @foreach($methods as $channel)
+                        <div class="payment-method-card card mb-2" 
+                             data-method="{{ $channel['code'] }}" 
+                             data-type="payment_gateway"
+                             data-pay-method="{{ $channel['pay_method'] }}"
+                             data-pay-option="{{ $channel['pay_option'] }}">
+                            <div class="card-body d-flex justify-content-between align-items-center py-2">
+                                <div class="d-flex align-items-center">
+                                    @if(isset($channel['icon_url']) && $channel['icon_url'])
+                                        <img src="{{ $channel['icon_url'] }}" 
+                                             alt="{{ $channel['name'] }}" 
+                                             height="30" 
+                                             class="me-3"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    @endif
+                                    
+                                    <!-- Fallback icon if image not available -->
+                                    <div class="bg-light rounded me-3 align-items-center justify-content-center" 
+                                         style="width: 40px; height: 30px; display: {{ isset($channel['icon_url']) ? 'none' : 'flex' }};">
+                                        <i class="fa-solid 
+                                            @if($category == 'virtual_account') fa-building-columns
+                                            @elseif($category == 'qris') fa-qrcode
+                                            @elseif($category == 'ewallet') fa-wallet
+                                            @elseif($category == 'credit_card') fa-credit-card
+                                            @else fa-money-bill
+                                            @endif text-danger"></i>
                                     </div>
 
-                                    <div class="tab-pane fade" id="manual-content" role="tabpanel" aria-labelledby="manual-tab">
-                                        <h5 class="mb-3">Metode Pembayaran Manual (Verifikasi Admin 1x24 Jam)</h5>
-                                        <div class="payment-methods">
-                                            @foreach($manualMethods as $method)
-                                            <div class="payment-method-card card mb-3" data-method="{{ $method->id }}" data-type="manual">
-                                                <div class="card-body d-flex justify-content-between align-items-center py-2">
-                                                    <div class="d-flex align-items-center">
-                                                        @if($method->icon)
-                                                            <img src="{{ asset('storage/' . $method->icon) }}" alt="{{ $method->name }}" height="30" class="me-3">
-                                                        @else
-                                                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 30px;">
-                                                                <i class="fa-solid fa-building-columns text-muted"></i>
-                                                            </div>
-                                                        @endif
-                                                        <div>
-                                                            <h6 class="mb-0">{{ $method->name }}</h6>
-                                                            <small class="text-muted">{{ $method->account_number }} ({{ $method->account_name }})</small>
-                                                        </div>
-                                                    </div>
-                                                    <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
-                                                </div>
-                                            </div>
-                                            @endforeach
-                                        </div>
-
-                                        <div id="manualPaymentDetails" class="mt-4 d-none">
-                                            <div class="alert alert-info">
-                                                <i class="fa-solid fa-info-circle me-1"></i> Jumlah transfer akan diinformasikan setelah submit.
-                                            </div>
-
-                                            <div class="selected-method-details mb-3">
-                                                <h6>Detail Pembayaran:</h6>
-                                                <div id="methodDetails" class="bg-light p-3 rounded"></div>
-                                            </div>
-
-                                        </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ $channel['name'] }}</h6>
+                                        @if(isset($channel['fee_amount']) && $channel['fee_amount'] > 0)
+                                            <small class="text-muted">
+                                                Biaya: 
+                                                @if($channel['fee_type'] == 'percent')
+                                                    {{ $channel['fee_amount'] }}%
+                                                @else
+                                                    Rp {{ number_format($channel['fee_amount'], 0, ',', '.') }}
+                                                @endif
+                                            </small>
+                                        @else
+                                            <small class="text-success">Gratis biaya admin</small>
+                                        @endif
                                     </div>
                                 </div>
+                                <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endforeach
+        @else
+            <!-- No payment methods available -->
+            <div class="alert alert-warning">
+                <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                Metode pembayaran otomatis sedang tidak tersedia. Silakan gunakan pembayaran manual atau hubungi admin.
+            </div>
+        @endif
+    </div>
+            </div>
+  
+
+    <!-- MANUAL PAYMENT TAB -->
+    <div class="tab-pane fade" id="manual-content" role="tabpanel" aria-labelledby="manual-tab">
+        <h5 class="mb-3">Metode Pembayaran Manual (Verifikasi Admin 1x24 Jam)</h5>
+        <div class="payment-methods">
+            @foreach($manualMethods as $method)
+            <div class="payment-method-card card mb-3" data-method="{{ $method->id }}" data-type="manual">
+                <div class="card-body d-flex justify-content-between align-items-center py-2">
+                    <div class="d-flex align-items-center">
+                        @if($method->icon)
+                            <img src="{{ asset('storage/' . $method->icon) }}" alt="{{ $method->name }}" height="30" class="me-3">
+                        @else
+                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 30px;">
+                                <i class="fa-solid fa-building-columns text-muted"></i>
+                            </div>
+                        @endif
+                        <div>
+                            <h6 class="mb-0">{{ $method->name }}</h6>
+                            <small class="text-muted">{{ $method->account_number }} ({{ $method->account_name }})</small>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <div id="manualPaymentDetails" class="mt-4 d-none">
+            <div class="alert alert-info">
+                <i class="fa-solid fa-info-circle me-1"></i> Jumlah transfer akan diinformasikan setelah submit.
+            </div>
+
+            <div class="selected-method-details mb-3">
+                <h6>Detail Pembayaran:</h6>
+                <div id="methodDetails" class="bg-light p-3 rounded"></div>
+            </div>
+        </div>
+    </div>
+</div>
                             </div>
                             
                             {{-- <div class="footer mb-5 text-center">
@@ -314,6 +407,7 @@
     });
     @endif
 </script>
+
 <script>
     $(document).ready(function() {
         // Format input angka dengan separator ribuan
@@ -344,24 +438,30 @@
             $('#customAmount').val(amount);
         });
 
-          // Pilih metode pembayaran
+        // Pilih metode pembayaran (UPDATED untuk Espay)
         $('.payment-method-card').click(function() {
+            // Remove selected from all payment methods
             $('.payment-method-card').removeClass('selected');
             $('.payment-check-icon').addClass('d-none');
 
+            // Add selected to clicked method
             $(this).addClass('selected');
             $(this).find('.payment-check-icon').removeClass('d-none');
 
             const method = $(this).data('method');
             const type = $(this).data('type');
+            
+            // Set values
             $('#selected_payment_method').val(method);
             $('#payment_type').val(type);
 
+            // Handle manual payment details
             if (type === 'manual') {
                 $('#manualPaymentDetails').removeClass('d-none');
 
                 const methodName = $(this).find('h6').text();
                 const methodInfo = $(this).find('small').text();
+                
                 $('#methodDetails').html(`
                     <p class="mb-1"><strong>Bank/E-wallet:</strong> ${methodName}</p>
                     <p class="mb-1"><strong>Nomor Rekening:</strong> ${methodInfo}</p>
@@ -369,17 +469,24 @@
             } else {
                 $('#manualPaymentDetails').addClass('d-none');
             }
+
+            // Log for debugging (optional, hapus di production)
+            console.log('Payment method selected:', {
+                method: method,
+                type: type,
+                payMethod: $(this).data('pay-method'),
+                payOption: $(this).data('pay-option')
+            });
         });
 
-
+        // Submit form validation
         $('#submitForm').on('click', function(e) {
+            e.preventDefault();
 
+            // Validasi amount
             const amount = $('#customAmount').val();
-
-            let submit = false;
             
             if (!amount || parseInt(amount) < 10000) {
-                e.preventDefault();
                 Swal.fire({
                     icon: 'info',
                     text: 'Minimal donasi adalah Rp 10.000',
@@ -391,30 +498,56 @@
                 return false;
             }
 
-                // Validasi nama, phone, dan email
-                const name = $('#full_name').val();
-                const phone = $('#whatsapp').val();
-                const email = $('#email').val();
-                
-                if (!name || !phone || !email) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        text: 'Silakan lengkapi data diri Anda',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 2000
-                    });
-                    return false;
-                }
+            // Validasi nama, phone, dan email
+            const name = $('#full_name').val().trim();
+            const phone = $('#whatsapp').val().trim();
+            const email = $('#email').val().trim();
+            
+            if (!name || !phone || !email) {
+                Swal.fire({
+                    icon: 'error',
+                    text: 'Silakan lengkapi data diri Anda',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                return false;
+            }
 
+            // Validasi email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                Swal.fire({
+                    icon: 'error',
+                    text: 'Format email tidak valid',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                return false;
+            }
 
-                  const paymentType = $('#payment_type').val();
+            // Validasi phone (minimal 10 digit)
+            const phoneDigits = phone.replace(/\D/g, '');
+            if (phoneDigits.length < 10) {
+                Swal.fire({
+                    icon: 'error',
+                    text: 'Nomor WhatsApp tidak valid',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                return false;
+            }
+
+            // Validasi payment method
+            const paymentType = $('#payment_type').val();
             const paymentMethod = $('#selected_payment_method').val();
 
             if (!paymentType || !paymentMethod) {
-                e.preventDefault();
                 Swal.fire({
                     icon: 'error',
                     text: 'Silakan pilih metode pembayaran',
@@ -426,16 +559,34 @@
                 return false;
             }
 
+            // Show loading
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Submit form
             $('#donationForm').submit();
         });
+
+        // Auto-select first payment method (optional)
+        // Uncomment jika ingin auto-select metode pertama
+        // setTimeout(function() {
+        //     $('.payment-method-card:first').click();
+        // }, 500);
     });
-    // Parse URL parameters
+
+    // Parse URL parameters for UTM tracking
     const urlParams = new URLSearchParams(window.location.search);
     const utmParams = ['utm_source', 'utm_medium', 'utm_campaign'];
     
-
-     // Add UTM parameters to donation forms
-     document.querySelectorAll('form[action*="donations"]').forEach(form => {
+    // Add UTM parameters to donation forms
+    document.querySelectorAll('form[action*="donations"]').forEach(form => {
         utmParams.forEach(param => {
             const value = localStorage.getItem(param);
             if (value && !form.querySelector(`[name="${param}"]`)) {
