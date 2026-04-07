@@ -432,6 +432,23 @@ public function handlePayment(Request $request)
     try {
         Log::info('Espay Payment Notification', $request->all());
 
+        $paymentRef = $request->input('additionalInfo.paymentRef') 
+           ?? $request->input('payment_ref') 
+           ?? null;
+
+if ($paymentRef) {
+    $cacheKey = 'payment_ref_' . $paymentRef;
+    if (Cache::has($cacheKey)) {
+        return response()->json([
+            'rq_uuid'       => $request->input('rq_uuid', ''),
+            'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+            'error_code'    => '0001',
+            'error_message' => 'double payment',
+        ]);
+    }
+    Cache::put($cacheKey, true, now()->addHours(24));
+}
+
         $orderId = $request->input('order_id')
         ?? $request->input('virtualAccountNo')
         ?? $request->input('partnerReferenceNo')
