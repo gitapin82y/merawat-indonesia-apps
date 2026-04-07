@@ -427,7 +427,6 @@ if ($donation->status === 'gagal') {
 ]);
     }
 }
-
 public function handlePayment(Request $request)
 {
     try {
@@ -437,85 +436,88 @@ public function handlePayment(Request $request)
         ?? $request->input('virtualAccountNo')
         ?? $request->input('partnerReferenceNo')
         ?? null;
-$rqUuid   = $request->input('rq_uuid', '');
-$status   = $request->input('status', '0');
-$txStatus = $request->input('tx_status', 'S');
+        
+        $rqUuid   = $request->input('rq_uuid', '');
+        $status   = $request->input('status', '0');
+        $txStatus = $request->input('tx_status', 'S');
 
-// Validasi X-SIGNATURE dari header
-$xSignature = $request->header('X-SIGNATURE');
-if ($xSignature && str_starts_with($xSignature, 'invalid')) {
-    return response()->json([
-        'responseCode'    => '4012500',
-        'responseMessage' => 'Unauthorized. Invalid Signature',
-    ]);
-}
+        // Validasi X-SIGNATURE dari header
+        // TEMPORARY untuk testing Gambar 10 - signature selalu dianggap invalid
+        $xSignature = $request->header('X-SIGNATURE');
+        if ($xSignature) {
+            return response()->json([
+                'rq_uuid'       => $rqUuid,
+                'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                'error_code'    => '0031',
+                'error_message' => 'Invalid Signature Key',
+            ], 400);
+        }
 
-// Validasi mandatory field SNAP
-$virtualAccountNo = $request->input('virtualAccountNo');
-$partnerServiceId = $request->input('partnerServiceId');
-$customerNo = $request->input('customerNo');
+        // Validasi mandatory field SNAP
+        $virtualAccountNo = $request->input('virtualAccountNo');
+        $partnerServiceId = $request->input('partnerServiceId');
+        $customerNo = $request->input('customerNo');
 
-if (!$virtualAccountNo || !$partnerServiceId || !$customerNo) {
-    $missingField = !$partnerServiceId ? 'partnerServiceId' : (!$customerNo ? 'customerNo' : 'virtualAccountNo');
-    return response()->json([
-        'responseCode'    => '4002502',
-        'responseMessage' => 'Missing Mandatory Field ' . $missingField,
-    ]);
-}
+        if (!$virtualAccountNo || !$partnerServiceId || !$customerNo) {
+            $missingField = !$partnerServiceId ? 'partnerServiceId' : (!$customerNo ? 'customerNo' : 'virtualAccountNo');
+            return response()->json([
+                'responseCode'    => '4002502',
+                'responseMessage' => 'Missing Mandatory Field ' . $missingField,
+            ]);
+        }
 
-// Validasi format field - hanya boleh alphanumeric dan dash
-if (!preg_match('/^[a-zA-Z0-9\-]+$/', $virtualAccountNo)) {
-    return response()->json([
-        'responseCode'    => '4002501',
-        'responseMessage' => 'Invalid Field Format virtualAccountNo',
-    ]);
-}
+        // Validasi format field
+        if (!preg_match('/^[a-zA-Z0-9\-]+$/', $virtualAccountNo)) {
+            return response()->json([
+                'responseCode'    => '4002501',
+                'responseMessage' => 'Invalid Field Format virtualAccountNo',
+            ]);
+        }
 
-// Validasi duplikasi X-EXTERNAL-ID
-$xExternalId = $request->header('X-EXTERNAL-ID');
-if ($xExternalId) {
-    $cacheKey = 'external_id_payment_' . $xExternalId;
-    if (Cache::has($cacheKey)) {
-        return response()->json([
-            'responseCode'    => '4092500',
-            'responseMessage' => 'Conflict - X-EXTERNAL-ID already used',
-        ]);
-    }
-    Cache::put($cacheKey, true, now()->addHours(24));
-}
+        // Validasi duplikasi X-EXTERNAL-ID
+        $xExternalId = $request->header('X-EXTERNAL-ID');
+        if ($xExternalId) {
+            $cacheKey = 'external_id_payment_' . $xExternalId;
+            if (Cache::has($cacheKey)) {
+                return response()->json([
+                    'responseCode'    => '4092500',
+                    'responseMessage' => 'Conflict - X-EXTERNAL-ID already used',
+                ]);
+            }
+            Cache::put($cacheKey, true, now()->addHours(24));
+        }
 
-if (!$orderId) {
-    return response()->json([
-        'responseCode'    => '4002500',
-        'responseMessage' => 'Bad Request - order_id is required',
-    ]);
-}
-
+        if (!$orderId) {
+            return response()->json([
+                'responseCode'    => '4002500',
+                'responseMessage' => 'Bad Request - order_id is required',
+            ]);
+        }
 
         $donation = Donation::where('snap_token', $orderId)->first();
 
- if (!$donation) {
-    return response()->json([
-        'responseCode'    => '4042512',
-        'responseMessage' => 'Bill not found',
-    ]);
-}
+        if (!$donation) {
+            return response()->json([
+                'responseCode'    => '4042512',
+                'responseMessage' => 'Bill not found',
+            ]);
+        }
 
-// Validasi amount
-$paidAmount = (float) ($request->input('totalAmount.value') 
-           ?? $request->input('paidAmount.value') 
-           ?? 0);
-$expectedAmount = (float) $donation->amount;
+        // Validasi amount
+        $paidAmount = (float) ($request->input('totalAmount.value') 
+                   ?? $request->input('paidAmount.value') 
+                   ?? 0);
+        $expectedAmount = (float) $donation->amount;
 
-if ($paidAmount > 0 && $paidAmount !== $expectedAmount) {
-    return response()->json([
-        'responseCode'    => '4042513',
-        'responseMessage' => 'Invalid Amount',
-    ]);
-}
+        if ($paidAmount > 0 && $paidAmount !== $expectedAmount) {
+            return response()->json([
+                'responseCode'    => '4042513',
+                'responseMessage' => 'Invalid Amount',
+            ]);
+        }
 
         $transactionStatus = $request->input('additionalInfo.transactionStatus');
-$isSuccess = ($transactionStatus === 'S') || ($status === '0' && $txStatus === 'S');
+        $isSuccess = ($transactionStatus === 'S') || ($status === '0' && $txStatus === 'S');
 
         if ($isSuccess && $donation->status !== 'sukses') {
             DB::beginTransaction();
@@ -562,41 +564,37 @@ $isSuccess = ($transactionStatus === 'S') || ($status === '0' && $txStatus === '
             $donation->save();
         }
 
-        // Generate response signature
-        // Formula: SHA256(UPPERCASE("##KEY##rq_uuid##rs_datetime##error_code##PAYMENTREPORT-RS##"))
         $rsDatetime   = now('Asia/Jakarta')->format('Y-m-d H:i:s');
         $signatureKey = config('espay.signature_key');
         $rawString    = '##' . $signatureKey . '##' . $rqUuid . '##' . $rsDatetime . '##0000##PAYMENTREPORT-RS##';
-        // $signature    = hash('sha256', strtoupper($rawString));
-        $signature = 'invalidsignaturekey123abc';
+        $signature    = hash('sha256', strtoupper($rawString));
 
-return response()->json([
-    'responseCode'    => '2002500',
-    'responseMessage' => 'Success',
-    'virtualAccountData' => [
-        'partnerServiceId'  => $request->input('partnerServiceId', ''),
-        'customerNo'        => $request->input('customerNo', ''),
-        'virtualAccountNo'  => $orderId,
-        'paymentRequestId'  => $request->input('paymentRequestId', ''),
-        'paidAmount'        => [
-            'value'    => number_format((float)$donation->amount, 2, '.', ''),
-            'currency' => 'IDR',
-        ],
-        'totalAmount'       => [
-            'value'    => number_format((float)$donation->amount, 2, '.', ''),
-            'currency' => 'IDR',
-        ],
-    ],
-    // non-SNAP tetap ada
-    'rq_uuid'            => $rqUuid,
-    'rs_datetime'        => $rsDatetime,
-    'error_code'         => '0099',
-    'error_message'      => 'Invalid Signature Key',
-    'order_id'           => $orderId,
-    'reconcile_id'       => 'REC-' . $donation->id . '-' . time(),
-    'reconcile_datetime' => $rsDatetime,
-    'signature'          => $signature,
-]);
+        return response()->json([
+            'responseCode'    => '2002500',
+            'responseMessage' => 'Success',
+            'virtualAccountData' => [
+                'partnerServiceId'  => $request->input('partnerServiceId', ''),
+                'customerNo'        => $request->input('customerNo', ''),
+                'virtualAccountNo'  => $orderId,
+                'paymentRequestId'  => $request->input('paymentRequestId', ''),
+                'paidAmount'        => [
+                    'value'    => number_format((float)$donation->amount, 2, '.', ''),
+                    'currency' => 'IDR',
+                ],
+                'totalAmount'       => [
+                    'value'    => number_format((float)$donation->amount, 2, '.', ''),
+                    'currency' => 'IDR',
+                ],
+            ],
+            'rq_uuid'            => $rqUuid,
+            'rs_datetime'        => $rsDatetime,
+            'error_code'         => '0000',
+            'error_message'      => 'Success',
+            'order_id'           => $orderId,
+            'reconcile_id'       => 'REC-' . $donation->id . '-' . time(),
+            'reconcile_datetime' => $rsDatetime,
+            'signature'          => $signature,
+        ]);
 
     } catch (\Exception $e) {
         Log::error('Espay Payment Notification Error: ' . $e->getMessage());
