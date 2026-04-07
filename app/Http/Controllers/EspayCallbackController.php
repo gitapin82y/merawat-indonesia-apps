@@ -458,17 +458,7 @@ if ($paymentRef) {
         $status   = $request->input('status', '0');
         $txStatus = $request->input('tx_status', 'S');
 
-        // Validasi X-SIGNATURE dari header
-        // TEMPORARY untuk testing Gambar 10 - signature selalu dianggap invalid
-        $xSignature = $request->header('X-SIGNATURE');
-        if ($xSignature) {
-            return response()->json([
-                'rq_uuid'       => $rqUuid,
-                'rs_datetime'   => now('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                'error_code'    => '0031',
-                'error_message' => 'Invalid Signature Key',
-            ], 400);
-        }
+    
 
         // Validasi mandatory field SNAP
         $virtualAccountNo = $request->input('virtualAccountNo');
