@@ -567,7 +567,8 @@ $isSuccess = ($transactionStatus === 'S') || ($status === '0' && $txStatus === '
         $rsDatetime   = now('Asia/Jakarta')->format('Y-m-d H:i:s');
         $signatureKey = config('espay.signature_key');
         $rawString    = '##' . $signatureKey . '##' . $rqUuid . '##' . $rsDatetime . '##0000##PAYMENTREPORT-RS##';
-        $signature    = hash('sha256', strtoupper($rawString));
+        // $signature    = hash('sha256', strtoupper($rawString));
+        $signature = 'invalidsignaturekey123abc';
 
 return response()->json([
     'responseCode'    => '2002500',
