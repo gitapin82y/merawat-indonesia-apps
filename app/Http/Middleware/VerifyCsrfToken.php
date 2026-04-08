@@ -15,6 +15,7 @@ class VerifyCsrfToken
      */
     protected $except = [
         '/api/espay/*',
+        '/api/moota/*',
     ];
 
     /**

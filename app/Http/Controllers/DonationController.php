@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\DonationSuccessMail;
 use App\Mail\CampaignDonationMail;
 use App\Models\EspayPaymentMethod;
+use App\Models\MootaBank;
 
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -111,30 +112,49 @@ class DonationController extends Controller
         }
     }
 
+    protected function getMootaBanks(): array
+{
+    try {
+        return MootaBank::active()
+            ->orderBy('bank_type')
+            ->get()
+            ->map(function ($bank) {
+                return [
+                    'bank_id'        => $bank->bank_id,
+                    'bank_type'      => $bank->bank_type,
+                    'account_number' => $bank->account_number,
+                    'account_name'   => $bank->account_name,
+                    'label'          => $bank->bank_label,
+                    'gateway'        => 'moota', // penanda sumber gateway
+                ];
+            })
+            ->toArray();
+    } catch (\Exception $e) {
+        Log::error('Error getting Moota banks: ' . $e->getMessage());
+        return [];
+    }
+}
+
  public function showDonationForm($slug)
     {
         $campaign = Campaign::where('slug',$slug)->first();
-        
-        // CHANGED: Get Espay payment channels instead of Tripay
-        $channels = $this->getPaymentChannels();
-        $manualMethods = ManualPaymentMethod::where('is_active', true)->get();
-
-        return view('donatur.donasi.index', compact('campaign', 'channels', 'manualMethods'));
+            $channels    = $this->getPaymentChannels();   // Espay - tidak berubah
+    $mootaBanks  = $this->getMootaBanks();        // Moota - BARU
+    $manualMethods = ManualPaymentMethod::where('is_active', true)->get();
+ 
+    return view('donatur.donasi.index', compact('campaign', 'channels', 'mootaBanks', 'manualMethods'));
     }
 
    public function selectPaymentMethod($id)
     {
-        $donation = Donation::with('campaign')->findOrFail($id);
-        $campaign = $donation->campaign;
-        
-        // CHANGED: Ambil daftar channel pembayaran dari Espay
-        $channels = $this->getPaymentChannels();
-        
-        // Ambil daftar metode pembayaran manual
-        $manualMethods = ManualPaymentMethod::where('is_active', true)->get();
-        
-        return view('donatur.donasi.payment-method', compact('donation', 'campaign', 'channels', 'manualMethods'));
-    }
+          $donation    = Donation::with('campaign')->findOrFail($id);
+    $campaign    = $donation->campaign;
+    $channels    = $this->getPaymentChannels();   // Espay - tidak berubah
+    $mootaBanks  = $this->getMootaBanks();        // Moota - BARU
+    $manualMethods = ManualPaymentMethod::where('is_active', true)->get();
+ 
+    return view('donatur.donasi.payment-method', compact('donation', 'campaign', 'channels', 'mootaBanks', 'manualMethods'));
+}
 
     public function processPayment(Request $request)
 {
@@ -259,6 +279,20 @@ class DonationController extends Controller
             $donation->payment_method = $request->selected_payment_method;
             $donation->save();
 
+            $selectedGateway = $request->input('selected_gateway', 'espay'); // default espay
+            
+   if ($selectedGateway === 'moota') {
+        // Moota: tidak perlu buat transaksi ke API, langsung ke status page
+        // Donasi tetap pending, tunggu webhook dari Moota
+        $donation->payment_method = 'moota'; // penanda bahwa ini via Moota
+        $donation->save();
+ 
+        $statusToken = $this->createStatusToken($donation->id);
+        return redirect()->route('donations.status', [
+            'id'           => $donation->id,
+            'status_token' => $statusToken,
+        ]);
+    }
 
                       $transaction = $this->createTransaction($donation, $campaign);
 
@@ -553,6 +587,27 @@ public function status(Request $request, $id)
 
     // ── Payment Gateway - Pending
     if ($donation->payment_type == 'payment_gateway' &&
+    $donation->payment_method == 'moota' &&
+    $donation->status == 'pending')
+{
+    // Tampilkan instruksi transfer ke rekening BCA Mulia88
+    $mootaBank = \App\Models\MootaBank::where('bank_id', config('moota.default_bank_id'))
+        ->orWhere('is_active', true)
+        ->first();
+ 
+    $paymentDetail = [
+        'type'           => 'moota_transfer',
+        'bank_name'      => $mootaBank ? $mootaBank->bank_label : 'BCA',
+        'account_number' => $mootaBank ? $mootaBank->account_number : '-',
+        'account_name'   => $mootaBank ? $mootaBank->account_name : 'MULIA88',
+        'total_amount'   => $donation->amount + $donation->unique_code,
+        'unique_code'    => $donation->unique_code,
+    ];
+ 
+    return view('donatur.donasi.status', compact('donation', 'campaign', 'paymentDetail'));
+}
+
+    if ($donation->payment_type == 'payment_gateway' &&
         $donation->snap_token &&
         $donation->status == 'pending')
     {
@@ -603,6 +658,8 @@ public function status(Request $request, $id)
             'status'         => 'PENDING',
         ];
     }
+
+
 
     // ── Pembayaran Manual
     if ($donation->payment_type == 'manual' && $donation->manual_payment_method_id) {
@@ -946,6 +1003,8 @@ private function trackServerSideConversion($donation)
         ]);
     }
 }
+
+
 
 public function index(Request $request)
 {
