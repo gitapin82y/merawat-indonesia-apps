@@ -219,10 +219,7 @@
                                 $hasMoota = !empty($mootaBanks);
                                 $hasEspay = !empty($channels);
                             @endphp
-  <div class="alert alert-warning">
-                                    <i class="fa-solid fa-exclamation-triangle me-2"></i>
-                                    Metode pembayaran otomatis sedang maintenance. Silakan gunakan pembayaran manual.
-                                </div>
+
                             @if(!$hasMoota && !$hasEspay)
                                 <div class="alert alert-warning">
                                     <i class="fa-solid fa-exclamation-triangle me-2"></i>
@@ -283,7 +280,7 @@
                                     @endphp
 
                                     @foreach($groupedChannels as $category => $methods)
-                                        <div class="payment-category-header mb-2 mt-3">
+                                        <div class="payment-category-header mb-2 mt-3 d-none">
                                             <h6 class="text-muted mb-0">
                                                 <i class="fa-solid
                                                     @if($category == 'virtual_account') fa-building-columns
@@ -296,7 +293,7 @@
                                             </h6>
                                         </div>
                                         @foreach($methods as $channel)
-                                            <div class="payment-method-card card mb-2"
+                                            <div class="payment-method-card card mb-2 d-none"
                                                  data-method="{{ $channel['code'] }}"
                                                  data-type="payment_gateway"
                                                  data-gateway="espay"
