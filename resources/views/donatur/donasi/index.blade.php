@@ -232,7 +232,7 @@
 
                                 {{-- SECTION 1: MOOTA –- Transfer Bank Otomatis --}}
                                 @if($hasMoota)
-                                    <div class="gateway-section-label d-none">
+                                    <div class="gateway-section-label">
                                         <i class="fa-solid fa-bolt me-1 text-success"></i>
                                         Transfer Bank — Verifikasi Otomatis
                                     </div>
@@ -244,7 +244,7 @@
                                         Controller kemudian tahu BANK MANA yang dipilih donatur
                                     --}}
                                     @foreach($mootaBanks as $bank)
-                                        <div class="payment-method-card card mb-2 d-none"
+                                        <div class="payment-method-card card mb-2"
                                              data-method="moota"
                                              data-type="payment_gateway"
                                              data-gateway="moota"
@@ -266,7 +266,6 @@
                                         </div>
                                     @endforeach
                                 @endif
-                                    <div class="d-none">
 
                                 {{-- SECTION 2: ESPAY -- Virtual Account / QRIS --}}
                                 @if($hasEspay)
@@ -339,7 +338,6 @@
                                     </div>
 
                             @endif
-                        </div>
                         {{-- END TAB OTOMATIS --}}
 
                         {{-- TAB MANUAL --}}
@@ -460,7 +458,7 @@ $(document).ready(function() {
         e.preventDefault();
 
         const amount = $('#customAmount').val();
-        if (!amount || parseInt(amount) < 2000) {
+        if (!amount || parseInt(amount) < 10000) {
             Swal.fire({ icon: 'info', text: 'Minimal donasi adalah Rp 10.000', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
             return;
         }

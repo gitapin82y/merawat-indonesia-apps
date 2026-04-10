@@ -205,7 +205,7 @@ class DonationController extends Controller
  
         $rules = [
             'campaign_id'             => 'required|exists:campaigns,id',
-            'amount'                  => 'required|numeric|min:2000',
+            'amount'                  => 'required|numeric|min:10000',
             'name'                    => 'required|string|max:255',
             'phone'                   => 'required|string',
             'email'                   => 'required',
