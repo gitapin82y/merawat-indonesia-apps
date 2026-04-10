@@ -275,10 +275,12 @@ Route::get('/kampanye/{slug}/donasi', [DonationController::class, 'showDonationF
 Route::post('/donations/process', [DonationController::class, 'processDonation'])->name('donations.process');
 Route::get('/donations/{id}/status', [DonationController::class, 'status'])->name('donations.status');
 Route::post('/donations/{id}/mark-expired', [DonationController::class, 'markExpired'])->name('donations.mark-expired');
-Route::get('/donations/{id}/check-status-by-id', [DonationController::class, 'checkStatusById'])
-    ->name('donations.check-status-by-id');
+
 Route::get('/donations/check-status/{reference}', [DonationController::class, 'checkStatus'])
     ->name('donations.check-status');
+
+Route::get('/donations/{id}/check-status-by-id', [DonationController::class, 'checkStatusById'])
+    ->name('donations.check-status-by-id');
 
 Route::get('/donations/{id}/payment-method', [DonationController::class, 'selectPaymentMethod'])->name('donations.select-payment-method');
 Route::post('/donations/process-payment', [DonationController::class, 'processPayment'])->name('donations.process-payment');
