@@ -51,7 +51,7 @@
 </a>
 
 <button type="button" class="btn btn-danger btn-sm col-12 my-2 col-md-2 col-lg-2" data-toggle="modal" data-target="#manageMootaModal">
-    <i class="fas fa-university mr-1"></i> Manage Bank Moota
+    Manage Bank Moota
 </button>
 
         <div class="col-12 my-2 col-md-2 col-lg-2">
@@ -143,9 +143,8 @@
                 <div class="alert alert-info d-flex align-items-start" role="alert">
                     <i class="fas fa-info-circle mr-2 mt-1"></i>
                     <div>
-                        <strong>Cara Kerja Moota:</strong>
-                        Donatur transfer ke rekening yang terdaftar &rarr; Moota otomatis mendeteksi mutasi masuk &rarr; donasi langsung terverifikasi <strong>tanpa upload bukti</strong>.<br>
-                        <small class="text-muted">Pastikan webhook Moota sudah didaftarkan ke: <code>{{ url('/moota/webhook') }}</code></small>
+                        <strong>Note :</strong>
+                        Saat sync menampilkan semua info bank yang terdaftar di moota, Pastikan saat mengaktifkan list bank dibawah ini, Pada dashboard moota bank tersebut siap digunakan untuk transaksi tidak ada alert 'Terjadi Masalah teknis'.<br>
                     </div>
                 </div>
  
