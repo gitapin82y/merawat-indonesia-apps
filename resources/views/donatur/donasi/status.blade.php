@@ -648,7 +648,7 @@ $(document).ready(function() {
                 // Cek status dari DB via route check-status
                 // Controller sudah handle Moota: return PAID jika status='sukses'
                 $.ajax({
-                    url: '/donations/check-status/{{ $donation->snap_token }}',
+                    url: '{{ route("donations.check-status-by-id", $donation->id) }}',
                     type: 'GET',
                     success: function(res) {
                         if (res.success && res.data && res.data.status === 'PAID') {

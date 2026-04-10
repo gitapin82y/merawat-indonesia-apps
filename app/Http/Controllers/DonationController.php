@@ -342,6 +342,39 @@ class DonationController extends Controller
         return redirect()->route('donations.status', ['id' => $donation->id]);
     }
 
+     public function checkStatusById($id)
+    {
+        try {
+            $donation = Donation::find($id);
+ 
+            if (!$donation) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Donasi tidak ditemukan'
+                ], 404);
+            }
+ 
+            $status = 'PENDING';
+            if ($donation->status === 'sukses') $status = 'PAID';
+            if ($donation->status === 'gagal')  $status = 'EXPIRED';
+ 
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'status'  => $status,
+                    'amount'  => $donation->amount,
+                ]
+            ]);
+ 
+        } catch (\Exception $e) {
+            Log::error('checkStatusById error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem'
+            ]);
+        }
+    }
+
  
     // ============================================================
  
@@ -832,12 +865,17 @@ private function formatPaymentInstructions($instructions)
         return false;
     }
 
- public function checkStatus($reference)
+   public function checkStatus($reference)
     {
         try {
             $donation = Donation::where('snap_token', $reference)
                 ->with('manualPaymentMethod')
                 ->first();
+ 
+            // Fallback: snap_token mungkin sudah berubah ke "moota_{mutation_id}"
+            // tapi halaman masih pakai snap_token lama
+            // Cari berdasarkan snap_token lama yang disimpan di... tidak bisa.
+            // Solusinya: gunakan checkStatusById() untuk Moota (lihat blade fix)
  
             if (!$donation) {
                 return response()->json([
@@ -846,18 +884,11 @@ private function formatPaymentInstructions($instructions)
                 ], 404);
             }
  
-            // ── MOOTA: cek dari DB saja, TIDAK hit API manapun ──────────
-            // snap_token Moota format: "moota_{mutation_id}" setelah sukses
-            // Saat pending: snap_token masih random string (placeholder)
-            // Kita identifikasi Moota dari payment_method
+            // ── MOOTA: cek dari DB ────────────────────────────────────
             if (str_starts_with($donation->payment_method ?? '', 'moota')) {
                 $status = 'PENDING';
- 
-                if ($donation->status === 'sukses') {
-                    $status = 'PAID';
-                } elseif ($donation->status === 'gagal') {
-                    $status = 'EXPIRED';
-                }
+                if ($donation->status === 'sukses') $status = 'PAID';
+                if ($donation->status === 'gagal')  $status = 'EXPIRED';
  
                 return response()->json([
                     'success' => true,
@@ -869,7 +900,7 @@ private function formatPaymentInstructions($instructions)
                 ]);
             }
  
-            // ── MANUAL: cek dari DB ──────────────────────────────────────
+            // ── MANUAL: cek dari DB ───────────────────────────────────
             if ($donation->payment_type === 'manual') {
                 $status = 'PENDING';
                 if ($donation->status === 'sukses') $status = 'PAID';
@@ -879,17 +910,14 @@ private function formatPaymentInstructions($instructions)
                     'success' => true,
                     'data'    => [
                         'status'         => $status,
-                        'payment_method' => 'Manual - ' .
-                            ($donation->manualPaymentMethod?->name ?? 'Transfer'),
+                        'payment_method' => 'Manual - ' . ($donation->manualPaymentMethod?->name ?? 'Transfer'),
                         'amount'         => $donation->amount,
-                        'payment_proof'  => $donation->payment_proof
-                            ? asset('storage/' . $donation->payment_proof) : null,
                         'updated_at'     => $donation->updated_at->format('Y-m-d H:i:s'),
                     ]
                 ]);
             }
  
-            // ── ESPAY: hit API Espay ─────────────────────────────────────
+            // ── ESPAY: hit API ────────────────────────────────────────
             $statusCheck = $this->espayService->checkPaymentStatus($reference);
  
             if (isset($statusCheck['success']) && $statusCheck['success'] === true && isset($statusCheck['data'])) {
@@ -898,7 +926,6 @@ private function formatPaymentInstructions($instructions)
  
                 if (isset($transaction['transactionStatusCode']) && $transaction['transactionStatusCode'] === '00') {
                     $status = 'PAID';
-                    // Proses sukses jika belum
                     $freshDonation = Donation::lockForUpdate()->find($donation->id);
                     if ($freshDonation && $freshDonation->status !== 'sukses') {
                         DB::beginTransaction();

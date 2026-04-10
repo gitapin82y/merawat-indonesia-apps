@@ -219,7 +219,10 @@
                                 $hasMoota = !empty($mootaBanks);
                                 $hasEspay = !empty($channels);
                             @endphp
-
+  <div class="alert alert-warning">
+                                    <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                                    Metode pembayaran otomatis sedang maintenance. Silakan gunakan pembayaran manual.
+                                </div>
                             @if(!$hasMoota && !$hasEspay)
                                 <div class="alert alert-warning">
                                     <i class="fa-solid fa-exclamation-triangle me-2"></i>
@@ -229,7 +232,7 @@
 
                                 {{-- SECTION 1: MOOTA –- Transfer Bank Otomatis --}}
                                 @if($hasMoota)
-                                    <div class="gateway-section-label">
+                                    <div class="gateway-section-label d-none">
                                         <i class="fa-solid fa-bolt me-1 text-success"></i>
                                         Transfer Bank — Verifikasi Otomatis
                                     </div>
@@ -241,7 +244,7 @@
                                         Controller kemudian tahu BANK MANA yang dipilih donatur
                                     --}}
                                     @foreach($mootaBanks as $bank)
-                                        <div class="payment-method-card card mb-2"
+                                        <div class="payment-method-card card mb-2 d-none"
                                              data-method="moota"
                                              data-type="payment_gateway"
                                              data-gateway="moota"
