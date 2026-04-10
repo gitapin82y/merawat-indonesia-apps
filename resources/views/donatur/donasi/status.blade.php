@@ -1,7 +1,7 @@
 @extends('layouts.public')
  
 @section('title', 'Status Donasi')
-
+ 
 @push('after-style')
 <script>
 @if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway')
@@ -27,9 +27,7 @@ window.paymentConfig = {
         text-align: center;
         margin: 15px 0;
     }
-    .virtual-account-display.moota-style {
-        border-color: #28a745;
-    }
+    .virtual-account-display.moota-style { border-color: #28a745; }
     .text-truncate {
         white-space: nowrap;
         overflow: hidden;
@@ -43,13 +41,67 @@ window.paymentConfig = {
         letter-spacing: 2px;
         margin: 10px 0;
     }
-    .virtual-account-number.text-success {
-        color: #28a745 !important;
+    .virtual-account-number.green { color: #28a745; }
+    .copy-button {
+        border: none;
+        background: none;
+        color: #dc3545;
+        cursor: pointer;
+        padding: 5px;
+    }
+    .copy-button.green { color: #28a745; }
+    .copy-button:hover { opacity: 0.75; }
+    .moota-countdown-box {
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+        border-radius: 10px;
+        padding: 14px 20px;
+        text-align: center;
+        margin: 16px 0;
+    }
+    .moota-countdown-number {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #16a34a;
+        letter-spacing: 2px;
+        font-variant-numeric: tabular-nums;
+    }
+    .moota-countdown-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 2px;
+    }
+    .moota-pulse {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #22c55e;
+        margin-right: 6px;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+        0%,100% { opacity: 1; transform: scale(1); }
+        50%      { opacity: 0.4; transform: scale(0.8); }
     }
     .countdown {
         font-weight: bold;
         color: #dc3545;
         font-size: 2rem;
+    }
+    .status-check-interval { font-size: 0.9rem; color: #6c757d; margin-top: 10px; }
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    .accordion-button:focus {
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+    .payment-amount-highlight {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #dc3545;
+        padding: 10px 0;
     }
     .qr-code-container {
         max-width: 250px;
@@ -59,35 +111,9 @@ window.paymentConfig = {
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .payment-amount-highlight {
-        font-size: 1.25rem;
-        font-weight: bold;
-        color: #dc3545;
-        padding: 10px 0;
-    }
-    .copy-button {
-        border: none;
-        background: none;
-        color: #dc3545;
-        cursor: pointer;
-        padding: 5px;
-    }
-    .copy-button:hover { color: #a02622; }
-    .accordion-button:not(.collapsed) {
-        background-color: rgba(220, 53, 69, 0.1);
-        color: #dc3545;
-    }
-    .accordion-button:focus {
-        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
-    }
-    .status-check-interval {
-        font-size: 0.9rem;
-        color: #6c757d;
-        margin-top: 10px;
-    }
 </style>
 @endpush
-
+ 
 @section('content')
 <div class="container mb-5">
     <div class="row justify-content-center">
@@ -98,91 +124,80 @@ window.paymentConfig = {
                 </div>
                 <div class="card-body">
 
-                    {{-- ══════════════════════════════════════════════════════════ --}}
-                    {{-- BLOK STATUS: satu @if besar dengan @elseif yang rapi      --}}
-                    {{-- ══════════════════════════════════════════════════════════ --}}
-
                     @if($donation->status == 'pending')
 
-                        {{-- ── CASE 1: Moota — Transfer Bank Otomatis ── --}}
-                        @if($donation->payment_type == 'payment_gateway' && $donation->payment_method == 'moota')
+                        {{-- ══════════════════════════════════════════════════════
+                             CASE 1: MOOTA — Transfer Bank Otomatis
+                             FIX: str_starts_with karena format "moota:bank_id"
+                             BUKAN == 'moota' karena tidak akan pernah match!
+                        ══════════════════════════════════════════════════════ --}}
+                        @if($donation->payment_type == 'payment_gateway' && str_starts_with($donation->payment_method ?? '', 'moota'))
 
-                            <div class="text-center mb-4">
-                                <div class="alert alert-success">
-                                    <h4 class="mb-0">
-                                        <i class="fa fa-university me-2"></i> Selesaikan Transfer Bank
-                                    </h4>
+                            {{-- Alert estimasi waktu --}}
+                            <div class="alert alert-info d-flex align-items-start mb-3">
+                                <div>
+                                    <strong>Estimasi Verifikasi: 3–5 menit</strong><br>
+                                    <small>Setelah transfer, Sistem mendeteksi mutasi masuk dan donasi Anda langsung terverifikasi otomatis.</small>
                                 </div>
-                                <p class="mt-2 text-muted">
-                                    <i class="fa-solid fa-bolt text-success me-1"></i>
-                                    Donasi Anda akan terverifikasi <strong>otomatis</strong> setelah transfer masuk — tanpa perlu upload bukti.
-                                </p>
                             </div>
+
+
 
                             @if(isset($paymentDetail) && ($paymentDetail['type'] ?? '') === 'moota_transfer')
                                 <div class="payment-info-card">
 
-                                    {{-- Nomor rekening tujuan --}}
+                                    {{-- Nomor rekening --}}
                                     <div class="virtual-account-display moota-style">
                                         <p class="mb-1 text-muted">Transfer ke Rekening</p>
                                         <h5 class="fw-bold text-success mb-1">{{ $paymentDetail['bank_name'] }}</h5>
-                                        <div class="virtual-account-number text-success" id="mootaAccountNumber">
+                                        <div class="virtual-account-number green" id="mootaAccountNumber">
                                             {{ $paymentDetail['account_number'] }}
                                         </div>
                                         <p class="mb-2 text-muted">a.n. <strong>{{ $paymentDetail['account_name'] }}</strong></p>
-                                        <button class="copy-button" style="color:#28a745;"
-                                            onclick="copyText('{{ $paymentDetail['account_number'] }}')"
-                                            title="Salin nomor rekening">
+                                        <button class="copy-button green" onclick="copyText('{{ $paymentDetail['account_number'] }}')">
                                             <i class="fa fa-copy"></i> Salin Nomor Rekening
                                         </button>
                                     </div>
 
-                                    {{-- Nominal yang harus ditransfer --}}
+                                    {{-- Nominal transfer --}}
                                     <div class="virtual-account-display moota-style mt-3">
                                         <p class="mb-1 text-muted">
                                             Nominal Transfer
                                             <span class="badge bg-danger ms-1">HARUS TEPAT</span>
                                         </p>
-                                        <div class="virtual-account-number text-success" id="mootaTransferAmount">
+                                        <div class="virtual-account-number green" id="mootaTransferAmount">
                                             Rp {{ number_format($paymentDetail['total_amount']) }}
                                         </div>
-                                        <small class="text-muted d-block">
-                                            Donasi Rp {{ number_format($donation->amount) }}
-                                            + Kode unik Rp {{ $paymentDetail['unique_code'] }}
-                                        </small>
-                                        <button class="copy-button mt-1" style="color:#28a745;"
-                                            onclick="copyText('{{ $paymentDetail['total_amount'] }}')"
-                                            title="Salin nominal">
+                                      
+                                        <button class="copy-button green mt-1" onclick="copyText('{{ $paymentDetail['total_amount'] }}')">
                                             <i class="fa fa-copy"></i> Salin Nominal
                                         </button>
                                     </div>
-
-                                    {{-- Catatan penting --}}
-                                    <div class="alert alert-warning mt-3 mb-0">
-                                        <i class="fa-solid fa-triangle-exclamation me-1"></i>
-                                        <strong>Penting:</strong> Transfer dengan nominal <strong>TEPAT</strong> termasuk 3 digit kode unik di belakang.
-                                        Sistem akan memverifikasi otomatis dalam beberapa menit setelah transfer masuk.
-                                    </div>
                                 </div>
-
-                                {{-- Info menunggu + auto-refresh --}}
-                                <div class="text-center mt-3">
-                                    <p class="text-muted status-check-interval">
-                                        <i class="fa fa-clock me-1"></i>
-                                        Halaman ini otomatis refresh setiap 30 detik untuk mengecek status pembayaran.
-                                    </p>
-                                    <div class="spinner-border spinner-border-sm text-success"></div>
-                                </div>
-
                             @else
-                                {{-- Fallback jika $paymentDetail tidak tersedia --}}
                                 <div class="alert alert-info">
                                     <i class="fa fa-info-circle me-1"></i>
-                                    Silakan transfer ke rekening BCA yang telah ditentukan. Donasi akan otomatis terverifikasi setelah transfer masuk.
+                                    Silakan transfer ke rekening yang telah ditentukan. Donasi terverifikasi otomatis setelah transfer masuk (estimasi 3–5 menit).
                                 </div>
                             @endif
 
-                        {{-- ── CASE 2: Espay — Payment Gateway Virtual Account / QRIS ── --}}
+                            {{-- Countdown 30 detik SELALU tampil --}}
+                            <div class="moota-countdown-box">
+                                <div class="mb-1">
+                                    <span class="moota-pulse"></span>
+                                    <span style="font-size:0.85rem;color:#15803d;font-weight:600;">
+                                        Memeriksa status pembayaran otomatis...
+                                    </span>
+                                </div>
+                                <div class="moota-countdown-number mt-2" id="mootaCountdown">30</div>
+                                <div class="moota-countdown-label" id="mootaCountdownLabel">
+                                    detik hingga pengecekan berikutnya
+                                </div>
+                            </div>
+
+                        {{-- ══════════════════════════════════════════════════════
+                             CASE 2: ESPAY — Payment Gateway
+                        ══════════════════════════════════════════════════════ --}}
                         @elseif($donation->payment_type == 'payment_gateway')
 
                             <div class="text-center mb-4">
@@ -193,9 +208,9 @@ window.paymentConfig = {
                                 <div class="mb-2 mt-4">
                                     <div id="current-date" class="text-muted"></div>
                                 </div>
-                                <h5 class="countdown" id="countdown">0</h5>
+                                <h5 class="countdown" id="countdown">--:--:--</h5>
                                 <div id="status-check-info" class="status-check-interval">
-                                    <i class="fa fa-sync-alt fa-spin me-1"></i> Memeriksa status pembayaran setiap 3 detik...
+                                    <i class="fa fa-sync-alt fa-spin me-1"></i> Memeriksa status pembayaran...
                                 </div>
                             </div>
 
@@ -207,13 +222,12 @@ window.paymentConfig = {
                                             <small class="text-muted">Jumlah yang harus dibayar:</small>
                                             <div class="payment-amount-highlight">
                                                 Rp {{ number_format($donation->amount) }}
-                                                <button class="copy-button ms-2" onclick="copyToClipboard('{{ $paymentDetail['payment_amount'] ?? $donation->amount }}', this)" title="Salin nominal">
+                                                <button class="copy-button ms-2" onclick="copyToClipboard('{{ $paymentDetail['payment_amount'] ?? $donation->amount }}', this)">
                                                     <i class="fa fa-copy"></i>
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
-
                                     @if(isset($paymentDetail['virtual_account']) && $paymentDetail['virtual_account'])
                                         <div class="virtual-account-display">
                                             <small class="text-muted">Nomor Virtual Account</small>
@@ -223,17 +237,15 @@ window.paymentConfig = {
                                                     <i class="fa fa-copy"></i>
                                                 </button>
                                             </div>
-                                            <small class="text-muted">{{ $paymentDetail['payment_method'] }}</small>
+                                            <small class="text-muted">{{ $paymentDetail['payment_method'] ?? '' }}</small>
                                         </div>
                                     @endif
-
                                     @if(isset($paymentDetail['qr_url']) && $paymentDetail['qr_url'])
                                         <div class="qr-code-container">
                                             <h6 class="text-center mb-2">Scan QR Code</h6>
                                             <img src="{{ $paymentDetail['qr_url'] }}" alt="QR Code" class="img-fluid">
                                         </div>
                                     @endif
-
                                     @if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
                                         <div class="text-center mt-3 mb-3">
                                             <a href="{{ $paymentDetail['checkout_url'] }}" target="_blank" class="btn btn-danger btn-lg">
@@ -241,21 +253,6 @@ window.paymentConfig = {
                                             </a>
                                         </div>
                                     @endif
-
-                                    <div class="text-center mt-3">
-                                        <p class="text-muted">Metode: {{ $paymentDetail['payment_method'] }}</p>
-                                        @if(isset($paymentDetail['manual_account_number']))
-                                            <div class="bg-light p-3 rounded d-inline-block mt-2">
-                                                <p class="mb-1"><strong>Nomor Rekening:</strong>
-                                                    <span id="manualAccountNumber">{{ $paymentDetail['manual_account_number'] }}</span>
-                                                    <button type="button" class="copy-button btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ $paymentDetail['manual_account_number'] }}', this)">
-                                                        <i class="fa fa-copy"></i>
-                                                    </button>
-                                                </p>
-                                                <p class="mb-0"><small>{{ $paymentDetail['manual_account_name'] }}</small></p>
-                                            </div>
-                                        @endif
-                                    </div>
                                 </div>
                             @endif
 
@@ -266,74 +263,123 @@ window.paymentConfig = {
                                 <div id="statusResult" class="mt-3"></div>
                             </div>
 
-                        {{-- ── CASE 3: Manual — Upload Bukti ── --}}
+                        {{-- ══════════════════════════════════════════════════════
+                             CASE 3: MANUAL — Upload Bukti
+                        ══════════════════════════════════════════════════════ --}}
                         @else
+ 
+    <div class="text-center mb-4">
+        @if(!$donation->payment_proof)
+            <div class="alert alert-warning">
+                <h4 class="mb-0">
+                    <i class="fa fa-money-bill-transfer me-2"></i> Menunggu Pembayaran Manual
+                </h4>
+            </div>
+            <p class="mt-4">Silakan transfer sesuai instruksi kemudian unggah bukti pembayaran.</p>
+ 
+            {{-- Detail rekening tujuan --}}
+            <div class="bg-light p-3 rounded mb-3 text-start">
+                <p class="mb-1">
+                    <strong>Bank/E-wallet:</strong>
+                    {{ optional($donation->manualPaymentMethod)->name }}
+                </p>
+                <p class="mb-1">
+                    <strong>Nomor Rekening:</strong>
+                    <span id="accountNumberDisplay">
+                        {{ optional($donation->manualPaymentMethod)->account_number }}
+                    </span>
+                    <button type="button"
+                        class="copy-button btn btn-sm btn-outline-secondary ms-2"
+                        onclick="copyToClipboard('{{ optional($donation->manualPaymentMethod)->account_number }}', this)"
+                        title="Salin nomor rekening">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                </p>
+                <p class="mb-1">
+                    <strong>Atas Nama:</strong>
+                    {{ optional($donation->manualPaymentMethod)->account_name }}
+                </p>
+ 
+                {{-- ══════════════════════════════════════════════════════
+                     JUMLAH TRANSFER = amount + unique_code
+                     Donatur HARUS transfer nominal TEPAT ini agar admin
+                     bisa memverifikasi via kode unik 3 digit di belakang.
+                     
+                     Contoh: donasi Rp 50.000, unique_code = 819
+                             → donatur transfer Rp 50.819 (TEPAT)
+                             → admin lihat transfer Rp 50.819 masuk
+                             → cocok dengan kode unik 819 di sistem
+                ══════════════════════════════════════════════════════ --}}
+                <p class="mb-1">
+                    <strong>Jumlah Transfer:</strong>
+                    <span class="fw-bold text-danger" id="manualTransferAmount">
+                        Rp {{ number_format($donation->amount + $donation->unique_code) }}
+                    </span>
+                    <button type="button"
+                        class="copy-button btn btn-sm btn-outline-secondary ms-2"
+                        onclick="copyToClipboard('{{ $donation->amount + $donation->unique_code }}', this)"
+                        title="Salin nominal transfer">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                </p>
+ 
 
-                            <div class="text-center mb-4">
-                                @if(!$donation->payment_proof)
-                                    <div class="alert alert-warning">
-                                        <h4 class="mb-0"><i class="fa fa-money-bill-transfer me-2"></i> Menunggu Pembayaran Manual</h4>
-                                    </div>
-                                    <p class="mt-4">Silakan transfer sesuai instruksi kemudian unggah bukti pembayaran di bawah ini.</p>
+            </div>
+ 
+            {{-- Instruksi tambahan jika ada --}}
+            @if(optional($donation->manualPaymentMethod)->instructions)
+                <div class="alert alert-info mt-3 text-start">
+                    {!! nl2br(e(optional($donation->manualPaymentMethod)->instructions)) !!}
+                </div>
+            @endif
+ 
+            {{-- Form upload bukti --}}
+            <form action="{{ route('donations.process-manual-payment') }}" method="POST"
+                  enctype="multipart/form-data" class="mt-3" id="manualPaymentForm">
+                @csrf
+                <input type="hidden" name="donation_id" value="{{ $donation->id }}">
+                <input type="hidden" name="payment_type" value="manual">
+                <input type="hidden" name="selected_payment_method" value="{{ $donation->manual_payment_method_id }}">
+                <div class="mb-3 text-start">
+                    <label class="form-label fw-bold">
+                        Upload Bukti Transfer <span class="text-danger">*</span>
+                    </label>
+                    <input type="file" class="form-control" id="payment_proof"
+                           name="payment_proof" required accept="image/*">
+                    <div class="form-text text-muted">Format: JPG, PNG, JPEG (Maks. 2MB)</div>
+                    <div id="fileError" class="alert alert-danger mt-2 d-none"></div>
+                </div>
+                <button type="submit" class="btn btn-danger btn-lg w-100" id="submitPaymentBtn">
+                    <i class="fa fa-upload me-1"></i> Kirim Bukti Pembayaran
+                </button>
+            </form>
+ 
+        @else
+            {{-- Bukti sudah diupload, menunggu verifikasi --}}
+            <div class="alert alert-info">
+                <h4 class="mb-0">
+                    <i class="fa fa-clock me-2"></i> Menunggu Verifikasi Admin
+                </h4>
+            </div>
+            <p class="mt-4">Bukti pembayaran Anda telah kami terima dan sedang diverifikasi oleh admin.</p>
+            <p class="text-muted">Proses verifikasi biasanya memakan waktu <strong>1x24 jam kerja</strong>.</p>
+        @endif
+    </div>
+ 
+@endif
+{{-- END CASE 3 Manual --}}
 
-                                    <div class="bg-light p-3 rounded mb-3">
-                                        <p class="mb-1"><strong>Bank/E-wallet:</strong> {{ optional($donation->manualPaymentMethod)->name }}</p>
-                                        <p class="mb-1"><strong>Nomor Rekening:</strong>
-                                            <span id="accountNumberDisplay">{{ optional($donation->manualPaymentMethod)->account_number }}</span>
-                                            <button type="button" class="copy-button btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ optional($donation->manualPaymentMethod)->account_number }}', this)">
-                                                <i class="fa fa-copy"></i>
-                                            </button>
-                                        </p>
-                                        <p class="mb-1"><strong>Atas Nama:</strong> {{ optional($donation->manualPaymentMethod)->account_name }}</p>
-                                        <p class="mb-0"><strong>Jumlah Transfer:</strong> Rp
-                                            <span id="transferAmount">{{ number_format($donation->amount) }}</span>
-                                            <button type="button" class="copy-button btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ $donation->amount }}', this)">
-                                                <i class="fa fa-copy"></i>
-                                            </button>
-                                        </p>
-                                    </div>
-
-                                    @if(optional($donation->manualPaymentMethod)->instructions)
-                                        <div class="alert alert-secondary mt-3">
-                                            {!! nl2br(e(optional($donation->manualPaymentMethod)->instructions)) !!}
-                                        </div>
-                                    @endif
-
-                                    <form action="{{ route('donations.process-manual-payment') }}" method="POST" enctype="multipart/form-data" class="mt-3" id="manualPaymentForm">
-                                        @csrf
-                                        <input type="hidden" name="donation_id" value="{{ $donation->id }}">
-                                        <input type="hidden" name="payment_type" value="manual">
-                                        <input type="hidden" name="selected_payment_method" value="{{ $donation->manual_payment_method_id }}">
-                                        <div class="mb-3">
-                                            <label for="payment_proof" class="form-label">Upload Bukti Transfer <span class="text-danger">*</span></label>
-                                            <input type="file" class="form-control" id="payment_proof" name="payment_proof" required accept="image/*">
-                                            <div class="form-text">Format: JPG, PNG, JPEG (Maks. 2MB)</div>
-                                            <div id="fileError" class="alert alert-danger mt-2 d-none"></div>
-                                        </div>
-                                        <button type="submit" class="btn btn-danger btn-lg" id="submitPaymentBtn">
-                                            <i class="fa fa-upload me-1"></i> Kirim Bukti Pembayaran
-                                        </button>
-                                    </form>
-                                @else
-                                    <div class="alert alert-info">
-                                        <h4 class="mb-0"><i class="fa fa-clock me-2"></i> Menunggu Verifikasi Admin</h4>
-                                    </div>
-                                    <p class="mt-4">Bukti pembayaran Anda telah kami terima dan sedang diverifikasi oleh admin.</p>
-                                    <p>Proses verifikasi biasanya memakan waktu 1x24 jam kerja.</p>
-                                @endif
-                            </div>
-
-                        @endif
-                        {{-- END @if payment_type --}}
 
                     @elseif($donation->status == 'sukses')
 
                         <div class="text-center mb-4">
                             <div class="alert alert-success">
-                                <h4 class="mb-0 text-white"><i class="fa text-white fa-check-circle me-2"></i> Pembayaran Berhasil</h4>
+                                <h4 class="mb-0 text-white">
+                                    <i class="fa text-white fa-check-circle me-2"></i> Pembayaran Berhasil
+                                </h4>
                             </div>
                             <p class="mt-4">Terima kasih atas donasi Anda!</p>
-                            <p>Donasi Anda akan sangat membantu bagi {{ $campaign->title }}.</p>
+                            <p>Donasi Anda akan sangat membantu bagi <strong>{{ $campaign->title }}</strong>.</p>
                             <div class="text-center mt-4">
                                 <a href="{{ route('campaign.detail', $campaign->slug) }}" class="btn btn-primary">
                                     <i class="fa fa-arrow-left me-1"></i> Kembali ke Kampanye
@@ -347,13 +393,10 @@ window.paymentConfig = {
                             <div class="alert alert-danger">
                                 <h4 class="mb-0"><i class="fa fa-times-circle me-2"></i> Pembayaran Gagal</h4>
                             </div>
-                            <p class="mt-4">Mohon maaf, pembayaran Anda tidak berhasil.</p>
-                            <p>Waktu pembayaran telah habis atau transaksi dibatalkan.</p>
-                            <div class="text-center mt-4">
-                                <a href="{{ route('campaign.detail', $campaign->slug) }}" class="btn btn-primary">
-                                    <i class="fa fa-refresh me-1"></i> Coba Lagi
-                                </a>
-                            </div>
+                            <p class="mt-4">Mohon maaf, pembayaran Anda tidak berhasil atau waktu telah habis.</p>
+                            <a href="{{ route('campaign.detail', $campaign->slug) }}" class="btn btn-primary">
+                                <i class="fa fa-refresh me-1"></i> Coba Lagi
+                            </a>
                         </div>
 
                     @endif
@@ -368,33 +411,29 @@ window.paymentConfig = {
                                 <p class="mb-1"><strong>Nama Donatur:</strong></p>
                                 <p class="mb-1"><strong>Email:</strong></p>
                                 <p class="mb-1"><strong>Nominal Donasi:</strong></p>
-                                <p class="mb-1"><strong>Metode Pembayaran:</strong></p>
+                                <p class="mb-1"><strong>Metode:</strong></p>
                                 <p class="mb-1"><strong>Status:</strong></p>
                                 <p class="mb-1"><strong>Waktu:</strong></p>
                             </div>
                             <div class="col-7 text-md-end">
                                 <p class="mb-1 text-truncate" title="{{ $campaign->title }}">{{ $campaign->title }}</p>
-                                <p class="mb-1 text-truncate">{{ $donation->is_anonymous ? 'Sahabat Baik' : $donation->name }}</p>
+                                <p class="mb-1">{{ $donation->is_anonymous ? 'Sahabat Baik' : $donation->name }}</p>
                                 <p class="mb-1 text-truncate" title="{{ $donation->email }}">{{ $donation->email }}</p>
                                 <p class="mb-1 fw-bold text-danger">Rp {{ number_format($donation->amount) }}</p>
                                 <p class="mb-1">
-                                    @if($donation->payment_type == 'payment_gateway')
-                                        @if($donation->payment_method == 'moota')
-                                            <span class="badge bg-success">Transfer Bank (Moota)</span>
-                                        @else
-                                            {{ $donation->payment_method }}
-                                        @endif
+                                    {{-- FIX: str_starts_with untuk display label Moota --}}
+                                    @if($donation->payment_type == 'payment_gateway' && str_starts_with($donation->payment_method ?? '', 'moota'))
+                                        <span class="badge bg-success">Transfer Bank (Moota)</span>
+                                    @elseif($donation->payment_type == 'payment_gateway')
+                                        {{ $donation->payment_method }}
                                     @else
                                         Manual ({{ optional($donation->manualPaymentMethod)->name ?? 'Transfer Manual' }})
                                     @endif
                                 </p>
                                 <p class="mb-1">
-                                    @if($donation->status == 'pending')
-                                        <span class="badge bg-warning">Menunggu</span>
-                                    @elseif($donation->status == 'sukses')
-                                        <span class="badge bg-success">Berhasil</span>
-                                    @else
-                                        <span class="badge bg-danger">Gagal</span>
+                                    @if($donation->status == 'pending') <span class="badge bg-warning">Menunggu</span>
+                                    @elseif($donation->status == 'sukses') <span class="badge bg-success">Berhasil</span>
+                                    @else <span class="badge bg-danger">Gagal</span>
                                     @endif
                                 </p>
                                 <p class="mb-1">{{ $donation->created_at->format('d M Y H:i') }}</p>
@@ -402,17 +441,16 @@ window.paymentConfig = {
                         </div>
                     </div>
 
-                    {{-- Instruksi pembayaran Espay (accordion) --}}
+                    {{-- Instruksi Espay (accordion) --}}
                     @if($donation->status == 'pending' && isset($paymentDetail['payment_instructions']) && !empty($paymentDetail['payment_instructions']))
-                        <div class="payment-instructions mb-4 mt-5">
+                        <div class="mt-5">
                             <h5 class="border-bottom pb-2">Cara Pembayaran</h5>
                             <div class="accordion" id="paymentInstructionsAccordion">
                                 @foreach($paymentDetail['payment_instructions'] as $index => $instruction)
                                     <div class="accordion-item mb-2 border">
-                                        <h2 class="accordion-header" id="heading{{ $index }}">
+                                        <h2 class="accordion-header">
                                             <button class="accordion-button @if($index > 0) collapsed @endif" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#collapse{{ $index }}"
-                                                aria-expanded="{{ $index == 0 ? 'true' : 'false' }}">
+                                                data-bs-toggle="collapse" data-bs-target="#collapse{{ $index }}">
                                                 <strong>{{ $instruction['title'] }}</strong>
                                             </button>
                                         </h2>
@@ -432,20 +470,20 @@ window.paymentConfig = {
                         </div>
                     @endif
 
-                </div>{{-- end card-body --}}
+                </div>
             </div>
         </div>
     </div>
 </div>
-
+ 
 @include('includes.public.menu')
 @endsection
 
 @push('after-script')
 <script>
 (function() {
-    function isEventTracked(id, type) { return localStorage.getItem(`donation_${id}_${type}`) === 'true'; }
-    function markEventTracked(id, type) { localStorage.setItem(`donation_${id}_${type}`, 'true'); }
+    function isEventTracked(id, t) { return localStorage.getItem(`donation_${id}_${t}`) === 'true'; }
+    function markEventTracked(id, t) { localStorage.setItem(`donation_${id}_${t}`, 'true'); }
     window.pixelHelper = { isEventTracked, markEventTracked };
 })();
 </script>
@@ -454,17 +492,13 @@ window.paymentConfig = {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const donationId = {{ $donation->id }};
-
     @if($donation->status == 'pending')
         if (!window.pixelHelper.isEventTracked(donationId, 'purchase')) {
             @if($adsense && $adsense->facebook_pixel)
-            fbq('track', 'Purchase', { content_name: '{{ $campaign->title ?? "" }}', value: {{ $donation->amount ?? 0 }}, currency: 'IDR', transaction_id: '{{ $donation->snap_token ?? "" }}' });
+            fbq('track', 'Purchase', { value: {{ $donation->amount ?? 0 }}, currency: 'IDR', transaction_id: '{{ $donation->snap_token ?? "" }}' });
             @endif
             @if($adsense && $adsense->google_ads_id)
             gtag('event', 'purchase', { 'send_to': '{{ $adsense->google_ads_id }}', 'transaction_id': '{{ $donation->id }}', 'value': {{ $donation->amount ?? 0 }}, 'currency': 'IDR' });
-            @endif
-            @if($adsense && $adsense->tiktok_pixel)
-            ttq.track('CompletePayment', { content_id: '{{ $campaign->id ?? "" }}', value: {{ $donation->amount ?? 0 }}, currency: 'IDR' });
             @endif
             window.pixelHelper.markEventTracked(donationId, 'purchase');
         }
@@ -474,9 +508,6 @@ document.addEventListener('DOMContentLoaded', function() {
             @if($adsense && $adsense->facebook_pixel)
             fbq('trackCustom', 'Donate', { value: {{ $donation->amount ?? 0 }}, currency: 'IDR', transaction_id: '{{ $donation->snap_token ?? "" }}' });
             @endif
-            @if($adsense && $adsense->google_ads_id)
-            gtag('event', 'donation_completed', { 'send_to': '{{ $adsense->google_ads_id }}', 'value': {{ $donation->amount ?? 0 }}, 'currency': 'IDR' });
-            @endif
             @if($adsense && $adsense->google_ads_id && $adsense->google_ads_label)
             gtag('event', 'conversion', { 'send_to': '{{ $adsense->google_ads_id }}/{{ $adsense->google_ads_label }}', 'value': {{ $donation->amount ?? 0 }}, 'currency': 'IDR', 'transaction_id': '{{ $donation->snap_token ?? "" }}' });
             @endif
@@ -485,11 +516,20 @@ document.addEventListener('DOMContentLoaded', function() {
     @endif
 });
 </script>
-
+ 
 <script>
 $(document).ready(function() {
 
-    // ── Copy to clipboard (versi tombol button dengan icon) ──
+    // ── Copy: Moota (tanpa parameter button) ─────────────────────────
+    window.copyText = function(text) {
+        navigator.clipboard.writeText(String(text)).then(function() {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'success', title: 'Tersalin!', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+            }
+        });
+    };
+
+    // ── Copy: Espay/Manual (dengan parameter button element) ─────────
     window.copyToClipboard = function(text, button) {
         if (typeof text === 'string') text = text.replace(/\D/g, '');
         navigator.clipboard.writeText(text).then(function() {
@@ -498,26 +538,17 @@ $(document).ready(function() {
             icon.className = 'fa fa-check';
             icon.style.color = '#28a745';
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'success', title: 'Berhasil disalin!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                Swal.fire({ icon: 'success', title: 'Berhasil disalin!', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
             }
             setTimeout(() => { icon.className = orig; icon.style.color = ''; }, 2000);
         });
     };
 
-    // ── Copy to clipboard versi Moota (tanpa parameter button) ──
-    window.copyText = function(text) {
-        navigator.clipboard.writeText(String(text)).then(function() {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'success', title: 'Tersalin!', text: 'Berhasil disalin ke clipboard.', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
-            }
-        });
-    };
-
-    // ── Live clock ──
+    // ── Live clock (Espay) ────────────────────────────────────────────
     function updateClock() {
         const el = document.getElementById('current-date');
         if (!el) return;
-        const now = new Date();
+        const now    = new Date();
         const days   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
         const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
         el.innerHTML = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} WIB`;
@@ -525,64 +556,124 @@ $(document).ready(function() {
     updateClock();
     setInterval(updateClock, 1000);
 
-    // ── Countdown Espay ──
-    @if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && $donation->payment_method != 'moota')
-        const createdAt      = new Date("{{ $donation->created_at }}");
-        const expirationTime = new Date(createdAt.getTime() + (24 * 60 * 60 * 1000));
-        const countdownEl    = document.getElementById("countdown");
-
-        const countdownTimer = setInterval(function() {
-            const distance = expirationTime - new Date().getTime();
+    // ── ESPAY: Countdown 24 jam ───────────────────────────────────────
+    @if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && !str_starts_with($donation->payment_method ?? '', 'moota'))
+    (function() {
+        const expiration  = new Date(new Date("{{ $donation->created_at }}").getTime() + 24*60*60*1000);
+        const countdownEl = document.getElementById('countdown');
+        const timer = setInterval(function() {
+            const distance = expiration - Date.now();
             if (distance < 0) {
-                clearInterval(countdownTimer);
-                if (countdownEl) countdownEl.innerHTML = "EXPIRED";
-                $.ajax({ url: '{{ route("donations.mark-expired", $donation->id) }}', type: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                clearInterval(timer);
+                if (countdownEl) countdownEl.innerHTML = 'EXPIRED';
+                $.ajax({
+                    url: '{{ route("donations.mark-expired", $donation->id) }}',
+                    type: 'POST',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                     success: function(r) { if (r.success) location.reload(); }
                 });
                 return;
             }
-            const h = String(Math.floor((distance % (1000*60*60*24)) / (1000*60*60))).padStart(2,'0');
+            const h = String(Math.floor(distance / (1000*60*60))).padStart(2,'0');
             const m = String(Math.floor((distance % (1000*60*60)) / (1000*60))).padStart(2,'0');
             const s = String(Math.floor((distance % (1000*60)) / 1000)).padStart(2,'0');
             if (countdownEl) countdownEl.innerHTML = `${h}:${m}:${s}`;
         }, 1000);
+    })();
     @endif
 
-    // ── Auto-refresh Espay setiap 3 detik ──
-    @if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && $donation->payment_method != 'moota')
-        const espayInterval = setInterval(function() {
+    // ── ESPAY: Auto-check status ADAPTIF ─────────────────────────────
+    // Attempt 1-3: 5 detik | 4-6: 10 detik | 7-10: 20 detik | 11+: 30 detik
+    // Hemat ~70% request vs interval 3 detik flat
+    @if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && !str_starts_with($donation->payment_method ?? '', 'moota'))
+    (function() {
+        let attempt = 0, timeoutId = null, stopped = false;
+
+        function getDelay(n) {
+            if (n <= 3)  return 5000;
+            if (n <= 6)  return 10000;
+            if (n <= 10) return 20000;
+            return 30000;
+        }
+
+        function checkStatus() {
+            if (stopped) return;
+            attempt++;
+            const el = document.getElementById('status-check-info');
+            if (el) el.innerHTML = `<i class="fa fa-sync-alt fa-spin me-1"></i> Memeriksa status setiap ${getDelay(attempt+1)/1000} detik... (percobaan ke-${attempt})`;
+
             $.ajax({
                 url: '{{ route("donations.check-status", $donation->snap_token) }}',
                 type: 'GET',
                 success: function(response) {
                     if (response.success && response.data) {
                         if (['PAID','EXPIRED'].includes(response.data.status)) {
-                            clearInterval(espayInterval);
-                            location.reload();
+                            stopped = true; clearTimeout(timeoutId); location.reload(); return;
                         }
                     }
+                    if (!stopped) timeoutId = setTimeout(checkStatus, getDelay(attempt));
+                },
+                error: function() {
+                    if (!stopped) timeoutId = setTimeout(checkStatus, Math.max(getDelay(attempt), 15000));
                 }
             });
-        }, 3000);
+        }
+        timeoutId = setTimeout(checkStatus, 5000);
+    })();
     @endif
 
-    // ── Auto-refresh Moota setiap 30 detik ──
-    @if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && $donation->payment_method == 'moota')
-        const mootaInterval = setInterval(function() {
-            $.get('/donations/check-status/' + '{{ $donation->snap_token }}', function(res) {
-                if (res.success && res.data && res.data.status === 'PAID') {
-                    clearInterval(mootaInterval);
-                    location.reload();
-                }
-            });
-        }, 30000);
+    // ── MOOTA: Countdown 30 detik REAL-TIME + auto-check ─────────────
+    // setInterval 1 detik hanya untuk update angka tampilan
+    // AJAX dipanggil hanya setiap 30 detik (saat angka = 0)
+    // checkStatus() Moota return dari DB, TIDAK hit API Espay
+    @if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && str_starts_with($donation->payment_method ?? '', 'moota'))
+    (function() {
+        const countdownEl = document.getElementById('mootaCountdown');
+        const labelEl     = document.getElementById('mootaCountdownLabel');
+        let secondsLeft   = 30;
+        let stopped       = false;
+        let checkCount    = 0;
+
+        const timer = setInterval(function() {
+            if (stopped) { clearInterval(timer); return; }
+
+            secondsLeft--;
+            if (countdownEl) countdownEl.textContent = secondsLeft;
+
+            if (secondsLeft <= 0) {
+                checkCount++;
+                secondsLeft = 30; // reset segera
+                if (labelEl) labelEl.textContent = `Pengecekan ke-${checkCount}...`;
+
+                // Cek status dari DB via route check-status
+                // Controller sudah handle Moota: return PAID jika status='sukses'
+                $.ajax({
+                    url: '/donations/check-status/{{ $donation->snap_token }}',
+                    type: 'GET',
+                    success: function(res) {
+                        if (res.success && res.data && res.data.status === 'PAID') {
+                            stopped = true; clearInterval(timer);
+                            if (countdownEl) countdownEl.textContent = '✓';
+                            if (labelEl) labelEl.textContent = 'Pembayaran terdeteksi! Memuat ulang...';
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            if (labelEl) labelEl.textContent = `Belum terdeteksi. Cek berikutnya dalam 30 detik.`;
+                        }
+                    },
+                    error: function() {
+                        if (labelEl) labelEl.textContent = `Gagal cek. Mencoba lagi...`;
+                    }
+                });
+            }
+        }, 1000);
+    })();
     @endif
 
-    // ── Tombol manual cek status Espay ──
+    // ── Tombol manual cek status (Espay) ─────────────────────────────
     $('#checkStatus').click(function(e) {
         e.preventDefault();
-        $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Sedang mengecek...');
-        $('#statusResult').html('<div class="spinner-border text-primary" role="status"></div>');
+        $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Mengecek...');
+        $('#statusResult').html('<div class="d-flex justify-content-center my-2"><div class="spinner-border text-primary"></div></div>');
 
         $.ajax({
             url: '{{ route("donations.check-status", $donation->snap_token) }}',
@@ -592,21 +683,21 @@ $(document).ready(function() {
                 if (response.success && response.data) {
                     const s = response.data.status;
                     let text = 'Masih menunggu pembayaran...', cls = 'alert-warning';
-                    if (s === 'PAID')    { text = 'Pembayaran telah berhasil!'; cls = 'alert-success'; setTimeout(() => location.reload(), 2000); }
-                    if (s === 'EXPIRED') { text = 'Pembayaran telah kadaluarsa.'; cls = 'alert-danger'; setTimeout(() => location.reload(), 2000); }
-                    $('#statusResult').html(`<div class="alert ${cls}">${text}</div>`);
+                    if (s === 'PAID')    { text = 'Pembayaran berhasil! Memuat ulang...'; cls = 'alert-success'; setTimeout(() => location.reload(), 2000); }
+                    if (s === 'EXPIRED') { text = 'Pembayaran kadaluarsa.'; cls = 'alert-danger'; setTimeout(() => location.reload(), 2000); }
+                    $('#statusResult').html(`<div class="alert ${cls} mt-2">${text}</div>`);
                 } else {
-                    $('#statusResult').html('<div class="alert alert-danger">Gagal mendapatkan status. Silakan coba lagi.</div>');
+                    $('#statusResult').html('<div class="alert alert-danger mt-2">Gagal mendapatkan status. Coba lagi.</div>');
                 }
             },
             error: function() {
                 $('#checkStatus').prop('disabled', false).html('<i class="fa fa-refresh me-1"></i> Cek Status Pembayaran');
-                $('#statusResult').html('<div class="alert alert-danger">Terjadi kesalahan. Silakan coba lagi.</div>');
+                $('#statusResult').html('<div class="alert alert-danger mt-2">Terjadi kesalahan jaringan. Coba lagi.</div>');
             }
         });
     });
 
-    // ── Validasi ukuran file bukti transfer manual ──
+    // ── Validasi file bukti manual ────────────────────────────────────
     const proofInput = document.getElementById('payment_proof');
     if (proofInput) {
         proofInput.addEventListener('change', function() {
@@ -614,7 +705,7 @@ $(document).ready(function() {
             const fileError = document.getElementById('fileError');
             const submitBtn = document.getElementById('submitPaymentBtn');
             if (file && file.size > 2 * 1024 * 1024) {
-                fileError.textContent = 'File terlalu besar! Maksimal 2MB. File Anda: ' + (file.size/1024/1024).toFixed(2) + 'MB';
+                fileError.textContent = `File terlalu besar (${(file.size/1024/1024).toFixed(2)} MB). Maks. 2MB.`;
                 fileError.classList.remove('d-none');
                 submitBtn.disabled = true;
                 this.value = '';

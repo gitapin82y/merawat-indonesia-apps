@@ -54,7 +54,6 @@
         font-weight: bold;
         z-index: 1;
     }
-    /* Badge "Verifikasi Otomatis" hijau di card Moota */
     .badge-moota-auto {
         display: inline-block;
         background: #28a745;
@@ -63,9 +62,7 @@
         font-weight: 600;
         padding: 2px 7px;
         border-radius: 20px;
-        letter-spacing: 0.3px;
     }
-    /* Divider label antar section di tab otomatis */
     .gateway-section-label {
         font-size: 0.75rem;
         font-weight: 700;
@@ -77,9 +74,7 @@
         margin-bottom: 10px;
         margin-top: 16px;
     }
-    .gateway-section-label:first-child {
-        margin-top: 0;
-    }
+    .gateway-section-label:first-child { margin-top: 0; }
 </style>
 @endpush
 
@@ -94,8 +89,14 @@
                 <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
                 <input type="hidden" name="payment_type" id="payment_type">
                 <input type="hidden" name="selected_payment_method" id="selected_payment_method">
-                {{-- Hidden: penanda gateway (moota / espay) --}}
+                {{-- 
+                    FIX BUG: selected_gateway & selected_moota_bank_id dikirim ke controller
+                    selected_gateway    = 'moota' atau 'espay'
+                    selected_moota_bank_id = bank_id spesifik dari Moota (misal bpPkB9RxWB2)
+                    Ini yang sebelumnya menyebabkan salah bank tampil di status page
+                --}}
                 <input type="hidden" name="selected_gateway" id="selected_gateway" value="">
+                <input type="hidden" name="selected_moota_bank_id" id="selected_moota_bank_id" value="">
 
                 <!-- Pilihan Nominal Donasi -->
                 <div class="row container m-0">
@@ -211,10 +212,8 @@
 
                     <div class="tab-content" id="paymentTypeTabsContent">
 
-                        {{-- ════════════════════════════════════════ --}}
                         {{-- TAB OTOMATIS: MOOTA (atas) + ESPAY (bawah) --}}
-                        {{-- ════════════════════════════════════════ --}}
-                        <div class="tab-pane fade show active" id="gateway-content" role="tabpanel" aria-labelledby="gateway-tab">
+                        <div class="tab-pane fade show active" id="gateway-content" role="tabpanel">
 
                             @php
                                 $hasMoota = !empty($mootaBanks);
@@ -228,14 +227,19 @@
                                 </div>
                             @else
 
-                                {{-- ── SECTION 1: MOOTA – Transfer Bank Otomatis ── --}}
+                                {{-- SECTION 1: MOOTA –- Transfer Bank Otomatis --}}
                                 @if($hasMoota)
                                     <div class="gateway-section-label">
                                         <i class="fa-solid fa-bolt me-1 text-success"></i>
                                         Transfer Bank — Verifikasi Otomatis
                                     </div>
+                                 
 
-
+                                    {{-- 
+                                        FIX: Setiap card Moota menyimpan bank_id spesifiknya di data-bank-id
+                                        Saat diklik, bank_id ini dikirim ke hidden input #selected_moota_bank_id
+                                        Controller kemudian tahu BANK MANA yang dipilih donatur
+                                    --}}
                                     @foreach($mootaBanks as $bank)
                                         <div class="payment-method-card card mb-2"
                                              data-method="moota"
@@ -249,9 +253,8 @@
                                                     </div>
                                                     <div>
                                                         <h6 class="mb-0">{{ $bank['label'] }}</h6>
-                                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                        <div class="d-flex align-items-center flex-wrap gap-1">
                                                             <small class="text-muted">{{ $bank['account_number'] }} &bull; a.n. {{ $bank['account_name'] }}</small>
-
                                                         </div>
                                                     </div>
                                                 </div>
@@ -260,11 +263,11 @@
                                         </div>
                                     @endforeach
                                 @endif
+                                    <div class="d-none">
 
-                                {{-- ── SECTION 2: ESPAY – Virtual Account / QRIS / E-Wallet ── --}}
+                                {{-- SECTION 2: ESPAY -- Virtual Account / QRIS --}}
                                 @if($hasEspay)
-
-
+                                   
                                     @php
                                         $groupedChannels = collect($channels)->groupBy('category');
                                         $categoryLabels = [
@@ -286,75 +289,66 @@
                                                     @elseif($category == 'ewallet') fa-wallet
                                                     @elseif($category == 'credit_card') fa-credit-card
                                                     @elseif($category == 'bank_transfer') fa-money-bill-transfer
-                                                    @else fa-money-bill
-                                                    @endif me-2"></i>
+                                                    @else fa-money-bill @endif me-2"></i>
                                                 {{ $categoryLabels[$category] ?? ucfirst($category) }}
                                             </h6>
                                         </div>
-
-                                        <div class="payment-methods-group mb-2">
-                                            @foreach($methods as $channel)
-                                                <div class="payment-method-card card mb-2"
-                                                     data-method="{{ $channel['code'] }}"
-                                                     data-type="payment_gateway"
-                                                     data-gateway="espay"
-                                                     data-pay-method="{{ $channel['pay_method'] }}"
-                                                     data-pay-option="{{ $channel['pay_option'] }}">
-                                                    <div class="card-body d-flex justify-content-between align-items-center py-2">
-                                                        <div class="d-flex align-items-center">
-                                                            @if(isset($channel['icon_url']) && $channel['icon_url'])
-                                                                <img src="{{ $channel['icon_url'] }}"
-                                                                     alt="{{ $channel['name'] }}"
-                                                                     height="30"
-                                                                     class="me-3"
-                                                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                                                            @endif
-                                                            <div class="bg-light rounded me-3 align-items-center justify-content-center"
-                                                                 style="width:40px;height:30px;display:{{ isset($channel['icon_url']) && $channel['icon_url'] ? 'none' : 'flex' }};">
-                                                                <i class="fa-solid
-                                                                    @if($category == 'virtual_account') fa-building-columns
-                                                                    @elseif($category == 'qris') fa-qrcode
-                                                                    @elseif($category == 'ewallet') fa-wallet
-                                                                    @elseif($category == 'credit_card') fa-credit-card
-                                                                    @else fa-money-bill
-                                                                    @endif text-danger"></i>
-                                                            </div>
-                                                            <div>
-                                                                <h6 class="mb-0">{{ $channel['name'] }}</h6>
-                                                                @if(isset($channel['fee_amount']) && $channel['fee_amount'] > 0)
-                                                                    <small class="text-muted">
-                                                                        Biaya:
-                                                                        @if($channel['fee_type'] == 'percent')
-                                                                            {{ $channel['fee_amount'] }}%
-                                                                        @else
-                                                                            Rp {{ number_format($channel['fee_amount'], 0, ',', '.') }}
-                                                                        @endif
-                                                                    </small>
-                                                                @else
-                                                                    <small class="text-success">Gratis biaya admin</small>
-                                                                @endif
-                                                            </div>
+                                        @foreach($methods as $channel)
+                                            <div class="payment-method-card card mb-2"
+                                                 data-method="{{ $channel['code'] }}"
+                                                 data-type="payment_gateway"
+                                                 data-gateway="espay"
+                                                 data-bank-id=""
+                                                 data-pay-method="{{ $channel['pay_method'] }}"
+                                                 data-pay-option="{{ $channel['pay_option'] }}">
+                                                <div class="card-body d-flex justify-content-between align-items-center py-2">
+                                                    <div class="d-flex align-items-center">
+                                                        @if(isset($channel['icon_url']) && $channel['icon_url'])
+                                                            <img src="{{ $channel['icon_url'] }}" alt="{{ $channel['name'] }}" height="30" class="me-3"
+                                                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                                        @endif
+                                                        <div class="bg-light rounded me-3 align-items-center justify-content-center"
+                                                             style="width:40px;height:30px;display:{{ isset($channel['icon_url']) && $channel['icon_url'] ? 'none' : 'flex' }};">
+                                                            <i class="fa-solid
+                                                                @if($category == 'virtual_account') fa-building-columns
+                                                                @elseif($category == 'qris') fa-qrcode
+                                                                @elseif($category == 'ewallet') fa-wallet
+                                                                @else fa-money-bill @endif text-danger"></i>
                                                         </div>
-                                                        <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
+                                                        <div>
+                                                            <h6 class="mb-0">{{ $channel['name'] }}</h6>
+                                                            @if(isset($channel['fee_amount']) && $channel['fee_amount'] > 0)
+                                                                <small class="text-muted">
+                                                                    Biaya: @if($channel['fee_type'] == 'percent'){{ $channel['fee_amount'] }}%@else Rp {{ number_format($channel['fee_amount'], 0, ',', '.') }}@endif
+                                                                </small>
+                                                            @else
+                                                                <small class="text-success">Gratis biaya admin</small>
+                                                            @endif
+                                                        </div>
                                                     </div>
+                                                    <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
                                                 </div>
-                                            @endforeach
-                                        </div>
+                                            </div>
+                                        @endforeach
                                     @endforeach
-                                @endif
 
-                            @endif {{-- end if hasMoota || hasEspay --}}
+                                @endif
+                                    </div>
+
+                            @endif
                         </div>
                         {{-- END TAB OTOMATIS --}}
 
-                        {{-- ════════════════════════════════════════ --}}
-                        {{-- TAB MANUAL (tidak berubah)              --}}
-                        {{-- ════════════════════════════════════════ --}}
-                        <div class="tab-pane fade" id="manual-content" role="tabpanel" aria-labelledby="manual-tab">
+                        {{-- TAB MANUAL --}}
+                        <div class="tab-pane fade" id="manual-content" role="tabpanel">
                             <h5 class="mb-3">Metode Pembayaran Manual (Verifikasi Admin 1x24 Jam)</h5>
                             <div class="payment-methods">
                                 @foreach($manualMethods as $method)
-                                <div class="payment-method-card card mb-3" data-method="{{ $method->id }}" data-type="manual">
+                                <div class="payment-method-card card mb-3"
+                                     data-method="{{ $method->id }}"
+                                     data-type="manual"
+                                     data-gateway=""
+                                     data-bank-id="">
                                     <div class="card-body d-flex justify-content-between align-items-center py-2">
                                         <div class="d-flex align-items-center">
                                             @if($method->icon)
@@ -374,7 +368,6 @@
                                 </div>
                                 @endforeach
                             </div>
-
                             <div id="manualPaymentDetails" class="mt-4 d-none">
                                 <div class="alert alert-info">
                                     <i class="fa-solid fa-info-circle me-1"></i> Jumlah transfer akan diinformasikan setelah submit.
@@ -387,7 +380,7 @@
                         </div>
                         {{-- END TAB MANUAL --}}
 
-                    </div>{{-- end tab-content --}}
+                    </div>
                 </div>
 
                 <div class="footer">
@@ -407,42 +400,16 @@
 @php $adsense = \App\Models\Adsense::first(); @endphp
 <script>
     @if($adsense && $adsense->facebook_pixel)
-    fbq('track', 'AddToCart', {
-        content_name: '{{ $campaign->title ?? "Donation" }}',
-        content_category: '{{ $campaign->category->name ?? "Campaign" }}',
-        content_ids: ['{{ $campaign->id ?? "" }}'],
-        content_type: 'product',
-        value: {{ $donation->amount ?? 0 }},
-        currency: 'IDR'
-    });
-    @endif
-    @if($adsense && $adsense->google_ads_id)
-    gtag('event', 'add_to_cart', {
-        'send_to': '{{ $adsense->google_ads_id }}',
-        'value': {{ $donation->amount ?? 0 }},
-        'currency': 'IDR'
-    });
-    @endif
-    @if($adsense && $adsense->tiktok_pixel)
-    ttq.track('AddToCart', {
-        content_type: 'product',
-        content_id: '{{ $campaign->id ?? "" }}',
-        content_name: '{{ $campaign->title ?? "Donation" }}',
-        value: {{ $donation->amount ?? 0 }},
-        currency: 'IDR'
-    });
+    fbq('track', 'AddToCart', { content_name: '{{ $campaign->title ?? "" }}', value: {{ $donation->amount ?? 0 }}, currency: 'IDR' });
     @endif
 </script>
-
 <script>
 $(document).ready(function() {
 
     // ── Format input angka ──
     $("#customAmount").on('input', function() {
         this.value = this.value.replace(/[^0-9]/g, '');
-        if (this.value.length > 0) {
-            $('.donation-amount-card').removeClass('selected');
-        }
+        if (this.value.length > 0) $('.donation-amount-card').removeClass('selected');
     });
 
     // ── Pilih nominal donasi ──
@@ -452,29 +419,30 @@ $(document).ready(function() {
         $('#customAmount').val($(this).data('amount'));
     });
 
-    // ── Pilih metode pembayaran ──
+    // ── Pilih metode pembayaran ──────────────────────────────────────────
+    // FIX: Sekarang membaca data-bank-id dari card yang diklik
+    // sehingga BCA vs BRI vs Mandiri bisa dibedakan di controller
     $('.payment-method-card').click(function() {
-        // Reset semua card
         $('.payment-method-card').removeClass('selected');
         $('.payment-check-icon').addClass('d-none');
 
-        // Aktifkan card ini
         $(this).addClass('selected');
         $(this).find('.payment-check-icon').removeClass('d-none');
 
-        const method  = $(this).data('method');   // 'moota' atau espay code
-        const type    = $(this).data('type');      // 'payment_gateway' atau 'manual'
-        const gateway = $(this).data('gateway');   // 'moota', 'espay', atau undefined
+        const method  = $(this).data('method');    // 'moota' / espay_code / manual_id
+        const type    = $(this).data('type');       // 'payment_gateway' / 'manual'
+        const gateway = $(this).data('gateway');    // 'moota' / 'espay' / ''
+        const bankId  = $(this).data('bank-id');    // FIX: bank_id spesifik Moota
 
         $('#selected_payment_method').val(method);
         $('#payment_type').val(type);
         $('#selected_gateway').val(gateway || '');
+        $('#selected_moota_bank_id').val(bankId || ''); // FIX: simpan bank_id yang dipilih
 
-        // Tampilkan detail pembayaran manual
         if (type === 'manual') {
             $('#manualPaymentDetails').removeClass('d-none');
-            const methodName = $(this).find('h6').text();
-            const methodInfo = $(this).find('small').first().text();
+            const methodName = $(this).find('h6').text().trim();
+            const methodInfo = $(this).find('small').first().text().trim();
             $('#methodDetails').html(`
                 <p class="mb-1"><strong>Bank/E-wallet:</strong> ${methodName}</p>
                 <p class="mb-1"><strong>Nomor Rekening:</strong> ${methodInfo}</p>
@@ -489,11 +457,10 @@ $(document).ready(function() {
         e.preventDefault();
 
         const amount = $('#customAmount').val();
-        if (!amount || parseInt(amount) < 2000) {
+        if (!amount || parseInt(amount) < 10000) {
             Swal.fire({ icon: 'info', text: 'Minimal donasi adalah Rp 10.000', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
             return;
         }
-
         const name  = $('#full_name').val().trim();
         const phone = $('#whatsapp').val().trim();
         const email = $('#email').val().trim();
@@ -501,22 +468,15 @@ $(document).ready(function() {
             Swal.fire({ icon: 'error', text: 'Silakan lengkapi data diri Anda', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
             return;
         }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             Swal.fire({ icon: 'error', text: 'Format email tidak valid', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
             return;
         }
-
-        const phoneDigits = phone.replace(/\D/g, '');
-        if (phoneDigits.length < 10) {
+        if (phone.replace(/\D/g, '').length < 10) {
             Swal.fire({ icon: 'error', text: 'Nomor WhatsApp tidak valid', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
             return;
         }
-
-        const paymentType   = $('#payment_type').val();
-        const paymentMethod = $('#selected_payment_method').val();
-        if (!paymentType || !paymentMethod) {
+        if (!$('#payment_type').val() || !$('#selected_payment_method').val()) {
             Swal.fire({ icon: 'error', text: 'Silakan pilih metode pembayaran', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
             return;
         }
@@ -525,19 +485,18 @@ $(document).ready(function() {
         $('#donationForm').submit();
     });
 
-    // ── UTM tracking ──
-    const utmParams = ['utm_source', 'utm_medium', 'utm_campaign'];
-    document.querySelectorAll('form[action*="donations"]').forEach(form => {
-        utmParams.forEach(param => {
-            const value = localStorage.getItem(param);
-            if (value && !form.querySelector(`[name="${param}"]`)) {
-                const input = document.createElement('input');
-                input.type  = 'hidden';
-                input.name  = param;
-                input.value = value;
-                form.appendChild(input);
-            }
-        });
+    // UTM tracking
+    ['utm_source','utm_medium','utm_campaign'].forEach(param => {
+        const value = localStorage.getItem(param);
+        if (value) {
+            document.querySelectorAll('form[action*="donations"]').forEach(form => {
+                if (!form.querySelector(`[name="${param}"]`)) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden'; input.name = param; input.value = value;
+                    form.appendChild(input);
+                }
+            });
+        }
     });
 });
 </script>

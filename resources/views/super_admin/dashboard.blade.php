@@ -50,7 +50,7 @@
     Pembayaran Espay
 </a>
 
-<button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#manageMootaModal">
+<button type="button" class="btn btn-danger btn-sm col-12 my-2 col-md-2 col-lg-2" data-toggle="modal" data-target="#manageMootaModal">
     <i class="fas fa-university mr-1"></i> Manage Bank Moota
 </button>
 
