@@ -5,7 +5,7 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 $timestamp = '2026-04-11T20:20:00+07:00';
 $method = 'POST';
-$endpoint = '/apimerchant/v1.0/qr/qr-mpm-generate';
+$endpoint = '/api/v1.0/qr/qr-mpm-generate';
 $body = json_encode([
     'partnerReferenceNo' => 'QR-NEG-002-' . time(),
     'merchantId'         => 'SGWYAYASANBINAMULIA',
