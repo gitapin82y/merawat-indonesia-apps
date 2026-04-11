@@ -34,6 +34,8 @@ return Application::configure(basePath: dirname(__DIR__))
          $middleware->validateCsrfTokens(except: [
         'api/espay/*',
         'api/moota/*',
+        'api/v1.0/transfer-va/inquiry',
+        'api/v1.0/transfer-va/payment',
     ]);
 
     })
