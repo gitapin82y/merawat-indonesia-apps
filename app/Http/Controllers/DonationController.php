@@ -1229,10 +1229,11 @@ public function ceklis(Request $request)
     if ($row->payment_type == 'manual') {
         // Tombol file bukti pembayaran
         if ($row->payment_proof) {
-            $actionBtn .= '
-        <a href="'.asset('storage/'.$row->payment_proof).'" target="_blank" class="btn btn-info text-white btn-sm" title="Lihat Bukti">
-            <i class="fas fa-file"></i>
-        </a>';
+                $proofUrl = asset('storage/'.$row->payment_proof);
+    $actionBtn .= '
+<button onclick="lihatBukti(\''.addslashes($proofUrl).'\')" class="btn btn-info text-white btn-sm" title="Lihat Bukti">
+    <i class="fas fa-file"></i>
+</button>';
         } else {
             $actionBtn .= '
         <button onclick="noPaymentProofAlert()" class="btn btn-info text-white btn-sm" title="Belum ada bukti">

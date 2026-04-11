@@ -14,9 +14,6 @@ window.paymentConfig = {
 </script>
 <style>
     .payment-info-card {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 20px;
         margin: 20px 0;
     }
     .virtual-account-display {
@@ -40,17 +37,17 @@ window.paymentConfig = {
         color: #dc3545;
         letter-spacing: 2px;
         margin: 10px 0;
+        margin-bottom: 0;
     }
-    .virtual-account-number.green { color: #28a745; }
+    .virtual-account-number.green { color: #dc3545; }
     .copy-button {
         border: none;
         background: none;
-        color: #dc3545;
+        color: #dc3545 ; 
         cursor: pointer;
-        padding: 5px;
     }
     .copy-button.green { color: #28a745; }
-    .copy-button:hover { opacity: 0.75; }
+    .copy-button:hover { opacity: 0.75; background: white; }
     .moota-countdown-box {
         background: #f0fdf4;
         border: 1px solid #86efac;
@@ -58,6 +55,7 @@ window.paymentConfig = {
         padding: 14px 20px;
         text-align: center;
         margin: 16px 0;
+        margin-bottom: 0;
     }
     .moota-countdown-number {
         font-size: 2.2rem;
@@ -138,6 +136,9 @@ window.paymentConfig = {
                                 <div>
                                     <strong>Estimasi Verifikasi: 3–5 menit</strong><br>
                                     <small>Setelah transfer, Sistem mendeteksi mutasi masuk dan donasi Anda langsung terverifikasi otomatis.</small>
+                                    <small>
+                                    Ada kendala? Hubungi kami di <a href="https://api.whatsapp.com/send/?phone=6287821211934&text&type=phone_number&app_absent=0" style="color:#28a745;" target="_blank"><strong>WhatsApp Sekarang</strong></a>
+                                    </small>
                                 </div>
                             </div>
 
@@ -147,17 +148,44 @@ window.paymentConfig = {
                                 <div class="payment-info-card">
 
                                     {{-- Nomor rekening --}}
-                                    <div class="virtual-account-display moota-style">
-                                        <p class="mb-1 text-muted">Transfer ke Rekening</p>
-                                        <h5 class="fw-bold text-success mb-1">{{ $paymentDetail['bank_name'] }}</h5>
-                                        <div class="virtual-account-number green" id="mootaAccountNumber">
-                                            {{ $paymentDetail['account_number'] }}
-                                        </div>
-                                        <p class="mb-2 text-muted">a.n. <strong>{{ $paymentDetail['account_name'] }}</strong></p>
-                                        <button class="copy-button green" onclick="copyText('{{ $paymentDetail['account_number'] }}')">
-                                            <i class="fa fa-copy"></i> Salin Nomor Rekening
-                                        </button>
-                                    </div>
+                                   {{-- Nomor rekening --}}
+<div class="virtual-account-display moota-style">
+    <p class="mb-1 text-muted">Transfer ke Rekening</p>
+    
+    @php
+        $bankNameLower = strtolower($paymentDetail['bank_name']);
+        if (str_contains($bankNameLower, 'mandiri')) {
+            $bankLogo = asset('assets/img/icon/mandiri.png');
+            $bankLabel = 'Mandiri';
+        } elseif (str_contains($bankNameLower, 'bca')) {
+            $bankLogo = asset('assets/img/icon/bca.png');
+            $bankLabel = 'BCA';
+        } elseif (str_contains($bankNameLower, 'bri')) {
+            $bankLogo = asset('assets/img/icon/bri.png');
+            $bankLabel = 'BRI';
+        } else {
+            $bankLogo = null;
+            $bankLabel = $paymentDetail['bank_name'];
+        }
+    @endphp
+
+
+         <img src="{{ $bankLogo }}" alt="{{ $bankLabel }}" 
+     class="{{ $bankLogo ? '' : 'd-none' }} mb-1" 
+     style="height:32px;object-fit:contain;">
+
+@if(!$bankLogo)
+    <h5 class="fw-bold text-success mb-1">{{ $bankLabel }}</h5>
+@endif
+
+    <div class="virtual-account-number green" id="mootaAccountNumber">
+        {{ $paymentDetail['account_number'] }}
+    </div>
+    <p class="mb-2 text-muted">a.n. <strong>{{ $paymentDetail['account_name'] }}</strong></p>
+    <button class="copy-button green" onclick="copyText('{{ $paymentDetail['account_number'] }}')">
+        <i class="fa fa-copy"></i> Salin Nomor Rekening
+    </button>
+</div>
 
                                     {{-- Nominal transfer --}}
                                     <div class="virtual-account-display moota-style mt-3">
@@ -186,10 +214,10 @@ window.paymentConfig = {
                                 <div class="mb-1">
                                     <span class="moota-pulse"></span>
                                     <span style="font-size:0.85rem;color:#15803d;font-weight:600;">
-                                        Memeriksa status pembayaran otomatis...
+                                        Memeriksa status otomatis...
                                     </span>
                                 </div>
-                                <div class="moota-countdown-number mt-2" id="mootaCountdown">30</div>
+                                <div class="moota-countdown-number" id="mootaCountdown">30</div>
                                 <div class="moota-countdown-label" id="mootaCountdownLabel">
                                     detik hingga pengecekan berikutnya
                                 </div>
@@ -403,7 +431,7 @@ window.paymentConfig = {
                     {{-- END @if $donation->status --}}
 
                     {{-- ── Detail Donasi ── --}}
-                    <div class="mt-5">
+                    <div class="mt-4">
                         <h5 class="border-bottom pb-2 mb-3">Detail Donasi</h5>
                         <div class="row">
                             <div class="col-5">
