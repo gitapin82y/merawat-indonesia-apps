@@ -30,7 +30,7 @@
     }
     .payment-method-card.selected {
         border: 2px solid #dc3545;
-        background-color: rgba(220, 53, 69, 0.1);
+
     }
     .payment-type-tabs .nav-link {
         color: #495057;
