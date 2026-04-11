@@ -13,7 +13,7 @@ $body = json_encode([
     'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
     'feeAmount'          => ['value' => '0.00', 'currency' => 'IDR'],
     'validityPeriod'     => '2026-04-12T20:20:00+07:00',
-    'additionalInfo'     => (object)[]
+    'additionalInfo'     => ['productCode' => 'SALDOMUQR']
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $hashedBody = strtolower(hash('sha256', $body));
