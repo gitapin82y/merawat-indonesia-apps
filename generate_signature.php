@@ -16,7 +16,7 @@ $body = json_encode([
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $hashedBody = strtolower(hash('sha256', $body));
-$stringToSign = $method . ':' . $endpoint . ':' . $hashedBody . ':' . $timestamp;
+$stringToSign = $method . ':' . $endpoint . ':' . $hashedBody . ':' . $timestam>
 
 $privateKey = file_get_contents(storage_path('app/keys/espay/private_key.pem'));
 $pkeyId = openssl_pkey_get_private($privateKey);
