@@ -49,6 +49,11 @@
        <a class="btn btn-danger d-none" data-toggle="modal" data-target="#manageEspayModal">
     Pembayaran Espay
 </a>
+
+<button type="button" class="btn btn-danger btn-sm col-12 my-2 col-md-2 col-lg-2" data-toggle="modal" data-target="#manageMootaModal">
+    Manage Bank Moota
+</button>
+
         <div class="col-12 my-2 col-md-2 col-lg-2">
             <a class="w-100 btn btn-danger" href="{{ route('legal-documents.index') }}">
                 Dokumen Legal
@@ -119,6 +124,73 @@
         </div>
     </div>
 </div>
+<!-- Modal Manage Moota Banks -->
+<div class="modal fade" id="manageMootaModal" tabindex="-1" aria-labelledby="mootaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="mootaLabel">
+                    <i class="fas fa-university mr-2"></i>
+                    Manage Bank Moota (Verifikasi Otomatis)
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+ 
+                <!-- Info Alert -->
+                <div class="alert alert-info d-flex align-items-start" role="alert">
+                    <i class="fas fa-info-circle mr-2 mt-1"></i>
+                    <div>
+                        <strong>Note :</strong>
+                        Saat sync menampilkan semua info bank yang terdaftar di moota, Pastikan saat mengaktifkan list bank dibawah ini, Pada dashboard moota bank tersebut siap digunakan untuk transaksi tidak ada alert 'Terjadi Masalah teknis'.<br>
+                    </div>
+                </div>
+ 
+                <!-- Control Buttons -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button type="button" id="btnSyncMoota" class="btn btn-success">
+                        <i class="fas fa-sync-alt mr-1"></i> Sync Bank dari Moota
+                    </button>
+                    <small class="text-muted" id="mootaLastSync"></small>
+                </div>
+ 
+                <!-- Loading -->
+                <div id="mootaLoading" class="text-center py-3" style="display:none;">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="mt-2">Memuat data bank Moota...</p>
+                </div>
+ 
+                <!-- Error -->
+                <div id="mootaError" class="alert alert-danger d-none">
+                    <i class="fas fa-exclamation-circle mr-1"></i>
+                    <span id="mootaErrorMessage">Terjadi kesalahan.</span>
+                </div>
+ 
+                <!-- Bank List -->
+                <div id="mootaBankList" class="row">
+                    <!-- Diisi via AJAX -->
+                </div>
+ 
+                <!-- Empty State -->
+                <div id="mootaEmpty" class="alert alert-warning d-none">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    Belum ada bank yang tersinkronisasi. Klik <strong>"Sync Bank dari Moota"</strong> untuk mengambil data bank aktif dari akun Moota.
+                </div>
+ 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i> Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+ 
 
 <div class="modal fade" id="manageEspayModal" tabindex="-1" aria-labelledby="espayLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
@@ -970,6 +1042,179 @@ $(document).ready(function() {
     
     });
     
+</script>
+<script>
+$(document).ready(function () {
+ 
+    // Load bank Moota saat modal dibuka
+    $('#manageMootaModal').on('show.bs.modal', function () {
+        loadMootaBanks();
+    });
+ 
+    // ── Fungsi load daftar bank Moota ──
+    function loadMootaBanks() {
+        $('#mootaLoading').show();
+        $('#mootaBankList').empty();
+        $('#mootaEmpty').addClass('d-none');
+        $('#mootaError').addClass('d-none');
+ 
+        $.ajax({
+            url: '/super-admin/moota-banks',
+            method: 'GET',
+            success: function (banks) {
+                $('#mootaLoading').hide();
+ 
+                if (!banks || banks.length === 0) {
+                    $('#mootaEmpty').removeClass('d-none');
+                    return;
+                }
+ 
+                renderMootaBanks(banks);
+            },
+            error: function (xhr) {
+                $('#mootaLoading').hide();
+                $('#mootaError').removeClass('d-none');
+                $('#mootaErrorMessage').text('Gagal memuat bank Moota: ' + (xhr.responseJSON?.error || 'Terjadi kesalahan.'));
+            }
+        });
+    }
+ 
+    // ── Render bank cards ──
+    function renderMootaBanks(banks) {
+        let html = '';
+ 
+        banks.forEach(function (bank) {
+            const statusBadge = bank.is_active
+                ? '<span class="badge badge-success">Aktif</span>'
+                : '<span class="badge badge-secondary">Nonaktif</span>';
+ 
+            const mootaBadge = bank.moota_active
+                ? '<span class="badge badge-info ml-1">Terdaftar Moota</span>'
+                : '<span class="badge badge-warning ml-1">Nonaktif di Moota</span>';
+ 
+            html += `
+                <div class="col-md-6 mb-3">
+                    <div class="card border-left-success shadow-sm">
+                        <div class="card-body py-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="font-weight-bold text-success mb-0">${bank.label}</h6>
+                                    <small class="text-muted">${bank.account_number}</small><br>
+                                    <small class="text-muted">a.n. ${bank.account_name}</small><br>
+                                    <div class="mt-1">${statusBadge}${mootaBadge}</div>
+                                    ${bank.last_synced_at ? `<small class="text-muted">Terakhir sync: ${bank.last_synced_at}</small>` : ''}
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input toggle-moota-bank"
+                                        id="moota-bank-${bank.id}"
+                                        data-bank-id="${bank.bank_id}"
+                                        ${bank.is_active ? 'checked' : ''}>
+                                    <label class="custom-control-label" for="moota-bank-${bank.id}"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+ 
+        $('#mootaBankList').html(html);
+ 
+        // Bind toggle event
+        $('.toggle-moota-bank').off('change').on('change', function () {
+            const bankId   = $(this).data('bank-id');
+            const isActive = $(this).prop('checked') ? 1 : 0;
+            toggleMootaBank(bankId, isActive, $(this));
+        });
+    }
+ 
+    // ── Toggle aktif/nonaktif bank ──
+    function toggleMootaBank(bankId, isActive, $toggle) {
+        $.ajax({
+            url: '/super-admin/moota-banks/toggle-status',
+            method: 'POST',
+            data: {
+                bank_id:   bankId,
+                is_active: isActive,
+                _token:    $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function () {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Status bank berhasil diperbarui.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            },
+            error: function (xhr) {
+                // Rollback toggle jika gagal
+                $toggle.prop('checked', !isActive);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: xhr.responseJSON?.error || 'Gagal memperbarui status bank.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        });
+    }
+ 
+    // ── Sync bank dari Moota ──
+    $('#btnSyncMoota').on('click', function () {
+        Swal.fire({
+            title: 'Sinkronisasi Bank Moota',
+            text: 'Yakin ingin menyinkronkan data bank dari akun Moota?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Sinkronkan',
+            cancelButtonText: 'Batal'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+ 
+            $('#mootaLoading').show();
+            $('#mootaBankList').empty();
+ 
+            $.ajax({
+                url: '/super-admin/moota-banks/sync',
+                method: 'POST',
+                data: { _token: $('meta[name="csrf-token"]').attr('content') },
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: response.message || 'Bank berhasil disinkronkan.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
+                    loadMootaBanks();
+                },
+                error: function (xhr) {
+                    $('#mootaLoading').hide();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: 'Gagal sinkronisasi: ' + (xhr.responseJSON?.error || 'Terjadi kesalahan sistem'),
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                }
+            });
+        });
+    });
+ 
+}); // end document.ready
 </script>
 <script>
     // Fungsi untuk memuat daftar metode pembayaran

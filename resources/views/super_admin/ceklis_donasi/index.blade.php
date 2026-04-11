@@ -71,6 +71,30 @@
         </div>
     </div>
 
+
+    <!-- Modal Bukti Pembayaran -->
+<div class="modal fade" id="modalBuktiPembayaran" tabindex="-1" role="dialog" aria-labelledby="modalBuktiLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalBuktiLabel">Bukti Pembayaran</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="gambarBukti" src="" alt="Bukti Pembayaran" class="img-fluid rounded" style="max-height: 70vh; object-fit: contain;">
+            </div>
+            <div class="modal-footer">
+                <a id="linkUnduhBukti" href="" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Buka di Tab Baru
+                </a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- Campaign Filter Modal -->
 <div class="modal fade" id="campaignFilterModal" tabindex="-1" role="dialog" aria-labelledby="campaignFilterModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -433,7 +457,7 @@ function updateStatus(id, status) {
                             showConfirmButton: false,
                             timer: 3000
                         });
-                        $('.yajra-datatable').DataTable().ajax.reload();
+                        $('.yajra-datatable').DataTable().ajax.reload(null, false);
                     } else {
                         Swal.fire('Gagal!', response.message || 'Gagal mengupdate status.', 'error');
                     }
@@ -474,7 +498,7 @@ function deleteDonasi(id) {
                             timer: 3000
                         });
                         // Reload data tabel setelah berhasil menghapus
-                        $('.yajra-datatable').DataTable().ajax.reload();
+                        $('.yajra-datatable').DataTable().ajax.reload(null, false);
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -504,6 +528,11 @@ function noPaymentProofAlert() {
         title: 'Bukti pembayaran belum diupload!',
         text: 'User sudah mengisi form donasi dan mungkin sedang proses melakukan pembayaran sehingga belum mengirimkan foto bukti pembayaran.'
     });
+}
+function lihatBukti(url) {
+    $('#gambarBukti').attr('src', url);
+    $('#linkUnduhBukti').attr('href', url);
+    $('#modalBuktiPembayaran').modal('show');
 }
 </script>
 @endpush

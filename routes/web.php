@@ -34,6 +34,9 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\EspayPaymentMethodController;
 use App\Http\Controllers\EspayCallbackController;
 
+use App\Http\Controllers\MootaBankController;
+use App\Http\Controllers\MootaWebhookController;
+
 use App\Http\Controllers\StatistikPencairanController;
 
 Route::post('/api/espay/callback', [EspayCallbackController::class, 'handleCallback'])
@@ -46,6 +49,10 @@ Route::post('/api/espay/inquiry', [EspayCallbackController::class, 'handleInquir
 // Espay payment notification (dipanggil Espay setelah user bayar)  
 Route::post('/api/espay/payment', [EspayCallbackController::class, 'handlePayment'])
     ->name('espay.payment');
+
+     
+Route::post('/api/moota/webhook', [MootaWebhookController::class, 'handle'])
+    ->name('moota.webhook');
 
 // Route test email biasa (sudah ada dan berfungsi)
 Route::get('/test-email', function () {
@@ -272,6 +279,9 @@ Route::post('/donations/{id}/mark-expired', [DonationController::class, 'markExp
 Route::get('/donations/check-status/{reference}', [DonationController::class, 'checkStatus'])
     ->name('donations.check-status');
 
+Route::get('/donations/{id}/check-status-by-id', [DonationController::class, 'checkStatusById'])
+    ->name('donations.check-status-by-id');
+
 Route::get('/donations/{id}/payment-method', [DonationController::class, 'selectPaymentMethod'])->name('donations.select-payment-method');
 Route::post('/donations/process-payment', [DonationController::class, 'processPayment'])->name('donations.process-payment');
 Route::post('/donations/process-manual-payment', [DonationController::class, 'processManualPayment'])->name('donations.process-manual-payment');
@@ -296,6 +306,15 @@ Route::middleware(['checkRole:super_admin'])->prefix('super-admin')->group(funct
     
     Route::post('/espay-payment-methods/toggle-status', [EspayPaymentMethodController::class, 'toggleStatus'])
         ->name('espay-payment-methods.toggle-status');
+
+        Route::get('/moota-banks', [MootaBankController::class, 'index'])
+    ->name('moota-banks.index');
+ 
+Route::post('/moota-banks/sync', [MootaBankController::class, 'sync'])
+    ->name('moota-banks.sync');
+ 
+Route::post('/moota-banks/toggle-status', [MootaBankController::class, 'toggleStatus'])
+    ->name('moota-banks.toggle-status');
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
 
