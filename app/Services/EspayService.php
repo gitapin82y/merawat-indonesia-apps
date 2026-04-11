@@ -372,7 +372,106 @@ if (substr($sanitizedPhone, 0, 2) === '62') {
             ];
         }
     }
-
+public function createQRMPM($donation, $campaign, $paymentMethod)
+{
+    try {
+        $timestamp          = $this->generateTimestamp();
+        $externalId         = $this->generateExternalId();
+        $partnerReferenceNo = 'DON-' . $donation->id . '-' . time();
+        $amount             = number_format((float) $donation->amount, 2, '.', '');
+ 
+        $statusToken = md5($donation->id . time() . \Illuminate\Support\Str::random(10));
+        $returnUrl   = route('donations.status', [
+            'id'           => $donation->id,
+            'status_token' => $statusToken,
+        ]);
+ 
+        $requestBody = [
+            'partnerReferenceNo' => $partnerReferenceNo,
+            'merchantId'         => $this->merchantCode,
+            'amount'             => ['value' => $amount, 'currency' => 'IDR'],
+            'validityPeriod'     => \Carbon\Carbon::now('Asia/Jakarta')
+                ->addHours(config('espay.default_expiry_hours', 24))
+                ->format('Y-m-d\TH:i:sP'),
+            'additionalInfo'     => [
+                'productCode' => $paymentMethod->pay_option,
+                'payType'     => 'REDIRECT',
+                'callbackUrl' => url('/api/espay/callback'),
+            ],
+        ];
+ 
+        $requestBodyJson = json_encode($requestBody);
+        $endpoint        = '/api/v1.0/qr/qr-mpm-generate';
+ 
+        $signature = $this->generateSimpleSignature(
+            'POST',
+            $endpoint,
+            $requestBodyJson,
+            $timestamp
+        );
+ 
+        $url = $this->apiMerchantUrl . $endpoint;
+ 
+        Log::info('Espay QR MPM Request', [
+            'url'       => $url,
+            'body'      => $requestBody,
+            'timestamp' => $timestamp,
+        ]);
+ 
+        $response = Http::withHeaders([
+            'Content-Type'  => 'application/json',
+            'X-TIMESTAMP'   => $timestamp,
+            'X-SIGNATURE'   => $signature,
+            'X-EXTERNAL-ID' => $externalId,
+            'X-PARTNER-ID'  => $this->merchantCode,
+            'CHANNEL-ID'    => config('espay.channel_id'),
+        ])->post($url, $requestBody);
+ 
+        $responseData = $response->json();
+ 
+        Log::info('Espay QR MPM Response', [
+            'response' => $responseData,
+            'status'   => $response->status(),
+        ]);
+ 
+        if ($response->successful() && isset($responseData['responseCode'])) {
+            if ($responseData['responseCode'] === '2004700') {
+                return [
+                    'success' => true,
+                    'data'    => [
+                        'reference'           => $partnerReferenceNo,
+                        'qr_url'              => $responseData['qrUrl']     ?? null,
+                        'qr_content'          => $responseData['qrContent'] ?? null,
+                        'partner_reference_no' => $partnerReferenceNo,
+                        'expired_time'        => \Carbon\Carbon::now('Asia/Jakarta')
+                            ->addHours(config('espay.default_expiry_hours', 24))
+                            ->timestamp,
+                    ],
+                ];
+            }
+ 
+            return [
+                'success' => false,
+                'message' => 'Espay QR MPM Error: ' . ($responseData['responseMessage'] ?? 'Failed') .
+                             ' (Code: ' . ($responseData['responseCode'] ?? 'unknown') . ')',
+            ];
+        }
+ 
+        return [
+            'success' => false,
+            'message' => 'Failed to create QR MPM: ' . ($responseData['responseMessage'] ?? $response->body()),
+        ];
+ 
+    } catch (\Exception $e) {
+        Log::error('Error creating Espay QR MPM: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString(),
+        ]);
+        return [
+            'success' => false,
+            'message' => 'System error: ' . $e->getMessage(),
+        ];
+    }
+}
 private function generateSimpleSignature($method, $endpoint, $requestBody, $timestamp)
 {
     try {

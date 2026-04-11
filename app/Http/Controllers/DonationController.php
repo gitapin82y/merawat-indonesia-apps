@@ -634,7 +634,12 @@ protected function createTransaction($donation, $campaign)
             return ['success' => false, 'message' => 'Payment method not found'];
         }
 
-        $result = $this->espayService->createPaymentHostToHost($donation, $campaign, $paymentMethod);
+        if ($paymentMethod->category === 'qris') {
+    $result = $this->espayService->createQRMPM($donation, $campaign, $paymentMethod);
+} else {
+    $result = $this->espayService->createPaymentHostToHost($donation, $campaign, $paymentMethod);
+}
+
 
         // Simpan checkout_url ke donation jika transaksi berhasil
         if (isset($result['success']) && $result['success'] && !empty($result['data']['checkout_url'])) {
