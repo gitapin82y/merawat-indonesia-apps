@@ -3,15 +3,17 @@ require_once __DIR__ . '/vendor/autoload.php';
 $app = require_once __DIR__ . '/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-$timestamp = '2026-04-11T19:54:00+07:00';
-$method = 'DELETE';
-$endpoint = '/apimerchant/v1.0/transfer-va/delete-va';
+$timestamp = '2026-04-11T20:20:00+07:00';
+$method = 'POST';
+$endpoint = '/apimerchant/v1.0/qr/qr-mpm-generate';
 $body = json_encode([
-    'partnerServiceId' => ' ESPAY',
-    'customerNo' => 'SGWYAYASANBINAMULIA',
-    'virtualAccountNo' => 'DON-57590-1775912821',
-    'trxId' => 'DEL-002-2026',
-    'additionalInfo' => (object)[]
+    'partnerReferenceNo' => 'QR-NEG-002-' . time(),
+    'merchantId'         => 'SGWYAYASANBINAMULIA',
+    'subMerchantId'      => '478e6640ee7aab15364bf42569559a35',
+    'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
+    'feeAmount'          => ['value' => '0.00', 'currency' => 'IDR'],
+    'validityPeriod'     => '2026-04-12T20:20:00+07:00',
+    'additionalInfo'     => (object)[]
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $hashedBody = strtolower(hash('sha256', $body));
@@ -23,4 +25,4 @@ $signature = '';
 openssl_sign($stringToSign, $signature, $pkeyId, OPENSSL_ALGO_SHA256);
 
 echo "Signature: " . base64_encode($signature) . "\n";
-echo "String to Sign: " . $stringToSign . "\n";
+echo "Body: " . $body . "\n";
