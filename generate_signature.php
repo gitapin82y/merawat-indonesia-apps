@@ -7,12 +7,13 @@ $timestamp = '2026-04-11T20:20:00+07:00';
 $method = 'POST';
 $endpoint = '/api/v1.0/qr/qr-mpm-generate';
 $body = json_encode([
-    'merchantId'     => 'SGWYAYASANBINAMULIA',
-    'subMerchantId'  => '478e6640ee7aab15364bf42569559a35',
-    'amount'         => ['value' => '25000.00', 'currency' => 'IDR'],
-    'feeAmount'      => ['value' => '0.00', 'currency' => 'IDR'],
-    'validityPeriod' => '2026-04-12T20:20:00+07:00',
-    'additionalInfo' => ['productCode' => 'SALDOMUQR']
+    'partnerReferenceNo' => '#QR-INVALID-FORMAT!!!',
+    'merchantId'         => 'SGWYAYASANBINAMULIA',
+    'subMerchantId'      => '478e6640ee7aab15364bf42569559a35',
+    'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
+    'feeAmount'          => ['value' => '0.00', 'currency' => 'IDR'],
+    'validityPeriod'     => '2026-04-12T20:20:00+07:00',
+    'additionalInfo'     => ['productCode' => 'SALDOMUQR']
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $hashedBody = strtolower(hash('sha256', $body));
