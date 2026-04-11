@@ -276,8 +276,8 @@ if (substr($sanitizedPhone, 0, 2) === '62') {
     'userName'     => $sanitizedName,
     'userEmail'    => $donation->email,
     'userPhone'    => $sanitizedPhone,
-    'inquiryUrl'   => url('/api/espay/inquiry'),
-    'paymentUrl'   => url('/api/espay/payment'),
+    'inquiryUrl'   => url('/api/v1.0/transfer-va/inquiry'),
+    'paymentUrl'   => url('/api/v1.0/transfer-va/payment'),
     'callbackUrl'  => url('/api/espay/callback'),
 ],
 
