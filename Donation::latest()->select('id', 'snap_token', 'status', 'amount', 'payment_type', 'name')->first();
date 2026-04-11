@@ -1,0 +1,29 @@
+[90m= [39m[34;4mIlluminate\Database\Eloquent\Collection[39;24m {#2528
+    [34mall[39m: [
+      [34;4mApp\Models\Donation[39;24m {#6466
+        [34mid[39m: [35m57587[39m,
+        [34msnap_token[39m: "[32mmoota_9xzXx6LBwzP[39m",
+        [34mstatus[39m: "[32msukses[39m",
+        [34mamount[39m: [35m25578[39m,
+        [34mpayment_type[39m: "[32mpayment_gateway[39m",
+        [34mname[39m: "[32mAhmad Kaembarsah[39m",
+      },
+      [34;4mApp\Models\Donation[39;24m {#6465
+        [34mid[39m: [35m57586[39m,
+        [34msnap_token[39m: "[32mflKZ055Ag087i9n0SI9eiN106Wc4PNRA[39m",
+        [34mstatus[39m: "[32msukses[39m",
+        [34mamount[39m: [35m25379[39m,
+        [34mpayment_type[39m: "[32mmanual[39m",
+        [34mname[39m: "[32mpranadya[39m",
+      },
+      [34;4mApp\Models\Donation[39;24m {#6464
+        [34mid[39m: [35m57585[39m,
+        [34msnap_token[39m: "[32mBJl7Wnd8H893y2t4PB5isy2MZJnMz1qK[39m",
+        [34mstatus[39m: "[32msukses[39m",
+        [34mamount[39m: [35m50474[39m,
+        [34mpayment_type[39m: "[32mmanual[39m",
+        [34mname[39m: "[32mamelia ulfa[39m",
+      },
+    ],
+  }
+

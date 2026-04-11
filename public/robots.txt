@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /storage/campaign_documents/
 
 Sitemap: https://merawatindonesia.com/sitemap.xml
