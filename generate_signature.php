@@ -11,7 +11,8 @@ $body = json_encode([
     'merchantId'         => 'SGWYAYASANBINAMULIA',
     'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
     'validityPeriod'     => '2026-04-12T20:20:00+07:00',
-    'additionalInfo'     => ['productCode' => 'SALDOMUQR']
+'pointOfInitiation'  => 'Website',
+    'additionalInfo'     => ['productCode' => 'SALDOMUQR','payType'     => 'REDIRECT',]
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $hashedBody = strtolower(hash('sha256', $body));
