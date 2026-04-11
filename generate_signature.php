@@ -7,7 +7,7 @@ $timestamp = '2026-04-11T20:20:00+07:00';
 $method = 'POST';
 $endpoint = '/api/v1.0/qr/qr-mpm-generate';
 $body = json_encode([
-    'partnerReferenceNo' => 'QR-POS-005-' . time(),
+    'partnerReferenceNo' => 'QR-POS-006-' . time(),
     'merchantId'         => 'SGWYAYASANBINAMULIA',
     'subMerchantId'      => '478e6640ee7aab15364bf42569559a35',
     'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
