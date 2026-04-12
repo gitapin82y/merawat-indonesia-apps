@@ -8,10 +8,14 @@ $method = 'POST';
 $endpoint = '/api/v1.0/qr/qr-mpm-generate';
 $body = json_encode([
     'partnerReferenceNo' => 'QR-POS-006-' . time(),
-    'merchantId'         => 'SGWYAYASANBINAMULIA',
     'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
-    'additionalInfo'     => ['productCode' => 'SALDOMUQR'],
+    'feeAmount'          => ['value' => '0.00', 'currency' => 'IDR'],
+    'merchantId'         => 'merch00001',
     'validityPeriod'     => '2026-04-13T08:13:00+07:00',
+    'additionalInfo'     => [
+        'deviceId' => '12345679237',
+        'channel'  => 'mobilephone',
+    ],
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $hashedBody = strtolower(hash('sha256', $body));
