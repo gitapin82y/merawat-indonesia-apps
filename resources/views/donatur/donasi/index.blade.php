@@ -334,7 +334,7 @@
                                                                     Biaya: @if($channel['fee_type'] == 'percent'){{ $channel['fee_amount'] }}%@else Rp {{ number_format($channel['fee_amount'], 0, ',', '.') }}@endif
                                                                 </small>
                                                             @else
-                                                                <small class="text-success">Gratis biaya admin</small>
+                                                                {{-- <small class="text-success">Gratis biaya admin</small> --}}
                                                             @endif
                                                         </div>
                                                     </div>
