@@ -7,12 +7,12 @@ $timestamp = '2026-04-12T15:17:00+07:00';
 $method = 'POST';
 $endpoint = '/apimerchant/v1.0/debit/payment-host-to-host';
 $body = json_encode([
-    'partnerReferenceNo' => 'DD-NEG-002-' . time(),
+    'partnerReferenceNo' => 'DON-57630-1775982745',
     'merchantId'         => 'SGWYAYASANBINAMULIA',
     'subMerchantId'      => '478e6640ee7aab15364bf42569559a35',
     'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
     'urlParam'           => [
-        'url'        => 'https://merawatindonesia.com/donations/status',
+        'url'        => 'https://merawatindonesia.com/donations/57630/status',
         'type'       => 'PAY_RETURN',
         'isDeeplink' => 'N',
     ],
@@ -25,15 +25,14 @@ $body = json_encode([
         'feeAmount'   => ['value' => '0.00', 'currency' => 'IDR'],
     ],
     'additionalInfo'     => [
-        'payType'       => 'REDIRECT',
-        'userId'        => '425666',
-        'userName'      => 'Test Donatur',
-        'userEmail'     => 'test@merawatindonesia.com',
-        'userPhone'     => '081234567890',
-        'buyerId'       => '12345678',
-        'productCode'   => 'BCAATM',
-        'balanceType'   => 'CASH',
-        'bankCardToken' => 'ESP230929094046rRD5mCT1IZkrBhJb5',
+        'payType'     => 'REDIRECT',
+        'userName'    => 'Test Donatur',
+        'userEmail'   => 'test@merawatindonesia.com',
+        'userPhone'   => '081234567890',
+        'inquiryUrl'  => 'https://merawatindonesia.com/api/v1.0/transfer-va/inquiry',
+        'paymentUrl'  => 'https://merawatindonesia.com/api/v1.0/transfer-va/payment',
+        'callbackUrl' => 'https://merawatindonesia.com/api/espay/callback',
+        'productCode' => 'BCAATM',
     ],
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
