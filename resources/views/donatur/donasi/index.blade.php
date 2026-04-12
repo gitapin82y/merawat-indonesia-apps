@@ -270,11 +270,13 @@
                     </div>
                 </div>
             </div>
-            <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
+            <i class="fa-solid fa-circle-check text-success payment-check-icon "></i>
         </div>
     </div>
 @endforeach
                                 @endif
+
+                                <div class="d-none">
 
                                 {{-- SECTION 2: ESPAY -- Virtual Account / QRIS --}}
                                 @if($hasEspay)
@@ -290,9 +292,8 @@
                                             'other'           => 'Lainnya',
                                         ];
                                     @endphp
-
                                     @foreach($groupedChannels as $category => $methods)
-                                        <div class="payment-category-header mb-2 mt-3 d-none">
+                                        <div class="payment-category-header mb-2 mt-3">
                                             <h6 class="text-muted mb-0">
                                                 <i class="fa-solid
                                                     @if($category == 'virtual_account') fa-building-columns
@@ -305,7 +306,7 @@
                                             </h6>
                                         </div>
                                         @foreach($methods as $channel)
-                                            <div class="payment-method-card card mb-2 d-none"
+                                            <div class="payment-method-card card mb-2"
                                                  data-method="{{ $channel['code'] }}"
                                                  data-type="payment_gateway"
                                                  data-gateway="espay"
@@ -344,6 +345,8 @@
                                     @endforeach
 
                                 @endif
+                                </div>
+
                                     </div>
 
                             @endif
