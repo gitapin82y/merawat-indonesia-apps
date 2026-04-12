@@ -3,19 +3,15 @@ require_once __DIR__ . '/vendor/autoload.php';
 $app = require_once __DIR__ . '/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-$timestamp = '2026-04-12T08:46:00+07:00';
+$timestamp = '2026-04-12T14:32:00+07:00';
 $method = 'POST';
 $endpoint = '/api/v1.0/qr/qr-mpm-generate';
 $body = json_encode([
-    'partnerReferenceNo' => 'QR-POS-006-' . time(),
+    'partnerReferenceNo' => 'QR-POS-007-' . time(),
+    'merchantId'         => 'SGWYAYASANBINAMULIA',
     'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
-    'feeAmount'          => ['value' => '0.00', 'currency' => 'IDR'],
-    'merchantId'         => 'merch00001',
-    'validityPeriod'     => '2026-04-13T08:13:00+07:00',
-    'additionalInfo'     => [
-        'deviceId' => '12345679237',
-        'channel'  => 'mobilephone',
-    ],
+    'additionalInfo'     => ['productCode' => 'QRIS'],
+    'validityPeriod'     => '2026-04-13T14:32:00+07:00',
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $hashedBody = strtolower(hash('sha256', $body));
