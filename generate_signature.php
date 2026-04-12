@@ -10,8 +10,8 @@ $body = json_encode([
     'partnerReferenceNo' => 'DON-57628-1775980884',
     'merchantId'         => 'SGWYAYASANBINAMULIA',
     'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
-    'additionalInfo'     => ['productCode' => 'QRIS'],
-    'validityPeriod'     => '2026-04-13T14:52:00+07:00',
+    'additionalInfo'     => ['productCode' => 'SALDOMUQR'],
+    'validityPeriod'     => '2026-04-13T15:10:00+07:00',
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $hashedBody = strtolower(hash('sha256', $body));
