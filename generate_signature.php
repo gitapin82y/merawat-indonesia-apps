@@ -25,11 +25,15 @@ $body = json_encode([
         'feeAmount'   => ['value' => '0.00', 'currency' => 'IDR'],
     ],
     'additionalInfo'     => [
-        'payType'    => 'REDIRECT',
-        'userName'   => 'Test Donatur',
-        'userEmail'  => 'test@merawatindonesia.com',
-        'userPhone'  => '081234567890',
-        'productCode'=> 'BCAATM',
+        'payType'       => 'REDIRECT',
+        'userId'        => '425666',
+        'userName'      => 'Test Donatur',
+        'userEmail'     => 'test@merawatindonesia.com',
+        'userPhone'     => '081234567890',
+        'buyerId'       => '12345678',
+        'productCode'   => 'BCAATM',
+        'balanceType'   => 'CASH',
+        'bankCardToken' => 'ESP230929094046rRD5mCT1IZkrBhJb5',
     ],
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
