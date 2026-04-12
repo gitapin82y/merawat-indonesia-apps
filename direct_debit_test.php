@@ -240,7 +240,7 @@ echo ($response2['status'] === 409 ? "PASS ✓" : "FAIL ✗ - Expected 409, got 
 // 19.6 - Direct Debit Payment sukses
 // ────────────────────────────────────────────────────────────
 $bodySuccess = $baseBody;
-$bodySuccess['partnerReferenceNo'] = 'YBMSUCCESS-' . time();
+$bodySuccess['partnerReferenceNo'] = 'DON-57632-1775985035';
 $bodySuccessJson = json_encode($bodySuccess);
 
 $timestamp  = generateTimestamp();

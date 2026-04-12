@@ -46,3 +46,5 @@ openssl_sign($stringToSign, $signature, $pkeyId, OPENSSL_ALGO_SHA256);
 
 echo "Signature: " . base64_encode($signature) . "\n";
 echo "Body: " . $body . "\n";
+
+
