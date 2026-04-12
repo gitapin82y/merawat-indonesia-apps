@@ -3,15 +3,34 @@ require_once __DIR__ . '/vendor/autoload.php';
 $app = require_once __DIR__ . '/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-$timestamp = '2026-04-12T15:10:00+07:00';
+$timestamp = '2026-04-12T15:17:00+07:00';
 $method = 'POST';
-$endpoint = '/api/v1.0/qr/qr-mpm-generate';
+$endpoint = '/apimerchant/v1.0/debit/payment-host-to-host';
 $body = json_encode([
-    'partnerReferenceNo' => 'DON-57626-1775979782',
+    'partnerReferenceNo' => 'DD-NEG-002-' . time(),
     'merchantId'         => 'SGWYAYASANBINAMULIA',
+    'subMerchantId'      => '478e6640ee7aab15364bf42569559a35',
     'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
-    'additionalInfo'     => ['productCode' => 'SALDOMUQR'],
-    'validityPeriod'     => '2026-04-13T15:10:00+07:00',
+    'urlParam'           => [
+        'url'        => 'https://merawatindonesia.com/donations/status',
+        'type'       => 'PAY_RETURN',
+        'isDeeplink' => 'N',
+    ],
+    'validUpTo'          => '2026-04-13T15:17:00+07:00',
+    'pointOfInitiation'  => 'Website',
+    'payOptionDetails'   => [
+        'payMethod'   => '014',
+        'payOption'   => 'BCAATM',
+        'transAmount' => ['value' => '25000.00', 'currency' => 'IDR'],
+        'feeAmount'   => ['value' => '0.00', 'currency' => 'IDR'],
+    ],
+    'additionalInfo'     => [
+        'payType'    => 'REDIRECT',
+        'userName'   => 'Test Donatur',
+        'userEmail'  => 'test@merawatindonesia.com',
+        'userPhone'  => '081234567890',
+        'productCode'=> 'BCAATM',
+    ],
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $hashedBody = strtolower(hash('sha256', $body));
