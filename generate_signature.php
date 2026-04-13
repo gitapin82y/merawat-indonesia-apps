@@ -10,7 +10,7 @@ $body = json_encode([
     'partnerReferenceNo' => 'DON-57666-1776078007',
     'merchantId'         => 'SGWYAYASANBINAMULIA',
     'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
-    'additionalInfo'     => ['productCode' => 'QRIS'],
+    'additionalInfo'     => ['productCode' => 'SALDOMUQR'],
     'validityPeriod'     => '2026-04-15T05:40:00+07:00',
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
