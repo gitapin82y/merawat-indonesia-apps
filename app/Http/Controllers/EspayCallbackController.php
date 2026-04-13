@@ -156,7 +156,7 @@ class EspayCallbackController extends Controller
                 'responseCode'       => '2002400',
                 'responseMessage'    => 'Success',
                 'virtualAccountData' => [
-                    'partnerServiceId'   => $partnerServiceId,
+                    'partnerServiceId'   => 'Espay',
                     'customerNo'         => $customerNo,
                     'virtualAccountNo'   => $virtualAccountNo,
                     'virtualAccountName' => $donation->name ?? 'Donatur',   // wajib per SNAP
@@ -175,7 +175,7 @@ class EspayCallbackController extends Controller
                         ],
                     ],
                     'additionalInfo' => [
-                        'transactionDate' => $donation->created_at->format('Y-m-d H:i:s'),
+                        'transactionDate' => $donation->created_at->setTimezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP'),
                     ],
                 ],
             ];
@@ -389,7 +389,7 @@ class EspayCallbackController extends Controller
                 'responseCode'       => '2002500',
                 'responseMessage'    => 'Success',
                 'virtualAccountData' => [
-                    'partnerServiceId'        => $partnerServiceId,
+                    'partnerServiceId'        => 'Espay',
                     'customerNo'              => $customerNo,
                     'virtualAccountNo'        => $virtualAccountNo,
                     'virtualAccountName'      => $donation->name ?? 'Donatur',
