@@ -401,9 +401,9 @@ class EspayCallbackController extends Controller
                         'value'    => $amount,
                         'currency' => 'IDR',
                     ],
-                    'additionalInfo'          => [
+                ],
+                'additionalInfo'          => [
                         'transactionStatus' => 'S',
-                    ],
                 ],
             ];
 
