@@ -385,25 +385,32 @@ class EspayCallbackController extends Controller
             // ------------------------------------------------------------------
             $amount = number_format((float) $donation->amount, 2, '.', '');
 
+            // Response yang benar sesuai doc Espay:
             $responseData = [
                 'responseCode'       => '2002500',
                 'responseMessage'    => 'Success',
                 'virtualAccountData' => [
-                    'partnerServiceId'        => 'Espay',
-                    'customerNo'              => $customerNo,
-                    'virtualAccountNo'        => $virtualAccountNo,
-                    'virtualAccountName'      => $donation->name ?? 'Donatur',
-                    'virtualAccountEmail'     => $donation->email ?? '',
-                    'paymentRequestId'        => $request->input('paymentRequestId', ''),
-                    'trxId'                   => $request->input('trxId', ''),        // wajib per SNAP
-                    'trxDateTime'             => $request->input('trxDateTime', now('Asia/Jakarta')->format('Y-m-d\TH:i:sP')),
-                    'totalAmount'             => [
+                    'partnerServiceId'   => 'Espay',
+                    'customerNo'         => $customerNo,
+                    'virtualAccountNo'   => $virtualAccountNo,
+                    'virtualAccountName' => $donation->name ?? 'Donatur',
+                    'paymentRequestId'   => $request->input('paymentRequestId', ''),
+                    'totalAmount'        => [
                         'value'    => $amount,
                         'currency' => 'IDR',
                     ],
+                    'billDetails' => [
+                        [
+                            'billDescription' => [
+                                'english'   => 'Donation - ' . ($donation->campaign->title ?? 'Campaign'),
+                                'indonesia' => 'Donasi - '   . ($donation->campaign->title ?? 'Campaign'),
+                            ],
+                        ],
+                    ],
                 ],
-                'additionalInfo'          => [
-                        'transactionStatus' => 'S',
+                'additionalInfo' => [
+                    'reconcileId'       => $request->input('trxId', ''),
+                    'reconcileDatetime' => now('Asia/Jakarta')->format('Y-m-d\TH:i:sP'),
                 ],
             ];
 
