@@ -9,7 +9,7 @@ $timestamp  = \Carbon\Carbon::now('Asia/Jakarta')->format('Y-m-d\TH:i:sP');
 $externalId = \Illuminate\Support\Str::uuid()->toString();
 
 $body = json_encode([
-    'partnerReferenceNo' => 'DON-57666-1776078007',
+    'partnerReferenceNo' => 'DON-57709-1776169116',
     'merchantId'         => $MERCHANT_ID,
     'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
     'additionalInfo'     => ['productCode' => 'SALDOMUQR'],
