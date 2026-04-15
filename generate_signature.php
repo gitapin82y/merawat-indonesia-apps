@@ -3,15 +3,19 @@ require_once __DIR__ . '/vendor/autoload.php';
 $app = require_once __DIR__ . '/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-$timestamp = '2026-04-14T18:55:00+07:00';
+$timestamp = '2026-04-15T18:21:00+07:00';
 $method = 'POST';
-$endpoint = '/api/v1.0/qr/qr-mpm-generate';
+$endpoint = '/api/v1.0/transfer-va/payment';
 $body = json_encode([
-    'partnerReferenceNo' => 'DON-57666-1776078007',
-    'merchantId'         => 'SGWYAYASANBINAMULIA',
-    'amount'             => ['value' => '25000.00', 'currency' => 'IDR'],
-    'additionalInfo'     => ['productCode' => 'SALDOMUQR'],
-    'validityPeriod'     => '2026-04-15T18:55:00+07:00',
+    'partnerServiceId' => 'Espay',
+    'customerNo'       => 'SGWYAYASANBINAMULIA',
+    'virtualAccountNo' => 'DON-57632-1775985035',
+    'virtualAccountName' => 'apin',
+    'trxId'            => 'TRX-DOUBLE-001',
+    'paymentRequestId' => 'payreq-double-001',
+    'totalAmount'      => ['value' => '25000.00', 'currency' => 'IDR'],
+    'trxDateTime'      => '2026-04-15T18:21:00+07:00',
+    'additionalInfo'   => ['transactionStatus' => 'S'],
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $hashedBody = strtolower(hash('sha256', $body));

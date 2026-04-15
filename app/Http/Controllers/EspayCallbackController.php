@@ -302,6 +302,14 @@ class EspayCallbackController extends Controller
                 ], 404, $this->snapHeaders());
             }
 
+            // Cek jika donasi sudah sukses (double payment)
+if ($donation->status === 'sukses') {
+    return response()->json([
+        'responseCode'    => '4042514',
+        'responseMessage' => 'Bill has been paid',
+    ], 404, $this->snapHeaders());
+}
+
             // ------------------------------------------------------------------
             // 8. Validasi amount
             // ------------------------------------------------------------------
