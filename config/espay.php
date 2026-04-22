@@ -64,7 +64,7 @@ return [
         'cust_id' => env('ESPAY_PORTAL_CUST_ID', 'YBM001'),
         'user_id' => env('ESPAY_PORTAL_USER_ID', '62812237623'),
         'username' => env('ESPAY_PORTAL_USERNAME', 'YBM'),
-        'password' => env('ESPAY_PORTAL_PASSWORD', 'APICEACEIH'),
+        'password' => env('ESPAY_PORTAL_PASSWORD', '#Bahrul110300'),
     ],
 
     /*
