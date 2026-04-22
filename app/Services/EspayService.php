@@ -46,38 +46,32 @@ class EspayService
 
     /**
      * Generate asymmetric signature untuk Espay menggunakan RSA
-     * Dokumentasi: https://docs.espay.id/api-mandatory/snap/signature/
+     * Format: METHOD:ENDPOINT:ACCESS_TOKEN:LOWERCASE_HEX(SHA256(BODY)):TIMESTAMP
      */
     public function generateAsymmetricSignature($method, $endpoint, $accessToken, $requestBody, $timestamp)
     {
         try {
-            // Format: HTTP_METHOD + ":" + RELATIVE_PATH + ":" + ACCESS_TOKEN + ":" + LOWERCASE_HEX(SHA256(REQUEST_BODY)) + ":" + TIMESTAMP
-            $hashedRequestBody = hash('sha256', $requestBody);
-            $hashedRequestBody = strtolower($hashedRequestBody);
-            
+            $hashedRequestBody = strtolower(hash('sha256', $requestBody));
             $stringToSign = "{$method}:{$endpoint}:{$accessToken}:{$hashedRequestBody}:{$timestamp}";
-            
-            // Load private key
+
+            Log::info('Espay StringToSign (asymmetric)', ['string_to_sign' => $stringToSign]);
+
             if (!file_exists($this->privateKeyPath)) {
                 throw new \Exception("Private key file not found at: {$this->privateKeyPath}");
             }
-            
+
             $privateKey = file_get_contents($this->privateKeyPath);
             $pkeyId = openssl_pkey_get_private($privateKey);
-            
+
             if (!$pkeyId) {
                 throw new \Exception("Failed to load private key");
             }
-            
-            // Sign the string
+
             $signature = '';
             openssl_sign($stringToSign, $signature, $pkeyId, OPENSSL_ALGO_SHA256);
-            
-            // Base64 encode
             $signatureBase64 = base64_encode($signature);
-            
             openssl_free_key($pkeyId);
-            
+
             return $signatureBase64;
         } catch (\Exception $e) {
             Log::error('Error generating asymmetric signature: ' . $e->getMessage());
@@ -94,120 +88,104 @@ class EspayService
         $string = $this->merchantCode . $this->apiKey . $this->signatureKey;
         return hash('sha256', $string);
     }
-public function getB2B2CAccessToken()
-{
-    try {
-        $timestamp = $this->generateTimestamp();
-
-        // StringToSign untuk access token = merchantCode + "|" + timestamp
-        $stringToSign = $this->merchantCode . '|' . $timestamp;
-
-        if (!file_exists($this->privateKeyPath)) {
-            throw new \Exception("Private key not found at: {$this->privateKeyPath}");
-        }
-
-        $privateKey = file_get_contents($this->privateKeyPath);
-        $pkeyId     = openssl_pkey_get_private($privateKey);
-
-        if (!$pkeyId) {
-            throw new \Exception("Failed to load private key: " . openssl_error_string());
-        }
-
-        $signature = '';
-        openssl_sign($stringToSign, $signature, $pkeyId, OPENSSL_ALGO_SHA256);
-        $signatureBase64 = base64_encode($signature);
-
-        // Sandbox menggunakan /api/v1.0/access-token/b2b (bukan b2b2c)
-        $url = $this->apiUrl . '/api/v1.0/access-token/b2b';
-
-        Log::info('Espay Access Token Request', [
-            'url'            => $url,
-            'timestamp'      => $timestamp,
-            'string_to_sign' => $stringToSign,
-        ]);
-
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'X-TIMESTAMP'  => $timestamp,
-            'X-CLIENT-KEY' => $this->apiKey, // 478e6640ee7aab15364bf42569559a35
-            'X-SIGNATURE'  => $signatureBase64,
-        ])->post($url, ['grantType' => 'client_credentials']);
-
-        Log::info('Espay Access Token Response', [
-            'status'   => $response->status(),
-            'response' => $response->body(),
-        ]);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            return [
-                'success'     => true,
-                'accessToken' => $data['accessToken'] ?? null,
-                'expiresIn'   => $data['expiresIn'] ?? null,
-                'tokenType'   => $data['tokenType'] ?? 'Bearer',
-            ];
-        }
-
-        Log::error('Espay Access Token Error', ['response' => $response->body()]);
-        return ['success' => false, 'message' => 'Failed to get access token: ' . $response->body()];
-
-    } catch (\Exception $e) {
-        Log::error('Error getting Espay access token: ' . $e->getMessage());
-        return ['success' => false, 'message' => $e->getMessage()];
-    }
-}
-
 
     /**
-     * Get Merchant Info (Inquiry Merchant Info)
-     * Endpoint untuk mendapatkan daftar payment methods yang aktif
-     * Dokumentasi: https://sandbox-kit.espay.id/docs/v2/docespay/en/inquirymi.php
+     * Get B2B Access Token dari Espay
+     * StringToSign: merchantCode + "|" + timestamp
+     */
+    public function getB2B2CAccessToken()
+    {
+        try {
+            $timestamp = $this->generateTimestamp();
+            $stringToSign = $this->merchantCode . '|' . $timestamp;
+
+            if (!file_exists($this->privateKeyPath)) {
+                throw new \Exception("Private key not found at: {$this->privateKeyPath}");
+            }
+
+            $privateKey = file_get_contents($this->privateKeyPath);
+            $pkeyId     = openssl_pkey_get_private($privateKey);
+
+            if (!$pkeyId) {
+                throw new \Exception("Failed to load private key: " . openssl_error_string());
+            }
+
+            $signature = '';
+            openssl_sign($stringToSign, $signature, $pkeyId, OPENSSL_ALGO_SHA256);
+            $signatureBase64 = base64_encode($signature);
+
+            $url = $this->apiUrl . '/api/v1.0/access-token/b2b';
+
+            Log::info('Espay Access Token Request', [
+                'url'            => $url,
+                'timestamp'      => $timestamp,
+                'string_to_sign' => $stringToSign,
+            ]);
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'X-TIMESTAMP'  => $timestamp,
+                'X-CLIENT-KEY' => $this->apiKey,
+                'X-SIGNATURE'  => $signatureBase64,
+            ])->post($url, ['grantType' => 'client_credentials']);
+
+            Log::info('Espay Access Token Response', [
+                'status'   => $response->status(),
+                'response' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return [
+                    'success'     => true,
+                    'accessToken' => $data['accessToken'] ?? null,
+                    'expiresIn'   => $data['expiresIn'] ?? null,
+                    'tokenType'   => $data['tokenType'] ?? 'Bearer',
+                ];
+            }
+
+            Log::error('Espay Access Token Error', ['response' => $response->body()]);
+            return ['success' => false, 'message' => 'Failed to get access token: ' . $response->body()];
+
+        } catch (\Exception $e) {
+            Log::error('Error getting Espay access token: ' . $e->getMessage());
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get Merchant Info (Inquiry Merchant Info) - Non-SNAP
      */
     public function getMerchantInfo()
     {
         try {
-            // FIXED: Endpoint yang benar
             $url = $this->apiUrl . '/rest/merchant/merchantinfo';
-            
-            // Request harus dalam format x-www-form-urlencoded, bukan JSON
-            $requestData = [
-                'key' => $this->apiKey,
-            ];
-            
-            Log::info('Espay Merchant Info Request', [
-                'url' => $url,
-                'data' => $requestData
-            ]);
-            
+            $requestData = ['key' => $this->apiKey];
+
+            Log::info('Espay Merchant Info Request', ['url' => $url, 'data' => $requestData]);
+
             $response = Http::asForm()->post($url, $requestData);
-            
             $responseData = $response->json();
-            
+
             Log::info('Espay Merchant Info Response', ['response' => $responseData]);
-            
+
             if ($response->successful() && isset($responseData['error_code']) && $responseData['error_code'] === '0000') {
-                return [
-                    'success' => true,
-                    'data' => $responseData
-                ];
+                return ['success' => true, 'data' => $responseData];
             }
-            
+
             return [
                 'success' => false,
                 'message' => $responseData['error_message'] ?? 'Failed to get merchant info'
             ];
         } catch (\Exception $e) {
             Log::error('Error getting Espay merchant info: ' . $e->getMessage());
-            return [
-                'success' => false,
-                'message' => $e->getMessage()
-            ];
+            return ['success' => false, 'message' => $e->getMessage()];
         }
     }
 
     /**
-     * Create Payment Transaction menggunakan Payment Host to Host
-     * Dokumentasi: https://docs.espay.id/pembayaran/direct-api/snap/payment-host-to-host/
+     * Create Payment Transaction menggunakan Payment Host to Host (SNAP)
+     * Signature wajib menyertakan access token untuk production
      */
     public function createPaymentHostToHost($donation, $campaign, $paymentMethod)
     {
@@ -216,14 +194,12 @@ public function getB2B2CAccessToken()
             $externalId = $this->generateExternalId();
             $partnerReferenceNo = 'DON-' . $donation->id . '-' . time();
             $amount = number_format((float)$donation->amount, 2, '.', '');
-            
-            // Parse payment method code
+
             $payMethod = $paymentMethod->pay_method;
             $payOption = $paymentMethod->pay_option;
-            
+
             $donaturName = $donation->is_anonymous ? 'Sahabat Baik' : $donation->name;
-            
-            // Generate status URL dengan token
+
             $statusToken = $this->createStatusToken($donation->id);
             $returnUrl = route('donations.status', [
                 'id' => $donation->id,
@@ -231,17 +207,14 @@ public function getB2B2CAccessToken()
             ]);
 
             $sanitizedName = preg_replace('/[^a-zA-Z0-9\s]/', '', $donaturName);
-$sanitizedName = trim(preg_replace('/\s+/', ' ', $sanitizedName)); // hapus spasi ganda
-// Maksimal 50 karakter sesuai spec Espay
-$sanitizedName = substr($sanitizedName, 0, 50);
+            $sanitizedName = trim(preg_replace('/\s+/', ' ', $sanitizedName));
+            $sanitizedName = substr($sanitizedName, 0, 50);
 
-$sanitizedPhone = preg_replace('/[^0-9]/', '', $donation->phone);
-// Pastikan diawali 08 bukan 8 atau +628
-if (substr($sanitizedPhone, 0, 2) === '62') {
-    $sanitizedPhone = '0' . substr($sanitizedPhone, 2);
-}
-            
-            // Base request body
+            $sanitizedPhone = preg_replace('/[^0-9]/', '', $donation->phone);
+            if (substr($sanitizedPhone, 0, 2) === '62') {
+                $sanitizedPhone = '0' . substr($sanitizedPhone, 2);
+            }
+
             $requestBody = [
                 'partnerReferenceNo' => $partnerReferenceNo,
                 'merchantId' => $this->merchantCode,
@@ -272,96 +245,106 @@ if (substr($sanitizedPhone, 0, 2) === '62') {
                     ]
                 ],
                 'additionalInfo' => [
-    'payType'      => 'REDIRECT',
-    'userName'     => $sanitizedName,
-    'userEmail'    => $donation->email,
-    'userPhone'    => $sanitizedPhone,
-    'inquiryUrl'   => url('/api/v1.0/transfer-va/inquiry'),
-    'paymentUrl'   => url('/api/v1.0/transfer-va/payment'),
-    'callbackUrl'  => url('/api/espay/callback'),
-],
-
+                    'payType'     => 'REDIRECT',
+                    'userName'    => $sanitizedName,
+                    'userEmail'   => $donation->email,
+                    'userPhone'   => $sanitizedPhone,
+                    'inquiryUrl'  => url('/api/v1.0/transfer-va/inquiry'),
+                    'paymentUrl'  => url('/api/v1.0/transfer-va/payment'),
+                    'callbackUrl' => url('/api/espay/callback'),
+                ],
             ];
-            
-            // Special handling untuk kategori tertentu
+
             if ($paymentMethod->category === 'ewallet') {
                 $requestBody['additionalInfo']['productCode'] = $payOption;
             } elseif ($paymentMethod->category === 'qris') {
-                // Untuk QRIS, tambahkan productCode
                 $requestBody['additionalInfo']['productCode'] = $payOption;
             }
-            
+
             $requestBodyJson = json_encode($requestBody);
             $endpoint = '/apimerchant/v1.0/debit/payment-host-to-host';
-            
-            // Generate signature
-            $signature = $this->generateSimpleSignature(
+
+            // Step 1: Ambil access token (wajib untuk SNAP production)
+            $tokenResult = $this->getB2B2CAccessToken();
+            if (!$tokenResult['success']) {
+                Log::error('Espay: Gagal mendapatkan access token', $tokenResult);
+                return [
+                    'success' => false,
+                    'message' => 'Gagal mendapatkan access token Espay: ' . ($tokenResult['message'] ?? 'unknown')
+                ];
+            }
+            $accessToken = $tokenResult['accessToken'];
+
+            // Step 2: Generate signature dengan access token
+            $signature = $this->generateAsymmetricSignature(
                 'POST',
                 $endpoint,
+                $accessToken,
                 $requestBodyJson,
                 $timestamp
             );
-            
+
             $url = $this->apiMerchantUrl . $endpoint;
-            
+
             Log::info('Espay Payment Request', [
-                'url' => $url,
-                'body' => $requestBody,
-                'timestamp' => $timestamp,
-                'external_id' => $externalId,
+                'url'            => $url,
+                'body'           => $requestBody,
+                'timestamp'      => $timestamp,
+                'external_id'    => $externalId,
                 'payment_method' => [
-                    'code' => $paymentMethod->code,
-                    'category' => $paymentMethod->category,
+                    'code'       => $paymentMethod->code,
+                    'category'   => $paymentMethod->category,
                     'pay_method' => $payMethod,
                     'pay_option' => $payOption
                 ]
             ]);
-            
+
+            // Step 3: Kirim request dengan Authorization Bearer token
             $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'X-TIMESTAMP' => $timestamp,
-                'X-SIGNATURE' => $signature,
-                'X-EXTERNAL-ID' => $externalId,
-                'X-PARTNER-ID' => $this->merchantCode,
-                'CHANNEL-ID' => config('espay.channel_id'),
+                'Content-Type'   => 'application/json',
+                'Authorization'  => 'Bearer ' . $accessToken,
+                'X-TIMESTAMP'    => $timestamp,
+                'X-SIGNATURE'    => $signature,
+                'X-EXTERNAL-ID'  => $externalId,
+                'X-PARTNER-ID'   => $this->merchantCode,
+                'CHANNEL-ID'     => config('espay.channel_id'),
             ])->post($url, $requestBody);
-            
+
             $responseData = $response->json();
-            
+
             Log::info('Espay Payment Response', [
                 'response' => $responseData,
-                'status' => $response->status()
+                'status'   => $response->status()
             ]);
-            
+
             if ($response->successful() && isset($responseData['responseCode'])) {
-                // Response code 2005400 = Success
                 if ($responseData['responseCode'] === '2005400') {
                     return [
                         'success' => true,
                         'data' => [
-                            'reference' => $partnerReferenceNo,
-                            'checkout_url' => $responseData['webRedirectUrl'] ?? null,
-                            'approval_code' => $responseData['approvalCode'] ?? null,
+                            'reference'          => $partnerReferenceNo,
+                            'checkout_url'       => $responseData['webRedirectUrl'] ?? null,
+                            'approval_code'      => $responseData['approvalCode'] ?? null,
                             'partner_reference_no' => $partnerReferenceNo,
-                            'expired_time' => Carbon::now('Asia/Jakarta')
+                            'expired_time'       => Carbon::now('Asia/Jakarta')
                                 ->addHours(config('espay.default_expiry_hours', 24))
                                 ->timestamp
                         ]
                     ];
                 }
-                
-                // Return error message dari Espay
+
                 return [
                     'success' => false,
-                    'message' => 'Espay Error: ' . ($responseData['responseMessage'] ?? 'Payment creation failed') . 
-                                ' (Code: ' . ($responseData['responseCode'] ?? 'unknown') . ')'
+                    'message' => 'Espay Error: ' . ($responseData['responseMessage'] ?? 'Payment creation failed') .
+                                 ' (Code: ' . ($responseData['responseCode'] ?? 'unknown') . ')'
                 ];
             }
-            
+
             return [
                 'success' => false,
                 'message' => 'Failed to create payment: ' . ($responseData['responseMessage'] ?? $response->body())
             ];
+
         } catch (\Exception $e) {
             Log::error('Error creating Espay payment: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
@@ -373,115 +356,62 @@ if (substr($sanitizedPhone, 0, 2) === '62') {
         }
     }
 
-private function generateSimpleSignature($method, $endpoint, $requestBody, $timestamp)
-{
-    try {
-        // Sesuai dokumentasi Espay:
-        // StringToSign = HTTPMethod + ":" + RelativeUrl + ":" + Lowercase(SHA256(MinifyJson(Body))) + ":" + Timestamp
-
-        // Step 1: Minify JSON lalu SHA256
-        $minifiedBody = json_encode(json_decode($requestBody), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $hashedBody   = strtolower(hash('sha256', $minifiedBody));
-
-        // Step 2: Build StringToSign (TANPA access token — ini non-SNAP payment endpoint)
-        $stringToSign = $method . ':' . $endpoint . ':' . $hashedBody . ':' . $timestamp;
-
-        Log::info('Espay StringToSign', ['string_to_sign' => $stringToSign]);
-
-        // Step 3: Load private key
-        if (!file_exists($this->privateKeyPath)) {
-            throw new \Exception("Private key not found at: {$this->privateKeyPath}");
-        }
-
-        $privateKey = file_get_contents($this->privateKeyPath);
-        $pkeyId     = openssl_pkey_get_private($privateKey);
-
-        if (!$pkeyId) {
-            $opensslError = openssl_error_string();
-            throw new \Exception("Failed to load private key. OpenSSL error: {$opensslError}");
-        }
-
-        // Step 4: Sign dengan SHA256withRSA
-        $signature = '';
-        $signed    = openssl_sign($stringToSign, $signature, $pkeyId, OPENSSL_ALGO_SHA256);
-
-        if (!$signed) {
-            throw new \Exception('openssl_sign failed: ' . openssl_error_string());
-        }
-
-        // Step 5: Base64 encode
-        return base64_encode($signature);
-
-    } catch (\Exception $e) {
-        Log::error('Error generating signature: ' . $e->getMessage());
-        throw $e;
-    }
-}
-
     /**
-     * Check payment status menggunakan Inquiry Status
-     * Dokumentasi: https://docs.espay.id/api-opsional/snap/inquiry-status/
+     * Check payment status - Non-SNAP
      */
-public function checkPaymentStatus($orderId)
-{
-    try {
-        $timestamp   = $this->generateTimestamp();
-        $uuid        = $this->generateExternalId();
-        $rqDatetime  = now('Asia/Jakarta')->format('Y-m-d H:i:s');
+    public function checkPaymentStatus($orderId)
+    {
+        try {
+            $timestamp  = $this->generateTimestamp();
+            $uuid       = $this->generateExternalId();
+            $rqDatetime = now('Asia/Jakarta')->format('Y-m-d H:i:s');
 
-        // Formula signature: SHA256(UPPERCASE("##KEY##rq_datetime##order_id##CHECKSTATUS##"))
-        $rawString = '##' . $this->signatureKey . '##' . $rqDatetime . '##' . $orderId . '##CHECKSTATUS##';
-        $signature = hash('sha256', strtoupper($rawString));
+            $rawString = '##' . $this->signatureKey . '##' . $rqDatetime . '##' . $orderId . '##CHECKSTATUS##';
+            $signature = hash('sha256', strtoupper($rawString));
 
-        $url = $this->apiUrl . '/rest/merchant/status';
+            $url = $this->apiUrl . '/rest/merchant/status';
 
-        $response = Http::asForm()->post($url, [
-            'uuid'             => $uuid,
-            'rq_datetime'      => $rqDatetime,
-            'comm_code'        => $this->merchantCode,
-            'order_id'         => $orderId,
-            'is_paymentnotif'  => 'Y', // Trigger payment notif ke server kita
-            'signature'        => $signature,
-        ]);
+            $response = Http::asForm()->post($url, [
+                'uuid'            => $uuid,
+                'rq_datetime'     => $rqDatetime,
+                'comm_code'       => $this->merchantCode,
+                'order_id'        => $orderId,
+                'is_paymentnotif' => 'Y',
+                'signature'       => $signature,
+            ]);
 
-        // Log::info('Espay Check Status Response', [
-        //     'status'   => $response->status(),
-        //     'response' => $response->json(),
-        // ]);
+            if ($response->successful()) {
+                $data     = $response->json();
+                $txStatus = $data['tx_status'] ?? 'IP';
 
-        if ($response->successful()) {
-            $data     = $response->json();
-            $txStatus = $data['tx_status'] ?? 'IP';
+                $statusMap = [
+                    'S'  => '00',
+                    'F'  => '02',
+                    'EX' => '03',
+                    'IP' => '01',
+                    'SP' => '01',
+                    'WC' => '01',
+                ];
 
-            // Map tx_status ke format yang dipakai controller
-            $statusMap = [
-                'S'  => '00', // Success
-                'F'  => '02', // Failed
-                'EX' => '03', // Expired
-                'IP' => '01', // In Process
-                'SP' => '01', // Suspect → treat as pending
-                'WC' => '01', // Waiting Correction
-            ];
+                return [
+                    'success' => true,
+                    'data'    => [
+                        'transactionStatusCode' => $statusMap[$txStatus] ?? '01',
+                        'tx_status'             => $txStatus,
+                        'order_id'              => $data['order_id'] ?? $orderId,
+                        'amount'                => $data['amount'] ?? null,
+                        'raw'                   => $data,
+                    ],
+                ];
+            }
 
-            return [
-                'success' => true,
-                'data'    => [
-                    'transactionStatusCode' => $statusMap[$txStatus] ?? '01',
-                    'tx_status'             => $txStatus,
-                    'order_id'              => $data['order_id'] ?? $orderId,
-                    'amount'                => $data['amount'] ?? null,
-                    'raw'                   => $data,
-                ],
-            ];
+            return ['success' => false, 'message' => 'Failed to check status: ' . $response->body()];
+
+        } catch (\Exception $e) {
+            Log::error('Espay checkPaymentStatus error: ' . $e->getMessage());
+            return ['success' => false, 'message' => $e->getMessage()];
         }
-
-        return ['success' => false, 'message' => 'Failed to check status: ' . $response->body()];
-
-    } catch (\Exception $e) {
-        Log::error('Espay checkPaymentStatus error: ' . $e->getMessage());
-        return ['success' => false, 'message' => $e->getMessage()];
     }
-}
 
     /**
      * Create status token untuk validasi halaman status
@@ -497,14 +427,9 @@ public function checkPaymentStatus($orderId)
     public function verifyCallbackSignature($requestBody, $receivedSignature, $timestamp)
     {
         try {
-            // Untuk callback, Espay mengirim signature yang perlu diverifikasi
-            // Implementasi ini tergantung dokumentasi callback Espay
-            // Untuk sekarang, return true jika verify signature disabled
             if (!config('espay.callback.verify_signature')) {
                 return true;
             }
-            
-            // TODO: Implement actual signature verification sesuai docs Espay
             return true;
         } catch (\Exception $e) {
             Log::error('Error verifying Espay callback signature: ' . $e->getMessage());
