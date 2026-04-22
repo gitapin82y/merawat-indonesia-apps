@@ -125,7 +125,7 @@ class EspayService
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'X-TIMESTAMP'  => $timestamp,
-                'X-CLIENT-KEY' => $this->apiKey,
+                'X-CLIENT-KEY' => $this->merchantCode,
                 'X-SIGNATURE'  => $signatureBase64,
             ])->post($url, ['grantType' => 'client_credentials']);
 
