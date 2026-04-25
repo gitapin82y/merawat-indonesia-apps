@@ -343,8 +343,8 @@ if (substr($sanitizedPhone, 0, 2) === '62') {
                             'checkout_url' => $responseData['webRedirectUrl'] ?? null,
                             'approval_code' => $responseData['approvalCode'] ?? null,
                             'partner_reference_no' => $partnerReferenceNo,
-                              'qr_image'           => $responseData['qrImage'] ?? null,  
-            'qr_content'         => $responseData['qrContent'] ?? null, 
+                              'qr_image'           => $responseData['qrContent'] ?? null,  
+            'qr_content'         => $responseData['qrUrl'] ?? null, 
                             'expired_time' => Carbon::now('Asia/Jakarta')
                                 ->addHours(config('espay.default_expiry_hours', 24))
                                 ->timestamp
@@ -563,9 +563,10 @@ public function checkPaymentStatus($orderId)
                 'data'    => [
                     'reference'           => $partnerReferenceNo,
                     'checkout_url'        => null,
-                    'qr_image'            => $responseData['qrImage']   ?? null,
-                    'qr_content'          => $responseData['qrContent'] ?? null,
-                    'partner_reference_no'=> $partnerReferenceNo,
+                    'qr_image'             => $responseData['qrContent'] ?? null, // SWAP: pakai qrContent
+        'qr_content'           => $responseData['qrUrl']    ?? null,  // qrUrl sebagai fallback
+        'partner_reference_no' => $partnerReferenceNo,
+
                     'expired_time'        => Carbon::now('Asia/Jakarta')->addMinutes(10)->timestamp,
                 ],
             ];
