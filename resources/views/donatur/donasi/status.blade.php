@@ -280,42 +280,12 @@ window.paymentConfig = {
                                                 <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran
                                             </a>
                                         </div>
+                                         <p class="text-muted mb-0 mt-2" style="font-size:0.78rem;">
+                <i class="fa fa-info-circle me-1"></i>
+                Nominal + fee yang tertera akan dikonfirmasi saat menekan tombol lanjutkan pembayaran di halaman Espay.
+            </p>
                                     @endif
-                                    {{-- Espay Embed Kit --}}
-@if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && !str_starts_with($donation->payment_method ?? '', 'moota'))
-<div class="mt-4">
-    <h6 class="text-center text-muted mb-3">
-        <i class="fa fa-lock me-1"></i> Bayar langsung di sini
-    </h6>
-    <div style="width:100%; max-width:480px; margin:0 auto;">
-        <iframe 
-            id="sgoplus-iframe" 
-            sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms allow-popups" 
-            src="" 
-            scrolling="no" 
-            frameborder="0" 
-            style="width:100%; min-height:520px; border-radius:8px; border:1px solid #dee2e6;">
-        </iframe>
-    </div>
-</div>
-
-<script type="text/javascript" src="https://kit.espay.id/public/signature/js"></script>
-<script type="text/javascript">
-window.onload = function() {
-    var data = {
-        key:       "{{ config('espay.api_key') }}",
-        paymentId: "{{ $donation->snap_token }}",
-        backUrl:   "{{ route('donations.status', ['id' => $donation->id]) }}"
-    };
-
-    var iframe = document.getElementById('sgoplus-iframe');
-    if (iframe !== null && typeof SGOSignature !== 'undefined') {
-        iframe.src = SGOSignature.getIframeURL(data);
-        // JANGAN panggil SGOSignature.receiveForm() — ini yang menyebabkan redirect otomatis
-    }
-};
-</script>
-@endif
+                                    
                                 </div>
                             @endif
 
