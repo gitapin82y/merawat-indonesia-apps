@@ -124,12 +124,12 @@ class EspayCallbackController extends Controller
                 ], 404, $this->snapHeaders());
             }
 
-            if ($donation->status === 'sukses') {
-                return response()->json([
-                    'responseCode'    => '4042414',
-                    'responseMessage' => 'Bill has been paid',
-                ], 404, $this->snapHeaders());
-            }
+            // if ($donation->status === 'sukses') {
+            //     return response()->json([
+            //         'responseCode'    => '4042414',
+            //         'responseMessage' => 'Bill has been paid',
+            //     ], 404, $this->snapHeaders());
+            // }
 
             if ($donation->status === 'gagal') {
                 return response()->json([
@@ -303,12 +303,12 @@ class EspayCallbackController extends Controller
             }
 
             // Cek jika donasi sudah sukses (double payment)
-if ($donation->status === 'sukses') {
-    return response()->json([
-        'responseCode'    => '4042514',
-        'responseMessage' => 'Bill has been paid',
-    ], 404, $this->snapHeaders());
-}
+// if ($donation->status === 'sukses') {
+//     return response()->json([
+//         'responseCode'    => '4042514',
+//         'responseMessage' => 'Bill has been paid',
+//     ], 404, $this->snapHeaders());
+// }
 
             // ------------------------------------------------------------------
             // 8. Validasi amount
