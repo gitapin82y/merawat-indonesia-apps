@@ -18,25 +18,36 @@ class PaymentStatusChecker {
         this.intervalId = null;
     }
     
-    start() {
-        // Start checking immediately
-        this.checkStatus();
-        
-        // Set up interval
-        this.intervalId = setInterval(() => {
-            this.checkStatus();
-        }, this.options.interval);
-        
-        console.log('Payment status checker started');
+   start() {
+    this.checkStatus();
+    this.scheduleNext();
+    console.log('Payment status checker started');
+}
+
+scheduleNext() {
+    const delay = this.getDelay(this.attempts);
+    this.intervalId = setTimeout(() => {
+        this.checkStatus().then(() => {
+            if (this.intervalId !== null) this.scheduleNext();
+        });
+    }, delay);
+}
+
+getDelay(n) {
+    if (n <= 3)  return 5000;
+    if (n <= 6)  return 10000;
+    if (n <= 10) return 20000;
+    return 30000;
+}
+
+stop() {
+    if (this.intervalId) {
+        clearTimeout(this.intervalId); // ganti clearInterval → clearTimeout
+        this.intervalId = null;
     }
+}
     
-    stop() {
-        if (this.intervalId) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
-        }
-        console.log('Payment status checker stopped');
-    }
+  
     
     async checkStatus() {
         if (this.isChecking) return;
@@ -45,7 +56,7 @@ class PaymentStatusChecker {
         this.attempts++;
         
         try {
-            this.options.onChecking(this.attempts);
+              this.options.onChecking(this.attempts, this.getDelay(this.attempts + 1));
             
             const response = await fetch(`/donations/check-status/${this.snapToken}`);
             const data = await response.json();
@@ -95,18 +106,17 @@ document.addEventListener('DOMContentLoaded', function() {
             window.paymentConfig.snapToken,
             {
                 interval: 3000,
-                onChecking: function(attempts) {
-                    // Update UI to show checking status
-                    const statusElement = document.getElementById('status-check-info');
-                    if (statusElement) {
-                        statusElement.innerHTML = `
-                            <small class="text-muted">
-                                <i class="fa fa-sync-alt fa-spin me-1"></i>
-                                Memeriksa status pembayaran... (${attempts} kali)
-                            </small>
-                        `;
-                    }
-                },
+                onChecking: function(attempts, nextDelay) {
+    const statusElement = document.getElementById('status-check-info');
+    if (statusElement) {
+        statusElement.innerHTML = `
+            <small class="text-muted">
+                <i class="fa fa-sync-alt fa-spin me-1"></i>
+                Memeriksa status... cek berikutnya ${nextDelay/1000} detik (percobaan ke-${attempts})
+            </small>
+        `;
+    }
+},
                 onSuccess: function(data) {
                     const statusElement = document.getElementById('status-check-info');
                     if (statusElement) {
@@ -133,15 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
         
         checker.start();
-        
-        // Stop checker when page is hidden
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                checker.stop();
-            } else {
-                checker.start();
-            }
-        });
+     
         
         // Clean up on page unload
         window.addEventListener('beforeunload', function() {
