@@ -48,13 +48,13 @@
         </div>
 
          <div class="col-12 my-2 col-md-2 col-lg-2">
-       <a class="btn btn-danger" data-toggle="modal" data-target="#manageEspayModal">
+       <a class="btn btn-danger w-100" data-toggle="modal" data-target="#manageEspayModal">
     Pembayaran Espay
 </a>
          </div>
 
           <div class="col-12 my-2 col-md-2 col-lg-2">
-<button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#manageMootaModal">
+<button type="button" style="height:40px !important;font-size:1rem;" class="w-100 btn btn-danger btn-sm" data-toggle="modal" data-target="#manageMootaModal">
     Manage Bank Moota
 </button>
           </div>
