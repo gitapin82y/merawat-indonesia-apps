@@ -303,7 +303,7 @@ window.paymentConfig = {
             <img src="{{ $paymentDetail['qr_image'] }}" alt="QR Code" class="img-fluid">
         </div>
         <p class="text-muted mt-2" style="font-size:0.8rem;">
-            <i class="fa fa-clock me-1"></i> QR berlaku selama 15 menit
+            <i class="fa fa-clock me-1"></i> QR berlaku selama 10 menit
         </p>
     </div>
 @elseif(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
@@ -634,7 +634,14 @@ $(document).ready(function() {
 // ── ESPAY: Countdown 24 jam ───────────────────────────────────
 @if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && !str_starts_with($donation->payment_method ?? '', 'moota'))
 (function() {
-    const expiration  = new Date(new Date("{{ $donation->created_at }}").getTime() + 24*60*60*1000);
+    @php
+    $isQrisPayment = App\Models\EspayPaymentMethod::where('code', $donation->payment_method)
+        ->whereIn('category', ['qris', 'ewallet'])
+        ->exists();
+@endphp
+const expiration = new Date(new Date("{{ $donation->created_at }}").getTime() + 
+    {{ $isQrisPayment ? '10*60*1000' : '24*60*60*1000' }});
+    
     const countdownEl = document.getElementById('countdown');
     const timer = setInterval(function() {
         const distance = expiration - Date.now();
