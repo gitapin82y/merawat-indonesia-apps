@@ -328,15 +328,20 @@
                                                                 @else fa-money-bill @endif text-danger"></i>
                                                         </div>
                                                         <div>
-                                                            <h6 class="mb-0">{{ $channel['name'] }}</h6>
-                                                            @if(isset($channel['fee_amount']) && $channel['fee_amount'] > 0)
-                                                                <small class="text-muted">
-                                                                    Biaya: @if($channel['fee_type'] == 'percent'){{ $channel['fee_amount'] }}%@else Rp {{ number_format($channel['fee_amount'], 0, ',', '.') }}@endif
-                                                                </small>
-                                                            @else
-                                                                {{-- <small class="text-success">Gratis biaya admin</small> --}}
-                                                            @endif
-                                                        </div>
+    <h6 class="mb-0">{{ $channel['name'] }}</h6>
+    @if(isset($channel['fee_amount']) && (float)$channel['fee_amount'] > 0)
+        <small class="text-muted">
+            Estimasi biaya:
+            @if($channel['fee_type'] == 'percent')
+                {{ $channel['fee_amount'] }}% per transaksi
+            @else
+                Rp {{ number_format($channel['fee_amount'], 0, ',', '.') }} per transaksi
+            @endif
+        </small>
+    @else
+        <small class="text-success">Gratis biaya admin</small>
+    @endif
+</div>
                                                     </div>
                                                     <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
                                                 </div>

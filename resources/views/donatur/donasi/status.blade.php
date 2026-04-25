@@ -232,6 +232,27 @@ window.paymentConfig = {
                                 <div class="alert alert-warning">
                                     <h4 class="mb-0"><i class="fa fa-clock me-2"></i> Menunggu Pembayaran</h4>
                                 </div>
+                                @php
+    $pmFee = App\Models\EspayPaymentMethod::where('code', $donation->payment_method)->first();
+    $feeAmt  = (float)($pmFee->fee_amount ?? 0);
+    $feeType = $pmFee->fee_type ?? 'flat';
+    if ($feeAmt > 0) {
+        if ($feeType === 'percent') {
+            $feeNominal = $donation->amount * $feeAmt / 100;
+            $feeInfo    = $feeAmt . '% ≈ Rp ' . number_format($feeNominal, 0, ',', '.');
+        } else {
+            $feeInfo = 'Rp ' . number_format($feeAmt, 0, ',', '.');
+        }
+    }
+@endphp
+@if($feeAmt > 0)
+<div class="alert alert-info py-2 px-3 mb-3" style="font-size:0.85rem;">
+    <i class="fa fa-info-circle me-1"></i>
+    <strong>Estimasi biaya admin {{ $pmFee->name ?? '' }}:</strong>
+    {{ $feeInfo }}
+    <span class="text-muted ms-1">(ditagihkan saat pembayaran)</span>
+</div>
+@endif
                                 <p class="mt-3">Silakan selesaikan pembayaran sebelum:</p>
                                 <div class="mb-2 mt-4">
                                     <div id="current-date" class="text-muted"></div>
@@ -603,6 +624,33 @@ $(document).ready(function() {
                 }
             });
         }
+    }, 1000);
+})();
+@endif
+
+
+// ── ESPAY: Countdown 24 jam ───────────────────────────────────
+@if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && !str_starts_with($donation->payment_method ?? '', 'moota'))
+(function() {
+    const expiration  = new Date(new Date("{{ $donation->created_at }}").getTime() + 24*60*60*1000);
+    const countdownEl = document.getElementById('countdown');
+    const timer = setInterval(function() {
+        const distance = expiration - Date.now();
+        if (distance < 0) {
+            clearInterval(timer);
+            if (countdownEl) countdownEl.innerHTML = 'EXPIRED';
+            $.ajax({
+                url: '{{ route("donations.mark-expired", $donation->id) }}',
+                type: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                success: function(r) { if (r.success) location.reload(); }
+            });
+            return;
+        }
+        const h = String(Math.floor(distance / (1000*60*60))).padStart(2,'0');
+        const m = String(Math.floor((distance % (1000*60*60)) / (1000*60))).padStart(2,'0');
+        const s = String(Math.floor((distance % (1000*60)) / 1000)).padStart(2,'0');
+        if (countdownEl) countdownEl.innerHTML = `${h}:${m}:${s}`;
     }, 1000);
 })();
 @endif
