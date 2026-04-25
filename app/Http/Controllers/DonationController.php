@@ -469,6 +469,8 @@ class DonationController extends Controller
                 'payment_method' => $donation->payment_method,
                 'payment_amount' => $donation->amount,
                 'checkout_url'   => $donation->checkout_url ?? null,
+                    'qr_image'       => $donation->qr_image ?? null,    // TAMBAH
+    'qr_content'     => $donation->qr_content ?? null,  // TAMBAH
                 'status'         => 'PENDING',
             ];
         }
@@ -638,9 +640,12 @@ protected function createTransaction($donation, $campaign)
 
 $result = $this->espayService->createPaymentHostToHost($donation, $campaign, $paymentMethod);
 
+
 if (isset($result['success']) && $result['success']) {
-    $donation->snap_token = $result['data']['reference'];
+    $donation->snap_token   = $result['data']['reference'];
     $donation->checkout_url = $result['data']['checkout_url'] ?? null;
+    $donation->qr_image     = $result['data']['qr_image'] ?? null;   // TAMBAH
+    $donation->qr_content   = $result['data']['qr_content'] ?? null; // TAMBAH
     $donation->save();
 }
 

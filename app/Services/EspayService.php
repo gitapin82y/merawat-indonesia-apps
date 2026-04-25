@@ -343,6 +343,8 @@ if (substr($sanitizedPhone, 0, 2) === '62') {
                             'checkout_url' => $responseData['webRedirectUrl'] ?? null,
                             'approval_code' => $responseData['approvalCode'] ?? null,
                             'partner_reference_no' => $partnerReferenceNo,
+                              'qr_image'           => $responseData['qrImage'] ?? null,  
+            'qr_content'         => $responseData['qrContent'] ?? null, 
                             'expired_time' => Carbon::now('Asia/Jakarta')
                                 ->addHours(config('espay.default_expiry_hours', 24))
                                 ->timestamp

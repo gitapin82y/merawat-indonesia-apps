@@ -274,17 +274,27 @@ window.paymentConfig = {
                                             <img src="{{ $paymentDetail['qr_url'] }}" alt="QR Code" class="img-fluid">
                                         </div>
                                     @endif
-                                    @if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
-                                        <div class="text-center mt-3 mb-3">
-                                            <a href="{{ $paymentDetail['checkout_url'] }}" target="_blank" class="btn btn-danger btn-lg">
-                                                <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran
-                                            </a>
-                                        </div>
-                                         <p class="text-muted mb-0 mt-2" style="font-size:0.78rem;">
+                                    {{-- QR Code untuk QRIS / E-Wallet --}}
+@if(isset($paymentDetail['qr_image']) && $paymentDetail['qr_image'])
+    <div class="text-center my-3">
+        <p class="text-muted mb-2">Scan QR Code dengan aplikasi pembayaran Anda</p>
+        <div class="qr-code-container">
+            <img src="{{ $paymentDetail['qr_image'] }}" alt="QR Code" class="img-fluid">
+        </div>
+        <p class="text-muted mt-2" style="font-size:0.8rem;">
+            <i class="fa fa-clock me-1"></i> QR berlaku selama 15 menit
+        </p>
+    </div>
+@elseif(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
+    {{-- Fallback: tidak ada QR image, tampilkan tombol --}}
+    <a href="{{ $paymentDetail['checkout_url'] }}" target="_blank" class="btn btn-danger btn-lg w-100 mb-3">
+        <i class="fa fa-external-link-alt me-2"></i> Lanjutkan Pembayaran
+    </a>
+                               <p class="text-muted mb-0 mt-2" style="font-size:0.78rem;">
                 <i class="fa fa-info-circle me-1"></i>
-                Nominal + fee yang tertera akan dikonfirmasi saat menekan tombol lanjutkan pembayaran di halaman Espay.
+                Nominal + fee akan tertera setelah menekan tombol lanjutkan pembayaran di halaman Espay.
             </p>
-                                    @endif
+@endif
                                     
                                 </div>
                             @endif
