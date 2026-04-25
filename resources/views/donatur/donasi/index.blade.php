@@ -470,7 +470,7 @@ $(document).ready(function() {
         e.preventDefault();
 
         const amount = $('#customAmount').val();
-        if (!amount || parseInt(amount) < 10000) {
+        if (!amount || parseInt(amount) < 5000) {
             Swal.fire({ icon: 'info', text: 'Minimal donasi adalah Rp 10.000', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
             return;
         }
