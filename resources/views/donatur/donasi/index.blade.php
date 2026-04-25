@@ -276,7 +276,6 @@
 @endforeach
                                 @endif
 
-                                <div class="d-none">
 
                                 {{-- SECTION 2: ESPAY -- Virtual Account / QRIS --}}
                                 @if($hasEspay)
@@ -352,7 +351,6 @@
                                 @endif
                                 </div>
 
-                                    </div>
 
                             @endif
                         {{-- END TAB OTOMATIS --}}
