@@ -314,6 +314,8 @@ class DonationController extends Controller
         // ── ESPAY ─────────────────────────────────────────────────────
         if ($isEspay) {
             $donation->payment_method = $request->selected_payment_method;
+             $preToken = 'DON-' . $donation->id . '-' . time();
+    $donation->snap_token = $preToken;
             $donation->save();
  
             $transaction = $this->createTransaction($donation, $campaign);

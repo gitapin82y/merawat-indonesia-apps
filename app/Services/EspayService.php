@@ -214,7 +214,7 @@ public function getB2B2CAccessToken()
         try {
             $timestamp = $this->generateTimestamp();
             $externalId = $this->generateExternalId();
-            $partnerReferenceNo = 'DON-' . $donation->id . '-' . time();
+            $partnerReferenceNo = $donation->snap_token;
             $amount = number_format((float)$donation->amount, 2, '.', '');
             
             // Parse payment method code
@@ -520,7 +520,7 @@ public function checkPaymentStatus($orderId)
     try {
         $timestamp          = $this->generateTimestamp();
         $externalId         = $this->generateExternalId();
-        $partnerReferenceNo = 'DON-' . $donation->id . '-' . time();
+        $partnerReferenceNo = $donation->snap_token;
         $amount             = number_format((float) $donation->amount, 2, '.', '');
 
         $requestBody = [
