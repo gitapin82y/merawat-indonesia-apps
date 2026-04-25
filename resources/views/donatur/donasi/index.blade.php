@@ -270,7 +270,7 @@
                     </div>
                 </div>
             </div>
-            <i class="fa-solid fa-circle-check text-success payment-check-icon "></i>
+            <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
         </div>
     </div>
 @endforeach
