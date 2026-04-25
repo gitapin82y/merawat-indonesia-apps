@@ -566,6 +566,47 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 $(document).ready(function() {
 
+    // ── MOOTA: Countdown 30 detik ─────────────────────────────────
+@if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && str_starts_with($donation->payment_method ?? '', 'moota'))
+(function() {
+    const countdownEl = document.getElementById('mootaCountdown');
+    const labelEl     = document.getElementById('mootaCountdownLabel');
+    let secondsLeft   = 30;
+    let stopped       = false;
+    let checkCount    = 0;
+
+    const timer = setInterval(function() {
+        if (stopped) { clearInterval(timer); return; }
+        secondsLeft--;
+        if (countdownEl) countdownEl.textContent = secondsLeft;
+
+        if (secondsLeft <= 0) {
+            checkCount++;
+            secondsLeft = 30;
+            if (labelEl) labelEl.textContent = `Pengecekan ke-${checkCount}...`;
+
+            $.ajax({
+                url: '{{ route("donations.check-status-by-id", $donation->id) }}',
+                type: 'GET',
+                success: function(res) {
+                    if (res.success && res.data && res.data.status === 'PAID') {
+                        stopped = true; clearInterval(timer);
+                        if (countdownEl) countdownEl.textContent = '✓';
+                        if (labelEl) labelEl.textContent = 'Pembayaran terdeteksi! Memuat ulang...';
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        if (labelEl) labelEl.textContent = `Belum terdeteksi. Cek berikutnya dalam 30 detik.`;
+                    }
+                },
+                error: function() {
+                    if (labelEl) labelEl.textContent = `Gagal cek. Mencoba lagi...`;
+                }
+            });
+        }
+    }, 1000);
+})();
+@endif
+
     // ── Copy: Moota (tanpa parameter button) ─────────────────────────
     window.copyText = function(text) {
         navigator.clipboard.writeText(String(text)).then(function() {
@@ -650,5 +691,7 @@ $(document).ready(function() {
     }
 
 });
+
+
 </script>
 @endpush
