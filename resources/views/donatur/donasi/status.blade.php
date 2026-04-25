@@ -232,7 +232,29 @@ window.paymentConfig = {
                                 <div class="alert alert-warning">
                                     <h4 class="mb-0"><i class="fa fa-clock me-2"></i> Menunggu Pembayaran</h4>
                                 </div>
-                                @php
+     
+                                <p class="mt-3">Silakan selesaikan pembayaran sebelum:</p>
+                                <div class="mb-2 mt-4">
+                                    <div id="current-date" class="text-muted"></div>
+                                </div>
+                                <h5 class="countdown" id="countdown">--:--:--</h5>
+
+                            </div>
+
+                            @if(isset($paymentDetail))
+                                <div class="payment-info-card">
+                                    <h5 class="text-center mb-3">Informasi Pembayaran</h5>
+                                    <div class="row text-center mb-3">
+                                        <div class="col-12">
+                                            <small class="text-muted">Jumlah yang harus dibayar (belum termasuk fee):</small>
+                                            <div class="payment-amount-highlight">
+                                                Rp {{ number_format($donation->amount) }}
+                                                <button class="copy-button ms-2" onclick="copyToClipboard('{{ $paymentDetail['payment_amount'] ?? $donation->amount }}', this)">
+                                                    <i class="fa fa-copy"></i>
+                                                </button>
+                                            </div>
+
+                                                                       @php
     $pmFee = App\Models\EspayPaymentMethod::where('code', $donation->payment_method)->first();
     $feeAmt  = (float)($pmFee->fee_amount ?? 0);
     $feeType = $pmFee->fee_type ?? 'flat';
@@ -253,26 +275,6 @@ window.paymentConfig = {
     <span class="text-muted ms-1">(ditagihkan saat pembayaran)</span>
 </div>
 @endif
-                                <p class="mt-3">Silakan selesaikan pembayaran sebelum:</p>
-                                <div class="mb-2 mt-4">
-                                    <div id="current-date" class="text-muted"></div>
-                                </div>
-                                <h5 class="countdown" id="countdown">--:--:--</h5>
-
-                            </div>
-
-                            @if(isset($paymentDetail))
-                                <div class="payment-info-card">
-                                    <h5 class="text-center mb-3">Informasi Pembayaran</h5>
-                                    <div class="row text-center mb-3">
-                                        <div class="col-12">
-                                            <small class="text-muted">Jumlah yang harus dibayar:</small>
-                                            <div class="payment-amount-highlight">
-                                                Rp {{ number_format($donation->amount) }}
-                                                <button class="copy-button ms-2" onclick="copyToClipboard('{{ $paymentDetail['payment_amount'] ?? $donation->amount }}', this)">
-                                                    <i class="fa fa-copy"></i>
-                                                </button>
-                                            </div>
                                         </div>
                                     </div>
                                     @if(isset($paymentDetail['virtual_account']) && $paymentDetail['virtual_account'])
