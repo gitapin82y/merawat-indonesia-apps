@@ -298,11 +298,16 @@ window.paymentConfig = {
                             @endif
 
                             <div class="text-center mt-4">
-                                <button id="checkStatus" class="btn btn-primary">
-                                    <i class="fa fa-refresh me-1"></i> Cek Status Pembayaran
-                                </button>
-                                <div id="statusResult" class="mt-3"></div>
-                            </div>
+    <div id="status-check-info" class="status-check-interval mb-2">
+        <i class="fa fa-sync-alt fa-spin me-1"></i> Memeriksa status setiap 5 detik...
+    </div>
+    <button id="checkStatus" class="btn btn-primary">
+        <i class="fa fa-refresh me-1"></i> Cek Status Pembayaran
+    </button>
+    <div id="statusResult" class="mt-3"></div>
+</div>
+
+                          
 
                         {{-- ══════════════════════════════════════════════════════
                              CASE 3: MANUAL — Upload Bukti
