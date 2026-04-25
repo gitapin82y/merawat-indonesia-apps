@@ -302,6 +302,13 @@ window.paymentConfig = {
         <div class="qr-code-container">
             <img src="{{ $paymentDetail['qr_image'] }}" alt="QR Code" class="img-fluid">
         </div>
+            <div class="mt-2">
+            <a href="{{ $paymentDetail['qr_image'] }}"
+               download="qrcode-donasi.png"
+               class="btn btn-outline-primary btn-sm">
+                <i class="fa fa-download me-1"></i> Download QR Code
+            </a>
+        </div>
         <p class="text-muted mt-2" style="font-size:0.8rem;">
             <i class="fa fa-clock me-1"></i> QR berlaku selama 10 menit
         </p>
