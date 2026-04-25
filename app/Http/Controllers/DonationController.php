@@ -634,13 +634,15 @@ protected function createTransaction($donation, $campaign)
             return ['success' => false, 'message' => 'Payment method not found'];
         }
 
-        $result = $this->espayService->createPaymentHostToHost($donation, $campaign, $paymentMethod);
+     
 
-        // Simpan checkout_url ke donation jika transaksi berhasil
-        if (isset($result['success']) && $result['success'] && !empty($result['data']['checkout_url'])) {
-            $donation->checkout_url = $result['data']['checkout_url'];
-            $donation->save();
-        }
+$result = $this->espayService->createPaymentHostToHost($donation, $campaign, $paymentMethod);
+
+if (isset($result['success']) && $result['success']) {
+    $donation->snap_token = $result['data']['reference'];
+    $donation->checkout_url = $result['data']['checkout_url'] ?? null;
+    $donation->save();
+}
 
         return $result;
 

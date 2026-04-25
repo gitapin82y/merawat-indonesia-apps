@@ -41,16 +41,11 @@ use App\Http\Controllers\StatistikPencairanController;
 
 Route::post('/api/espay/callback', [EspayCallbackController::class, 'handleCallback'])
     ->name('espay.callback');
-
-    // Espay inquiry endpoint (dipanggil Espay sebelum user bayar)
-Route::post('/api/espay/inquiry', [EspayCallbackController::class, 'handleInquiry'])
+Route::post('/api/v1.0/transfer-va/inquiry', [EspayCallbackController::class, 'handleInquiry'])
     ->name('espay.inquiry');
-
-// Espay payment notification (dipanggil Espay setelah user bayar)  
-Route::post('/api/espay/payment', [EspayCallbackController::class, 'handlePayment'])
+Route::post('/api/v1.0/transfer-va/payment', [EspayCallbackController::class, 'handlePayment'])
     ->name('espay.payment');
 
-     
 Route::post('/api/moota/webhook', [MootaWebhookController::class, 'handle'])
     ->name('moota.webhook');
 

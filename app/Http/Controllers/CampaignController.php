@@ -440,7 +440,7 @@ public function __construct(NotificationService $notificationService)
         
         $perPage = 4; // Set the number of items per page
         
-        $campaign = Campaign::where('slug', $slug)->first();
+        $campaign = Campaign::where('slug', $slug)->firstOrFail();
         
         // Get paginated data for each tab
         $kabarTerbaru = $campaign->kabarTerbaru()->paginate($perPage, ['*'], 'kabar_page');

@@ -27,11 +27,11 @@ return [
     | Credential API yang diberikan oleh Espay
     |
     */
-    'merchant_code' => env('ESPAY_MERCHANT_CODE', 'SGWYAYASANBINAMULIA'),
-    'merchant_name' => env('ESPAY_MERCHANT_NAME', 'YAYASAN BINA MULIA'),
-    'api_key' => env('ESPAY_API_KEY', '478e6640ee7aab15364bf42569559a35'),
-    'signature_key' => env('ESPAY_SIGNATURE_KEY', 'lb6k6q63lb0zn0hj'),
-    'password' => env('ESPAY_PASSWORD', 'Ybm123456!'),
+    'merchant_code' => env('ESPAY_MERCHANT_CODE', 'SGWBINAMULIA'),
+    'merchant_name' => env('ESPAY_MERCHANT_NAME', 'Yayasan Bina Mulia'),
+    'api_key' => env('ESPAY_API_KEY', '95fd9b93b4dd2268b9283abbb9f2c90a'),
+    'signature_key' => env('ESPAY_SIGNATURE_KEY', 'ct9vikymmea2ze1t'),
+    'password' => env('ESPAY_PASSWORD', 'KNQKREHV'),
 
     /*
     |--------------------------------------------------------------------------
@@ -64,7 +64,7 @@ return [
         'cust_id' => env('ESPAY_PORTAL_CUST_ID', 'YBM001'),
         'user_id' => env('ESPAY_PORTAL_USER_ID', '62812237623'),
         'username' => env('ESPAY_PORTAL_USERNAME', 'YBM'),
-        'password' => env('ESPAY_PORTAL_PASSWORD', 'APICEACEIH'),
+        'password' => env('ESPAY_PORTAL_PASSWORD', '#Bahrul110300'),
     ],
 
     /*
