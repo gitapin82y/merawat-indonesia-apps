@@ -237,9 +237,7 @@ window.paymentConfig = {
                                     <div id="current-date" class="text-muted"></div>
                                 </div>
                                 <h5 class="countdown" id="countdown">--:--:--</h5>
-                                <div id="status-check-info" class="status-check-interval">
-                                    <i class="fa fa-sync-alt fa-spin me-1"></i> Memeriksa status pembayaran...
-                                </div>
+
                             </div>
 
                             @if(isset($paymentDetail))
