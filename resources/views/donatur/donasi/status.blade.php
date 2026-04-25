@@ -275,12 +275,56 @@ window.paymentConfig = {
                                         </div>
                                     @endif
                                     @if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
-                                        <div class="text-center mt-3 mb-3">
-                                            <a href="{{ $paymentDetail['checkout_url'] }}" target="_blank" class="btn btn-danger btn-lg">
-                                                <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran
-                                            </a>
-                                        </div>
-                                    @endif
+    <div class="text-center mt-3 mb-3">
+        <a href="{{ $paymentDetail['checkout_url'] }}" target="_blank" class="btn btn-danger btn-lg">
+            <i class="fa fa-external-link-alt me-1"></i> Lanjutkan Pembayaran
+        </a>
+    </div>
+@endif
+
+{{-- Espay Embed Kit — tampil untuk semua metode Espay (termasuk QRIS) --}}
+@if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && !str_starts_with($donation->payment_method ?? '', 'moota'))
+<div class="mt-4">
+    <h6 class="text-center text-muted mb-3">
+        <i class="fa fa-lock me-1"></i> Atau bayar langsung di sini
+    </h6>
+    <div style="width:100%; max-width:480px; margin:0 auto;">
+        <iframe 
+            id="sgoplus-iframe" 
+            sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms allow-popups" 
+            src="" 
+            scrolling="no" 
+            frameborder="0" 
+            style="width:100%; min-height:500px; border-radius:8px; border:1px solid #dee2e6;">
+        </iframe>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://kit.espay.id/public/signature/js"></script>
+<script type="text/javascript">
+window.addEventListener('load', function() {
+    var data = {
+        key:       "{{ config('espay.api_key') }}",
+        paymentId: "{{ $donation->snap_token }}",
+        backUrl:   "{{ route('donations.status', ['id' => $donation->id]) }}",
+        @php
+            $pm = App\Models\EspayPaymentMethod::where('code', $donation->payment_method)->first();
+        @endphp
+        @if($pm)
+        bankCode:    "{{ $pm->pay_method }}",
+        bankProduct: "{{ $pm->pay_option }}",
+        @endif
+        display: "select"
+    };
+
+    var iframe = document.getElementById('sgoplus-iframe');
+    if (iframe !== null && typeof SGOSignature !== 'undefined') {
+        iframe.src = SGOSignature.getIframeURL(data);
+        SGOSignature.receiveForm();
+    }
+});
+</script>
+@endif
                                 </div>
                             @endif
 
