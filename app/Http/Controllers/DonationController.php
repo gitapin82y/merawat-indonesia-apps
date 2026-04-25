@@ -636,10 +636,13 @@ protected function createTransaction($donation, $campaign)
             return ['success' => false, 'message' => 'Payment method not found'];
         }
 
-     
 
-$result = $this->espayService->createPaymentHostToHost($donation, $campaign, $paymentMethod);
+$isQris = $paymentMethod->category === 'qris' ||
+          str_contains(strtoupper($paymentMethod->pay_option ?? ''), 'QR');
 
+$result = $isQris
+    ? $this->espayService->createQrisPayment($donation, $campaign, $paymentMethod)
+    : $this->espayService->createPaymentHostToHost($donation, $campaign, $paymentMethod);
 
 if (isset($result['success']) && $result['success']) {
     $donation->snap_token   = $result['data']['reference'];

@@ -513,4 +513,73 @@ public function checkPaymentStatus($orderId)
             return false;
         }
     }
+
+
+    public function createQrisPayment($donation, $campaign, $paymentMethod)
+{
+    try {
+        $timestamp          = $this->generateTimestamp();
+        $externalId         = $this->generateExternalId();
+        $partnerReferenceNo = 'DON-' . $donation->id . '-' . time();
+        $amount             = number_format((float) $donation->amount, 2, '.', '');
+
+        $requestBody = [
+            'partnerReferenceNo' => $partnerReferenceNo,
+            'merchantId'         => $this->merchantCode,
+            'amount'             => ['value' => $amount, 'currency' => 'IDR'],
+            'additionalInfo'     => [
+                'productCode' => $paymentMethod->pay_option, // e.g. SHOPEEQRPAY
+            ],
+            'validityPeriod' => Carbon::now('Asia/Jakarta')
+                ->addMinutes(10)
+                ->format('Y-m-d\TH:i:sP'),
+        ];
+
+        $requestBodyJson = json_encode($requestBody);
+        $endpoint        = '/api/v1.0/qr/qr-mpm-generate';
+
+        $signature = $this->generateSimpleSignature('POST', $endpoint, $requestBodyJson, $timestamp);
+
+        $url = $this->apiUrl . $endpoint; // https://api.espay.id
+
+        Log::info('Espay QRIS Request', ['url' => $url, 'body' => $requestBody]);
+
+        $response = Http::withHeaders([
+            'Content-Type'  => 'application/json',
+            'X-TIMESTAMP'   => $timestamp,
+            'X-SIGNATURE'   => $signature,
+            'X-EXTERNAL-ID' => $externalId,
+            'X-PARTNER-ID'  => $this->merchantCode,
+            'CHANNEL-ID'    => config('espay.channel_id'),
+        ])->post($url, $requestBody);
+
+        $responseData = $response->json();
+
+        Log::info('Espay QRIS Response', ['response' => $responseData]);
+
+        if ($response->successful() && ($responseData['responseCode'] ?? '') === '2004700') {
+            return [
+                'success' => true,
+                'data'    => [
+                    'reference'           => $partnerReferenceNo,
+                    'checkout_url'        => null,
+                    'qr_image'            => $responseData['qrImage']   ?? null,
+                    'qr_content'          => $responseData['qrContent'] ?? null,
+                    'partner_reference_no'=> $partnerReferenceNo,
+                    'expired_time'        => Carbon::now('Asia/Jakarta')->addMinutes(10)->timestamp,
+                ],
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'QRIS Error: ' . ($responseData['responseMessage'] ?? 'Failed') .
+                         ' (Code: ' . ($responseData['responseCode'] ?? 'unknown') . ')',
+        ];
+
+    } catch (\Exception $e) {
+        Log::error('Error creating QRIS payment: ' . $e->getMessage());
+        return ['success' => false, 'message' => $e->getMessage()];
+    }
+}
 }
