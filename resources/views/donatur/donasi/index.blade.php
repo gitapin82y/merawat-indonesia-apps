@@ -227,57 +227,7 @@
                                 </div>
                             @else
 
-                                {{-- SECTION 1: MOOTA –- Transfer Bank Otomatis --}}
-                                @if($hasMoota)
-                                    <div class="gateway-section-label">
-                                        <i class="fa-solid fa-bolt me-1 text-success"></i>
-                                        Transfer Bank — Verifikasi Otomatis
-                                    </div>
-                                 
-
-                                    {{-- 
-                                        FIX: Setiap card Moota menyimpan bank_id spesifiknya di data-bank-id
-                                        Saat diklik, bank_id ini dikirim ke hidden input #selected_moota_bank_id
-                                        Controller kemudian tahu BANK MANA yang dipilih donatur
-                                    --}}
-                                    @foreach($mootaBanks as $bank)
-    <div class="payment-method-card card mb-2"
-         data-method="moota"
-         data-type="payment_gateway"
-         data-gateway="moota"
-         data-bank-id="{{ $bank['bank_id'] }}">
-        <div class="card-body d-flex justify-content-between align-items-center py-2">
-            <div class="d-flex align-items-center">
-                <div class="bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center" style="width:40px;height:30px;flex-shrink:0;">
-                    @php
-                        $label = strtolower($bank['label']);
-                    @endphp
-
-                    @if(str_contains($label, 'mandiri'))
-                        <img src="{{ asset('assets/img/icon/mandiri.png') }}" alt="Mandiri" style="width:100%;height:100%;object-fit:contain;">
-                    @elseif(str_contains($label, 'bca'))
-                        <img src="{{ asset('assets/img/icon/bca.png') }}" alt="BCA" style="width:100%;height:100%;object-fit:contain;">
-                    @elseif(str_contains($label, 'bri'))
-                        <img src="{{ asset('assets/img/icon/bri.png') }}" alt="BRI" style="width:100%;height:100%;object-fit:contain;">
-                    @else
-                        <i class="fa-solid fa-building-columns text-success"></i>
-                    @endif
-                </div>
-                <div>
-                    <h6 class="mb-0">{{ $bank['label'] }}</h6>
-                    <div class="d-flex align-items-center flex-wrap gap-1">
-                        <small class="text-muted">{{ $bank['account_number'] }} &bull; a.n. {{ $bank['account_name'] }}</small>
-                    </div>
-                </div>
-            </div>
-            <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
-        </div>
-    </div>
-@endforeach
-                                @endif
-
-
-                                {{-- SECTION 2: ESPAY -- Virtual Account / QRIS --}}
+                              {{-- SECTION 2: ESPAY -- Virtual Account / QRIS --}}
                                 @if($hasEspay)
                                    
                                     @php
@@ -349,6 +299,58 @@
                                     @endforeach
 
                                 @endif
+
+                                {{-- SECTION 1: MOOTA –- Transfer Bank Otomatis --}}
+                                @if($hasMoota)
+                                    <div class="gateway-section-label">
+                                        <i class="fa-solid fa-bolt me-1 text-success"></i>
+                                        Transfer Bank — Verifikasi Otomatis
+                                    </div>
+                                 
+
+                                    {{-- 
+                                        FIX: Setiap card Moota menyimpan bank_id spesifiknya di data-bank-id
+                                        Saat diklik, bank_id ini dikirim ke hidden input #selected_moota_bank_id
+                                        Controller kemudian tahu BANK MANA yang dipilih donatur
+                                    --}}
+                                    @foreach($mootaBanks as $bank)
+    <div class="payment-method-card card mb-2"
+         data-method="moota"
+         data-type="payment_gateway"
+         data-gateway="moota"
+         data-bank-id="{{ $bank['bank_id'] }}">
+        <div class="card-body d-flex justify-content-between align-items-center py-2">
+            <div class="d-flex align-items-center">
+                <div class="bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center" style="width:40px;height:30px;flex-shrink:0;">
+                    @php
+                        $label = strtolower($bank['label']);
+                    @endphp
+
+                    @if(str_contains($label, 'mandiri'))
+                        <img src="{{ asset('assets/img/icon/mandiri.png') }}" alt="Mandiri" style="width:100%;height:100%;object-fit:contain;">
+                    @elseif(str_contains($label, 'bca'))
+                        <img src="{{ asset('assets/img/icon/bca.png') }}" alt="BCA" style="width:100%;height:100%;object-fit:contain;">
+                    @elseif(str_contains($label, 'bri'))
+                        <img src="{{ asset('assets/img/icon/bri.png') }}" alt="BRI" style="width:100%;height:100%;object-fit:contain;">
+                    @else
+                        <i class="fa-solid fa-building-columns text-success"></i>
+                    @endif
+                </div>
+                <div>
+                    <h6 class="mb-0">{{ $bank['label'] }}</h6>
+                    <div class="d-flex align-items-center flex-wrap gap-1">
+                        <small class="text-muted">{{ $bank['account_number'] }} &bull; a.n. {{ $bank['account_name'] }}</small>
+                    </div>
+                </div>
+            </div>
+            <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
+        </div>
+    </div>
+@endforeach
+                                @endif
+
+
+                              
                                 </div>
 
 
