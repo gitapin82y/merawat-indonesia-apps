@@ -474,11 +474,23 @@ $(document).ready(function() {
     $('#submitForm').on('click', function(e) {
         e.preventDefault();
 
-        const amount = $('#customAmount').val();
-        if (!amount || parseInt(amount) < 10000) {
-            Swal.fire({ icon: 'info', text: 'Minimal donasi adalah Rp 10.000', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-            return;
-        }
+        // BARU — ganti dengan ini:
+const amount = $('#customAmount').val();
+const selectedCard = $('.payment-method-card.selected');
+const selectedGateway = selectedCard.data('gateway') || '';
+const payMethod       = selectedCard.data('pay-method') || '';
+const payOption       = selectedCard.data('pay-option') || '';
+
+// Virtual Account Espay minimal Rp 15.000, lainnya Rp 10.000
+const isVA      = selectedGateway === 'espay' && (payMethod === 'virtual_account' || payOption === 'virtual_account');
+const minAmount = isVA ? 15000 : 10000;
+const minLabel  = isVA ? 'Rp 15.000 untuk metode Virtual Account' : 'Rp 10.000';
+
+if (!amount || parseInt(amount) < minAmount) {
+    Swal.fire({ icon: 'info', text: `Minimal donasi adalah ${minLabel}`, toast: true, position: 'top-end', showConfirmButton: false, timer: 2500 });
+    return;
+}
+
         const name  = $('#full_name').val().trim();
         const phone = $('#whatsapp').val().trim();
         const email = $('#email').val().trim();
