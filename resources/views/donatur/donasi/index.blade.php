@@ -503,15 +503,7 @@ $(document).ready(function() {
         payMethod === 'virtual_account'                            // Fallback
     );
     
-    console.log('=== DEBUG VA CHECK ===');  // HAPUS NANTI
-    console.log('Gateway:', selectedGateway);
-    console.log('Card class:', cardClass);
-    console.log('Card text:', cardText);
-    console.log('Category header:', categoryHeader);
-    console.log('Is VA:', isVA);
-    console.log('Min amount:', isVA ? 15000 : 10000);
-    console.log('Amount:', amount);
-    console.log('====================');
+   
 
     const minAmount = isVA ? 15000 : 10000;
     const minLabel = isVA ? 'Rp 15.000 untuk Virtual Account' : 'Rp 10.000';
