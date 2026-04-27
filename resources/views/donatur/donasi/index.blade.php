@@ -227,79 +227,86 @@
                                 </div>
                             @else
 
-                              {{-- SECTION 2: ESPAY -- Virtual Account / QRIS --}}
-                                @if($hasEspay)
-                                   
-                                    @php
-                                        $groupedChannels = collect($channels)->groupBy('category');
-                                        $categoryLabels = [
-                                            'virtual_account' => 'Virtual Account',
-                                            'qris'            => 'QRIS',
-                                            'ewallet'         => 'E-Wallet',
-                                            'credit_card'     => 'Kartu Kredit',
-                                            'bank_transfer'   => 'Transfer Bank',
-                                            'other'           => 'Lainnya',
-                                        ];
-                                    @endphp
-                                    @foreach($groupedChannels as $category => $methods)
-                                        <div class="payment-category-header mb-2 mt-3">
-                                            <h6 class="text-muted mb-0">
-                                                <i class="fa-solid
-                                                    @if($category == 'virtual_account') fa-building-columns
-                                                    @elseif($category == 'qris') fa-qrcode
-                                                    @elseif($category == 'ewallet') fa-wallet
-                                                    @elseif($category == 'credit_card') fa-credit-card
-                                                    @elseif($category == 'bank_transfer') fa-money-bill-transfer
-                                                    @else fa-money-bill @endif me-2"></i>
-                                                {{ $categoryLabels[$category] ?? ucfirst($category) }}
-                                            </h6>
-                                        </div>
-                                        @foreach($methods as $channel)
-                                            <div class="payment-method-card card mb-2"
-                                                 data-method="{{ $channel['code'] }}"
-                                                 data-type="payment_gateway"
-                                                 data-gateway="espay"
-                                                 data-bank-id=""
-                                                 data-pay-method="{{ $channel['pay_method'] }}"
-                                                 data-pay-option="{{ $channel['pay_option'] }}">
-                                                <div class="card-body d-flex justify-content-between align-items-center py-2">
-                                                    <div class="d-flex align-items-center">
-                                                        @if(isset($channel['icon_url']) && $channel['icon_url'])
-                                                            <img src="{{ $channel['icon_url'] }}" alt="{{ $channel['name'] }}" height="30" class="me-3"
-                                                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                                                        @endif
-                                                        <div class="bg-light rounded me-3 align-items-center justify-content-center"
-                                                             style="width:40px;height:30px;display:{{ isset($channel['icon_url']) && $channel['icon_url'] ? 'none' : 'flex' }};">
-                                                            <i class="fa-solid
-                                                                @if($category == 'virtual_account') fa-building-columns
-                                                                @elseif($category == 'qris') fa-qrcode
-                                                                @elseif($category == 'ewallet') fa-wallet
-                                                                @else fa-money-bill @endif text-danger"></i>
-                                                        </div>
-                                                        <div>
-    <h6 class="mb-0">{{ $channel['name'] }}</h6>
-    @if(isset($channel['fee_amount']) && (float)$channel['fee_amount'] > 0)
-        <small class="text-muted">
-            Estimasi biaya:
-            @if($channel['fee_type'] == 'percent')
-                {{ $channel['fee_amount'] }}% per transaksi
-            @else
-                Rp {{ number_format($channel['fee_amount'], 0, ',', '.') }} per transaksi
-            @endif
-        </small>
-    @else
-        <small class="text-success">Gratis biaya admin</small>
-    @endif
-</div>
-                                                    </div>
-                                                    <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    @endforeach
-
+                            {{-- SECTION 2: ESPAY -- QRIS DIATAS, lalu VA, lalu lainnya --}}
+@if($hasEspay)
+    @php
+        $groupedChannels = collect($channels)->groupBy('category');
+        $categoryLabels = [
+            'qris'            => 'QRIS',
+            'virtual_account' => 'Virtual Account', 
+            'ewallet'         => 'E-Wallet',
+            'credit_card'     => 'Kartu Kredit',
+            'bank_transfer'   => 'Transfer Bank',
+            'other'           => 'Lainnya',
+        ];
+        
+        // Urutan kategori yang diinginkan: QRIS dulu, baru VA, baru lainnya
+        $preferredOrder = ['qris', 'virtual_account', 'ewallet', 'credit_card', 'bank_transfer', 'other'];
+        $orderedCategories = collect($preferredOrder)->filter(function($category) use ($groupedChannels) {
+            return $groupedChannels->has($category);
+        })->merge($groupedChannels->keys()->diff($preferredOrder));
+    @endphp
+    
+    @foreach($orderedCategories as $category)
+        @if($groupedChannels->has($category))
+            <div class="payment-category-header mb-2 mt-3">
+                <h6 class="text-muted mb-0">
+                    <i class="fa-solid
+                        @if($category == 'qris') fa-qrcode
+                        @elseif($category == 'virtual_account') fa-building-columns
+                        @elseif($category == 'ewallet') fa-wallet
+                        @elseif($category == 'credit_card') fa-credit-card
+                        @elseif($category == 'bank_transfer') fa-money-bill-transfer
+                        @else fa-money-bill @endif me-2"></i>
+                    {{ $categoryLabels[$category] ?? ucfirst($category) }}
+                </h6>
+            </div>
+            @foreach($groupedChannels[$category] as $channel)
+                <div class="payment-method-card card mb-2 va-method-{{ $category === 'virtual_account' ? 'true' : 'false' }}"
+                     data-method="{{ $channel['code'] }}"
+                     data-type="payment_gateway"
+                     data-gateway="espay"
+                     data-bank-id=""
+                     data-pay-method="{{ $channel['pay_method'] }}"
+                     data-pay-option="{{ $channel['pay_option'] }}">
+                    {{-- content card sama seperti sebelumnya --}}
+                    <div class="card-body d-flex justify-content-between align-items-center py-2">
+                        <div class="d-flex align-items-center">
+                            @if(isset($channel['icon_url']) && $channel['icon_url'])
+                                <img src="{{ $channel['icon_url'] }}" alt="{{ $channel['name'] }}" height="30" class="me-3"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                            @endif
+                            <div class="bg-light rounded me-3 align-items-center justify-content-center"
+                                 style="width:40px;height:30px;display:{{ isset($channel['icon_url']) && $channel['icon_url'] ? 'none' : 'flex' }};">
+                                <i class="fa-solid
+                                    @if($category == 'qris') fa-qrcode
+                                    @elseif($category == 'virtual_account') fa-building-columns
+                                    @elseif($category == 'ewallet') fa-wallet
+                                    @else fa-money-bill @endif text-danger"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ $channel['name'] }}</h6>
+                                @if(isset($channel['fee_amount']) && (float)$channel['fee_amount'] > 0)
+                                    <small class="text-muted">
+                                        Estimasi biaya:
+                                        @if($channel['fee_type'] == 'percent')
+                                            {{ $channel['fee_amount'] }}% per transaksi
+                                        @else
+                                            Rp {{ number_format($channel['fee_amount'], 0, ',', '.') }} per transaksi
+                                        @endif
+                                    </small>
+                                @else
+                                    <small class="text-success">Gratis biaya admin</small>
                                 @endif
-
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
+                    </div>
+                </div>
+            @endforeach
+        @endif
+    @endforeach
+@endif
                                 {{-- SECTION 1: MOOTA –- Transfer Bank Otomatis --}}
                                 @if($hasMoota)
                                     <div class="gateway-section-label">
@@ -474,22 +481,40 @@ $(document).ready(function() {
     $('#submitForm').on('click', function(e) {
         e.preventDefault();
 
-        // BARU — ganti dengan ini:
-const amount = $('#customAmount').val();
-const selectedCard = $('.payment-method-card.selected');
-const selectedGateway = selectedCard.data('gateway') || '';
-const payMethod       = selectedCard.data('pay-method') || '';
-const payOption       = selectedCard.data('pay-option') || '';
+   
+    const amount = $('#customAmount').val();
+    const selectedCard = $('.payment-method-card.selected');
+    
+    if (selectedCard.length === 0) {
+        Swal.fire({ icon: 'error', text: 'Silakan pilih metode pembayaran', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        return;
+    }
 
-// Virtual Account Espay minimal Rp 15.000, lainnya Rp 10.000
-const isVA      = selectedGateway === 'espay' && (payMethod === 'virtual_account' || payOption === 'virtual_account');
-const minAmount = isVA ? 15000 : 10000;
-const minLabel  = isVA ? 'Rp 15.000 untuk metode Virtual Account' : 'Rp 10.000';
+    const selectedGateway = selectedCard.data('gateway') || '';
+    const payMethod = selectedCard.data('pay-method') || '';
+    const payOption = selectedCard.data('pay-option') || '';
+    
+    // FIX: Logika VA yang lebih akurat
+    const isVA = selectedGateway === 'espay' && 
+                (payMethod === 'virtual_account' || 
+                 payOption === 'virtual_account' || 
+                 selectedCard.data('method').toString().toLowerCase().includes('va') ||
+                 selectedCard.find('h6').text().toLowerCase().includes('virtual'));
+    
+    const minAmount = isVA ? 15000 : 10000;
+    const minLabel = isVA ? 'Rp 15.000 untuk metode Virtual Account' : 'Rp 10.000';
 
-if (!amount || parseInt(amount) < minAmount) {
-    Swal.fire({ icon: 'info', text: `Minimal donasi adalah ${minLabel}`, toast: true, position: 'top-end', showConfirmButton: false, timer: 2500 });
-    return;
-}
+    if (!amount || parseInt(amount) < minAmount) {
+        Swal.fire({ 
+            icon: 'info', 
+            text: `Minimal donasi adalah ${minLabel}`, 
+            toast: true, 
+            position: 'top-end', 
+            showConfirmButton: false, 
+            timer: 2500 
+        });
+        return;
+    }
 
         const name  = $('#full_name').val().trim();
         const phone = $('#whatsapp').val().trim();
