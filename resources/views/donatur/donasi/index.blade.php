@@ -481,8 +481,7 @@ $(document).ready(function() {
     $('#submitForm').on('click', function(e) {
         e.preventDefault();
 
-   
-    const amount = $('#customAmount').val();
+         const amount = $('#customAmount').val();
     const selectedCard = $('.payment-method-card.selected');
     
     if (selectedCard.length === 0) {
@@ -492,29 +491,45 @@ $(document).ready(function() {
 
     const selectedGateway = selectedCard.data('gateway') || '';
     const payMethod = selectedCard.data('pay-method') || '';
-    const payOption = selectedCard.data('pay-option') || '';
+    const cardClass = selectedCard.attr('class') || '';
+    const cardText = selectedCard.find('h6').first().text().toLowerCase();
+    const categoryHeader = selectedCard.closest('.payment-category-header').find('h6').first().text().toLowerCase();
     
-    // FIX: Logika VA yang lebih akurat
-    const isVA = selectedGateway === 'espay' && 
-                (payMethod === 'virtual_account' || 
-                 payOption === 'virtual_account' || 
-                 selectedCard.data('method').toString().toLowerCase().includes('va') ||
-                 selectedCard.find('h6').text().toLowerCase().includes('virtual'));
+    // 🔥 LOGIKA VA YANG 100% AKURAT BERDASARKAN HTML ANDA
+    const isVA = selectedGateway === 'espay' && (
+        cardClass.includes('va-method-true') ||                    // Class dari blade
+        categoryHeader.includes('virtual') ||                      // Header "Virtual Account"  
+        cardText.includes('va ') ||                                // Text "VA BRI", "VA CIMB"
+        payMethod === 'virtual_account'                            // Fallback
+    );
     
+    console.log('=== DEBUG VA CHECK ===');  // HAPUS NANTI
+    console.log('Gateway:', selectedGateway);
+    console.log('Card class:', cardClass);
+    console.log('Card text:', cardText);
+    console.log('Category header:', categoryHeader);
+    console.log('Is VA:', isVA);
+    console.log('Min amount:', isVA ? 15000 : 10000);
+    console.log('Amount:', amount);
+    console.log('====================');
+
     const minAmount = isVA ? 15000 : 10000;
-    const minLabel = isVA ? 'Rp 15.000 untuk metode Virtual Account' : 'Rp 10.000';
+    const minLabel = isVA ? 'Rp 15.000 untuk Virtual Account' : 'Rp 10.000';
 
     if (!amount || parseInt(amount) < minAmount) {
         Swal.fire({ 
             icon: 'info', 
-            text: `Minimal donasi adalah ${minLabel}`, 
+            title: 'Minimal Donasi',
+            text: `Minimal donasi ${minLabel}`, 
             toast: true, 
             position: 'top-end', 
             showConfirmButton: false, 
-            timer: 2500 
+            timer: 3000 
         });
         return;
     }
+   
+   
 
         const name  = $('#full_name').val().trim();
         const phone = $('#whatsapp').val().trim();
