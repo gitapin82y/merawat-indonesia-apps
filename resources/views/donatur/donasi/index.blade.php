@@ -241,7 +241,7 @@
         ];
         
         // Urutan kategori yang diinginkan: QRIS dulu, baru VA, baru lainnya
-        $preferredOrder = ['qris', 'virtual_account', 'ewallet', 'credit_card', 'bank_transfer', 'other'];
+        $preferredOrder = ['qris', 'ewallet', 'virtual_account', 'credit_card', 'bank_transfer', 'other'];
         $orderedCategories = collect($preferredOrder)->filter(function($category) use ($groupedChannels) {
             return $groupedChannels->has($category);
         })->merge($groupedChannels->keys()->diff($preferredOrder));
