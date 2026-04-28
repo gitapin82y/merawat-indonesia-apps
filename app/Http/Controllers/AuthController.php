@@ -140,7 +140,6 @@ class AuthController extends Controller
      {
          $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|regex:/^08[1-9][0-9]{7,10}$/|min:10|max:13',
             'email' => 'required|email|unique:users,email',
              'password' => 'required|min:6|confirmed',
          ]);
