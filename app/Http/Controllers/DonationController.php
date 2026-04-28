@@ -1242,10 +1242,10 @@ public function ceklis(Request $request)
         // Tombol file bukti pembayaran
         if ($row->payment_proof) {
                 $proofUrl = asset('storage/'.$row->payment_proof);
-    $actionBtn .= '
-<button onclick="lihatBukti(\''.addslashes($proofUrl).'\')" class="btn btn-info text-white btn-sm" title="Lihat Bukti">
-    <i class="fas fa-file"></i>
-</button>';
+                $actionBtn .= '
+            <button onclick="lihatBukti(\''.addslashes($proofUrl).'\')" class="btn btn-info text-white btn-sm" title="Lihat Bukti">
+                <i class="fas fa-file"></i>
+            </button>';
         } else {
             $actionBtn .= '
         <button onclick="noPaymentProofAlert()" class="btn btn-info text-white btn-sm" title="Belum ada bukti">
@@ -1275,6 +1275,26 @@ public function ceklis(Request $request)
         <button onclick="updateStatus('.$row->id.', \'pending\')" class="btn btn-secondary btn-sm" title="Kembalikan ke Pending">
             <i class="fas fa-undo"></i>
         </button>';
+        }
+    }elseif ($row->payment_type == 'payment_gateway' && str_starts_with($row->payment_method ?? '', 'moota')) {
+
+        if ($row->status != 'sukses') {
+            $actionBtn .= '
+                <button onclick="updateStatus('.$row->id.', \'sukses\')" class="btn btn-primary btn-sm" title="Approve">
+                    <i class="fas fa-check"></i>
+                </button>';
+        }
+        if ($row->status != 'gagal') {
+            $actionBtn .= '
+                <button onclick="updateStatus('.$row->id.', \'gagal\')" class="btn btn-warning text-white btn-sm" title="Reject">
+                    <i class="fas fa-times"></i>
+                </button>';
+        }
+        if (in_array($row->status, ['sukses', 'gagal'])) {
+            $actionBtn .= '
+                <button onclick="updateStatus('.$row->id.', \'pending\')" class="btn btn-secondary btn-sm" title="Kembalikan ke Pending">
+                    <i class="fas fa-undo"></i>
+                </button>';
         }
     }
 
