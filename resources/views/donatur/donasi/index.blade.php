@@ -230,26 +230,7 @@
                             {{-- SECTION 2: ESPAY -- QRIS DIATAS, lalu VA, lalu lainnya --}}
 @if($hasEspay)
     @php
-            $groupedChannels = collect($channels)->groupBy('category');
-    
-    // FIX: Override kategori yang salah dari Espay
-    $vaKeywords = ['va ', 'virtual account', 'va danamon', 'va mandiri'];
-    if ($groupedChannels->has('ewallet')) {
-        $misplacedVA = $groupedChannels['ewallet']->filter(function($ch) use ($vaKeywords) {
-            $name = strtolower($ch['name']);
-            return str_contains($name, 'va ') || str_contains($name, 'virtual');
-        });
-        
-        if ($misplacedVA->isNotEmpty()) {
-            $groupedChannels['ewallet'] = $groupedChannels['ewallet']->diff($misplacedVA);
-            $existing = $groupedChannels->get('virtual_account', collect());
-            $groupedChannels['virtual_account'] = $existing->merge($misplacedVA)->values();
-            
-            if ($groupedChannels['ewallet']->isEmpty()) {
-                $groupedChannels->forget('ewallet');
-            }
-        }
-    }
+        $groupedChannels = collect($channels)->groupBy('category');
         $categoryLabels = [
             'qris'            => 'QRIS',
             'virtual_account' => 'Virtual Account', 
