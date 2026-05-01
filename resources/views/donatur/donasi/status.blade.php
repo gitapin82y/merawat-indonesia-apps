@@ -576,6 +576,16 @@ document.addEventListener('DOMContentLoaded', function() {
             @if($adsense && $adsense->google_ads_id)
             gtag('event', 'purchase', { 'send_to': '{{ $adsense->google_ads_id }}', 'transaction_id': '{{ $donation->id }}', 'value': {{ $donation->amount ?? 0 }}, 'currency': 'IDR' });
             @endif
+
+            @if($adsense && $adsense->tiktok_pixel)
+            ttq.track('InitiateCheckout', {
+                content_type: 'product',
+                content_id: '{{ $campaign->id ?? $donation->campaign_id ?? "" }}',
+                content_name: '{{ $campaign->title ?? "" }}',
+                currency: 'IDR',
+                value: {{ $donation->amount ?? 0 }}
+            });
+            @endif
             window.pixelHelper.markEventTracked(donationId, 'purchase');
         }
     @elseif($donation->status === 'sukses')
@@ -587,6 +597,18 @@ document.addEventListener('DOMContentLoaded', function() {
             @if($adsense && $adsense->google_ads_id && $adsense->google_ads_label)
             gtag('event', 'conversion', { 'send_to': '{{ $adsense->google_ads_id }}/{{ $adsense->google_ads_label }}', 'value': {{ $donation->amount ?? 0 }}, 'currency': 'IDR', 'transaction_id': '{{ $donation->snap_token ?? "" }}' });
             @endif
+
+             @if($adsense && $adsense->tiktok_pixel)
+            ttq.track('CompletePayment', {
+                content_type: 'product',
+                content_id: '{{ $campaign->id ?? $donation->campaign_id ?? "" }}',
+                content_name: '{{ $campaign->title ?? "" }}',
+                currency: 'IDR',
+                value: {{ $donation->amount ?? 0 }},
+                transaction_id: '{{ $donation->snap_token ?? $donation->id }}'
+            });
+            @endif
+            
             window.pixelHelper.markEventTracked(donationId, 'donate');
         }
     @endif

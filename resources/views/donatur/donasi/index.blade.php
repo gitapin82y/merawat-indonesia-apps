@@ -427,6 +427,16 @@
     @if($adsense && $adsense->facebook_pixel)
     fbq('track', 'AddToCart', { content_name: '{{ $campaign->title ?? "" }}', value: {{ $donation->amount ?? 0 }}, currency: 'IDR' });
     @endif
+
+     @if($adsense && $adsense->tiktok_pixel)
+    ttq.track('AddToCart', {
+        content_type: 'product',
+        content_id: '{{ $campaign->id ?? "" }}',
+        content_name: '{{ $campaign->title ?? "" }}',
+        currency: 'IDR',
+        value: {{ $donation->amount ?? 0 }}
+    });
+    @endif
 </script>
 <script>
 $(document).ready(function() {

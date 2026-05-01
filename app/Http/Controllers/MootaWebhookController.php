@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\DonationSuccessMail;
 use App\Mail\CampaignDonationMail;
 
+use App\Models\Adsense;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
+
 class MootaWebhookController extends Controller
 {
     protected MootaService $mootaService;
@@ -204,9 +208,108 @@ class MootaWebhookController extends Controller
 
         // Email di luar DB transaction
         $this->sendNotifications($freshDonation);
+        $this->trackServerSideConversion($freshDonation);
 
         return 'processed';
     }
+
+    protected function trackServerSideConversion(Donation $donation): void
+{
+    // Guard: cegah duplikasi tracking
+    $cacheKey = 'conversion_tracked_' . $donation->id;
+    if (Cache::has($cacheKey)) {
+        Log::info('Moota: Conversion sudah di-track, skip.', ['donation_id' => $donation->id]);
+        return;
+    }
+    Cache::put($cacheKey, true, now()->addDays(7));
+
+    try {
+        $adsense = Adsense::first();
+        if (!$adsense) return;
+
+        // ── Facebook Conversion API ───────────────────────────────
+        if ($adsense->meta_token && $adsense->facebook_pixel) {
+            $userData = [
+                'em'                => hash('sha256', strtolower(trim($donation->email ?? ''))),
+                'client_ip_address' => request()->ip(),
+                'client_user_agent' => request()->userAgent(),
+            ];
+            if ($donation->phone) {
+                $userData['ph'] = hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone));
+            }
+
+            $response = Http::withToken($adsense->meta_token)
+                ->post("https://graph.facebook.com/v20.0/{$adsense->facebook_pixel}/events", [
+                    'data' => [[
+                        'event_name'       => 'Donate',
+                        'event_time'       => time(),
+                        'event_id'         => 'moota_' . $donation->id, // dedup key
+                        'user_data'        => $userData,
+                        'custom_data'      => [
+                            'currency'         => 'IDR',
+                            'value'            => (float) $donation->amount,
+                            'content_name'     => $donation->campaign->title ?? 'Donation',
+                            'content_type'     => 'donation',
+                            'content_ids'      => [(string) $donation->campaign_id],
+                        ],
+                        'event_source_url' => url('/donations/' . $donation->id . '/status'),
+                        'action_source'    => 'website',
+                    ]],
+                ]);
+
+            Log::info('Moota: Facebook CAPI sent', [
+                'donation_id' => $donation->id,
+                'status'      => $response->status(),
+            ]);
+        }
+
+        // ── TikTok Events API ─────────────────────────────────────
+        if ($adsense->tiktok_token && $adsense->tiktok_pixel && $adsense->tiktok_endpoint) {
+            $tiktokUser = array_filter([
+                'email'        => hash('sha256', strtolower(trim($donation->email ?? ''))),
+                'phone_number' => $donation->phone
+                    ? hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone))
+                    : null,
+            ]);
+
+            $response = Http::withHeaders([
+                'Access-Token' => $adsense->tiktok_token,
+                'Content-Type' => 'application/json',
+            ])->post($adsense->tiktok_endpoint, [
+                'pixel_code' => $adsense->tiktok_pixel,
+                'event'      => 'CompletePayment',
+                'event_id'   => 'moota_' . $donation->id, // dedup dengan browser pixel
+                'timestamp'  => now()->toIso8601String(),
+                'context'    => [
+                    'user'       => $tiktokUser,
+                    'page'       => ['url' => url('/donations/' . $donation->id . '/status')],
+                    'ip'         => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ],
+                'properties' => [
+                    'currency'     => 'IDR',
+                    'value'        => (float) $donation->amount,
+                    'content_id'   => (string) ($donation->campaign_id ?? $donation->id),
+                    'content_type' => 'product',
+                    'content_name' => $donation->campaign->title ?? 'Donation',
+                    'quantity'     => 1,
+                ],
+            ]);
+
+            Log::info('Moota: TikTok Events API sent', [
+                'donation_id' => $donation->id,
+                'status'      => $response->status(),
+                'response'    => $response->json(),
+            ]);
+        }
+
+    } catch (\Exception $e) {
+        Log::error('Moota: Gagal track server-side conversion', [
+            'donation_id' => $donation->id,
+            'error'       => $e->getMessage(),
+        ]);
+    }
+}
 
     /**
      * FIX: Hanya 1 parameter — gunakan $donation->amount langsung

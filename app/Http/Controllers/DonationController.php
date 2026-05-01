@@ -985,6 +985,13 @@ private function formatPaymentInstructions($instructions)
 
 private function trackServerSideConversion($donation)
 {
+        $cacheKey = 'conversion_tracked_' . $donation->id;
+    if (Cache::has($cacheKey)) {
+        Log::info('Conversion already tracked, skipping', ['donation_id' => $donation->id]);
+        return;
+    }
+    Cache::put($cacheKey, true, now()->addDays(7));
+    
     try {
         $adsense = Adsense::first();
         if (!$adsense) {
@@ -1040,47 +1047,47 @@ private function trackServerSideConversion($donation)
             ]);
         }
         
-        // TikTok Events API - Track "Donate" event  
-        if ($adsense->tiktok_token && $adsense->tiktok_endpoint && $adsense->tiktok_pixel) {
-            $tiktokData = [
-                'pixel_code' => $adsense->tiktok_pixel,
-                'event' => 'Donate',
-                'timestamp' => time(),
-                'properties' => [
-                    'currency' => 'IDR',
-                    'value' => (float) $donation->amount,
-                    'content_id' => (string) $donation->id,
-                    'content_type' => 'donation',
-                    'content_name' => $donation->campaign->title ?? 'Donation',
-                ],
-                'context' => [
-                    'user' => [
-                        'email' => hash('sha256', strtolower(trim($donation->email))),
-                    ],
-                    'page' => [
-                        'url' => url('/donations/' . $donation->id . '/status')
-                    ],
-                    'ip' => request()->ip(),
-                    'user_agent' => request()->userAgent(),
-                ]
-            ];
-            
-            // Tambahkan phone jika ada
-            if ($donation->phone) {
-                $tiktokData['context']['user']['phone'] = hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone));
-            }
-            
-            $response = Http::withHeaders([
-                'Access-Token' => $adsense->tiktok_token,
-                'Content-Type' => 'application/json'
-            ])->post($adsense->tiktok_endpoint, $tiktokData);
-            
-            Log::info('TikTok Conversion API Response', [
-                'donation_id' => $donation->id,
-                'status' => $response->status(),
-                'response' => $response->json()
-            ]);
-        }
+       // TikTok Events API - Track "CompletePayment" event  
+if ($adsense->tiktok_token && $adsense->tiktok_pixel) {
+    $tiktokData = [
+        'pixel_code' => $adsense->tiktok_pixel,
+        'event'      => 'CompletePayment',   // ✅ Gunakan event standar TikTok
+        'event_id'   => (string) $donation->id, // untuk dedup dengan pixel browser
+        'timestamp'  => now()->toIso8601String(), // ✅ Harus ISO 8601, bukan time()
+        'context'    => [
+            'user' => array_filter([
+                'email'       => hash('sha256', strtolower(trim($donation->email ?? ''))),
+                'phone_number'=> $donation->phone
+                    ? hash('sha256', preg_replace('/[^0-9]/', '', $donation->phone))
+                    : null,
+            ]),
+            'page' => [
+                'url' => url('/donations/' . $donation->id . '/status'),
+            ],
+            'ip'         => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ],
+        'properties' => [
+            'currency'     => 'IDR',
+            'value'        => (float) $donation->amount,
+            'content_id'   => (string) ($donation->campaign_id ?? $donation->id),
+            'content_type' => 'product',
+            'content_name' => $donation->campaign->title ?? 'Donation',
+            'quantity'     => 1,
+        ],
+    ];
+
+    $response = Http::withHeaders([
+        'Access-Token'  => $adsense->tiktok_token,
+        'Content-Type'  => 'application/json',
+    ])->post($adsense->tiktok_endpoint, $tiktokData);
+
+    Log::info('TikTok Conversion API Response', [
+        'donation_id' => $donation->id,
+        'status'      => $response->status(),
+        'response'    => $response->json(),
+    ]);
+}
         
     } catch (\Exception $e) {
         Log::error('Error tracking server-side conversion', [
