@@ -277,7 +277,7 @@ class MootaWebhookController extends Controller
                 'Content-Type' => 'application/json',
             ])->post($adsense->tiktok_endpoint, [
                 'pixel_code' => $adsense->tiktok_pixel,
-                'event'      => 'CompletePayment',
+                'event'      => 'Donate',
                 'event_id'   => 'moota_' . $donation->id, // dedup dengan browser pixel
                 'timestamp'  => now()->toIso8601String(),
                 'context'    => [

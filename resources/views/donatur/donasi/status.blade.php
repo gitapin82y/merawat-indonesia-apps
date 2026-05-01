@@ -578,7 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
             @endif
 
             @if($adsense && $adsense->tiktok_pixel)
-            ttq.track('InitiateCheckout', {
+            ttq.track('Purchase', {
                 content_type: 'product',
                 content_id: '{{ $campaign->id ?? $donation->campaign_id ?? "" }}',
                 content_name: '{{ $campaign->title ?? "" }}',
@@ -599,7 +599,7 @@ document.addEventListener('DOMContentLoaded', function() {
             @endif
 
              @if($adsense && $adsense->tiktok_pixel)
-            ttq.track('CompletePayment', {
+            ttq.track('Donate', {
                 content_type: 'product',
                 content_id: '{{ $campaign->id ?? $donation->campaign_id ?? "" }}',
                 content_name: '{{ $campaign->title ?? "" }}',

@@ -1047,11 +1047,11 @@ private function trackServerSideConversion($donation)
             ]);
         }
         
-       // TikTok Events API - Track "CompletePayment" event  
+       // TikTok Events API - Track "Donate" event  
 if ($adsense->tiktok_token && $adsense->tiktok_pixel) {
     $tiktokData = [
         'pixel_code' => $adsense->tiktok_pixel,
-        'event'      => 'CompletePayment',   // ✅ Gunakan event standar TikTok
+        'event'      => 'Donate',   // ✅ Gunakan event standar TikTok
         'event_id'   => (string) $donation->id, // untuk dedup dengan pixel browser
         'timestamp'  => now()->toIso8601String(), // ✅ Harus ISO 8601, bukan time()
         'context'    => [
