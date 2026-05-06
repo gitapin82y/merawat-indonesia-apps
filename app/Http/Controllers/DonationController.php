@@ -1325,68 +1325,143 @@ public function ceklis(Request $request)
     
     return view('super_admin.ceklis_donasi.index', compact('campaigns'));
 }
-
 public function exportCeklis(Request $request)
 {
-    $query = Donation::with(['campaign','user']);
-
-    if ($request->has('payment_type') && $request->payment_type) {
-        $query->where('payment_type', $request->payment_type);
-    }
-    if ($request->has('status') && $request->status) {
-        $query->where('status', $request->status);
-    }
-    if ($request->has('campaign_id') && $request->campaign_id) {
-        $query->where('campaign_id', $request->campaign_id);
-    }
-      if ($request->is_contactable !== null) {
-            $query->where('is_contactable', $request->is_contactable);
-    }
-    if ($request->has('search') && $request->search) {
-        $search = $request->search;
-        $query->where(function($q) use ($search) {
-            $q->where('name','like',"%$search%")
-              ->orWhere('email','like',"%$search%")
-              ->orWhere('phone','like',"%$search%")
-              ->orWhereHas('campaign', function($c) use ($search){
-                  $c->where('title','like',"%$search%");
-              });
-        });
-    }
-
-    $donations = $query->latest()->get();
+    set_time_limit(300);
+    ini_set('memory_limit', '256M');
 
     $filename = 'ceklis_donasi_'.now()->format('Ymd_His').'.csv';
 
     $headers = [
-        'Content-Type' => 'text/csv',
-        'Content-Disposition' => 'attachment; filename='.$filename,
+        'Content-Type'        => 'text/csv; charset=UTF-8',
+        'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        'Cache-Control'       => 'no-cache, no-store, must-revalidate',
+        'Pragma'              => 'no-cache',
     ];
 
-     $columns = ['Nama','Email','Phone','Bersedia Dihubungi','Kampanye','Total Donasi','Metode','Tanggal','Status'];
+    $columns = ['Nama','Email','Phone','Bersedia Dihubungi','Kampanye','Total Donasi','Metode','Tanggal','Status'];
 
-    $callback = function() use ($donations, $columns) {
+    // Clone query untuk dipakai di dalam callback
+    $baseQuery = Donation::with(['campaign:id,title', 'user:id,name']);
+
+    if ($request->filled('payment_type')) {
+        $baseQuery->where('payment_type', $request->payment_type);
+    }
+    if ($request->filled('status')) {
+        $baseQuery->where('status', $request->status);
+    }
+    if ($request->filled('campaign_id')) {
+        $baseQuery->where('campaign_id', $request->campaign_id);
+    }
+    if ($request->filled('is_contactable')) {
+        $baseQuery->where('is_contactable', $request->boolean('is_contactable'));
+    }
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $baseQuery->where(function($q) use ($search) {
+            $q->where('name', 'like', "%$search%")
+              ->orWhere('email', 'like', "%$search%")
+              ->orWhere('phone', 'like', "%$search%")
+              ->orWhereHas('campaign', function($c) use ($search) {
+                  $c->where('title', 'like', "%$search%");
+              });
+        });
+    }
+
+    $callback = function() use ($baseQuery, $columns) {
         $handle = fopen('php://output', 'w');
+
+        // BOM UTF-8 supaya Excel tidak rusak karakternya
+        fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
         fputcsv($handle, $columns);
-        foreach ($donations as $d) {
-            $method = ($d->payment_type == 'manual' ? 'Manual' : 'Payment Gateway') .' ('. $d->payment_method .')';
-            fputcsv($handle, [
-                $d->name,
-                $d->email,
-                $d->phone,
-                $d->is_contactable ? 'Bersedia' : 'Tidak Bersedia',
-                optional($d->campaign)->title,
-                $d->amount,
-                $method,
-                optional($d->created_at)->timezone('Asia/Jakarta')->format('d M Y'),
-                $d->status,
-            ]);
-        }
+
+        // Chunk 200 per batch agar memory tidak meledak
+        $baseQuery->latest()->chunk(200, function($donations) use ($handle) {
+            foreach ($donations as $d) {
+                $method = ($d->payment_type === 'manual' ? 'Manual' : 'Payment Gateway')
+                         .' ('.$d->payment_method.')';
+
+                fputcsv($handle, [
+                    $d->name,
+                    $d->email,
+                    $d->phone,
+                    $d->is_contactable ? 'Bersedia' : 'Tidak Bersedia',
+                    optional($d->campaign)->title,
+                    $d->amount,
+                    $method,
+                    optional($d->created_at)->timezone('Asia/Jakarta')->format('d M Y'),
+                    $d->status,
+                ]);
+            }
+        });
+
         fclose($handle);
     };
 
     return response()->stream($callback, 200, $headers);
 }
+
+// public function exportCeklis(Request $request)
+// {
+//     $query = Donation::with(['campaign','user']);
+
+//     if ($request->has('payment_type') && $request->payment_type) {
+//         $query->where('payment_type', $request->payment_type);
+//     }
+//     if ($request->has('status') && $request->status) {
+//         $query->where('status', $request->status);
+//     }
+//     if ($request->has('campaign_id') && $request->campaign_id) {
+//         $query->where('campaign_id', $request->campaign_id);
+//     }
+//       if ($request->is_contactable !== null) {
+//             $query->where('is_contactable', $request->is_contactable);
+//     }
+//     if ($request->has('search') && $request->search) {
+//         $search = $request->search;
+//         $query->where(function($q) use ($search) {
+//             $q->where('name','like',"%$search%")
+//               ->orWhere('email','like',"%$search%")
+//               ->orWhere('phone','like',"%$search%")
+//               ->orWhereHas('campaign', function($c) use ($search){
+//                   $c->where('title','like',"%$search%");
+//               });
+//         });
+//     }
+
+//     $donations = $query->latest()->get();
+
+//     $filename = 'ceklis_donasi_'.now()->format('Ymd_His').'.csv';
+
+//     $headers = [
+//         'Content-Type' => 'text/csv',
+//         'Content-Disposition' => 'attachment; filename='.$filename,
+//     ];
+
+//      $columns = ['Nama','Email','Phone','Bersedia Dihubungi','Kampanye','Total Donasi','Metode','Tanggal','Status'];
+
+//     $callback = function() use ($donations, $columns) {
+//         $handle = fopen('php://output', 'w');
+//         fputcsv($handle, $columns);
+//         foreach ($donations as $d) {
+//             $method = ($d->payment_type == 'manual' ? 'Manual' : 'Payment Gateway') .' ('. $d->payment_method .')';
+//             fputcsv($handle, [
+//                 $d->name,
+//                 $d->email,
+//                 $d->phone,
+//                 $d->is_contactable ? 'Bersedia' : 'Tidak Bersedia',
+//                 optional($d->campaign)->title,
+//                 $d->amount,
+//                 $method,
+//                 optional($d->created_at)->timezone('Asia/Jakarta')->format('d M Y'),
+//                 $d->status,
+//             ]);
+//         }
+//         fclose($handle);
+//     };
+
+//     return response()->stream($callback, 200, $headers);
+// }
 
 public function updateStatus(Request $request)
     {
