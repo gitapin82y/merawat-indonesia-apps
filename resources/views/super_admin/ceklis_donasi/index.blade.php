@@ -33,6 +33,9 @@
                 <button type="button" data-toggle="modal" data-target="#methodFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">
                     <i class="fas fa-filter fa-sm mr-1"></i> Filter Metode
                 </button>
+                <button type="button" data-toggle="modal" data-target="#dateFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
+    <i class="fas fa-calendar fa-sm mr-1"></i> Filter Tanggal
+</button>
                    <button type="button" data-toggle="modal" data-target="#contactFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm mx-2">
                     <i class="fas fa-filter fa-sm mr-1"></i> Filter Kontak
                 </button>
@@ -216,7 +219,35 @@
         </div>
     </div>
 </div>
-
+<!-- Date Filter Modal -->
+<div class="modal fade" id="dateFilterModal" tabindex="-1" role="dialog" aria-labelledby="dateFilterModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dateFilterModalLabel">Filter Berdasarkan Tanggal</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="dateFilterForm">
+                    <div class="form-group">
+                        <label for="date_from">Dari Tanggal</label>
+                        <input type="date" class="form-control" id="date_from" name="date_from">
+                    </div>
+                    <div class="form-group">
+                        <label for="date_to">Sampai Tanggal</label>
+                        <input type="date" class="form-control" id="date_to" name="date_to">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-danger btn-apply-filter" id="applyDateFilter">Terapkan Filter</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @endsection
 
@@ -237,6 +268,8 @@ $(function () {
             status: $('#status').val(),
             campaign_id: $('#campaign_id').val(),
             is_contactable: $('#is_contactable').val(),
+                date_from:      $('#date_from').val(), // tambah ini
+        date_to:        $('#date_to').val(),   // tambah ini
             search: table.search()
         };
         const query = $.param(params);
@@ -253,6 +286,8 @@ $(function () {
                d.status = $('#status').val();
                d.campaign_id = $('#campaign_id').val();
                 d.is_contactable = $('#is_contactable').val();
+                    d.date_from      = $('#date_from').val(); // tambah ini
+        d.date_to        = $('#date_to').val();   // tambah ini
            }
         },
         columns: [
@@ -341,6 +376,12 @@ $(function () {
         $('#contactFilterModal').modal('hide');
     });
 
+    $('#applyDateFilter').click(function() {
+    updateActiveFilters();
+    table.ajax.reload();
+    $('#dateFilterModal').modal('hide');
+});
+
     function updateActiveFilters() {
         const paymentType = $('#payment_type').val();
        const paymentLabel = $('#payment_type option:selected').text();
@@ -350,6 +391,8 @@ $(function () {
        const campaignLabel = $('#campaign_id option:selected').text();
         const contactStatus = $('#is_contactable').val();
         const contactLabel = $('#is_contactable option:selected').text();
+            const dateFrom      = $('#date_from').val();  // tambah ini
+    const dateTo        = $('#date_to').val();    // tambah ini
         
         let filtersHtml = '';
         
@@ -368,6 +411,13 @@ $(function () {
         if (contactStatus) {
             filtersHtml += `<span class="badge badge-danger mr-2 p-2">Kontak: ${contactLabel} <i class="fas fa-times ml-1 clear-filter" data-filter="contact"></i></span>`;
         }
+
+           if (dateFrom || dateTo) {
+        const label = (dateFrom && dateTo)
+            ? `${dateFrom} s/d ${dateTo}`
+            : (dateFrom ? `Dari ${dateFrom}` : `Sampai ${dateTo}`);
+        filtersHtml += `<span class="badge badge-danger mr-2 p-2">Tanggal: ${label} <i class="fas fa-times ml-1 clear-filter" data-filter="date"></i></span>`;
+    }
         
         if (filtersHtml) {
             filtersHtml = `<div class="mb-2">Filter Aktif:</div>` + filtersHtml + `<button id="clearAllFilters" class="btn btn-sm btn-outline-danger ml-2">Hapus Filter</button>`;
@@ -388,7 +438,10 @@ $(function () {
            $('#campaign_id').val('');
         } else if (filterType === 'contact') {
             $('#is_contactable').val('');
-       }
+       }else if (filterType === 'date') {  // tambah ini
+        $('#date_from').val('');
+        $('#date_to').val('');
+    }
         
         // Update display and reload table
         updateActiveFilters();
@@ -401,6 +454,8 @@ $(function () {
         $('#status').val('');
         $('#campaign_id').val('');
         $('#is_contactable').val('');
+            $('#date_from').val('');  // tambah ini
+    $('#date_to').val('');    // tambah ini
         
         // Update display and reload table
         $('#active-filters').html('');

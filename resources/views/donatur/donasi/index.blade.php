@@ -262,48 +262,91 @@
                 </h6>
             </div>
             @foreach($groupedChannels[$category] as $channel)
-                <div class="payment-method-card card mb-2 va-method-{{ $category === 'virtual_account' ? 'true' : 'false' }}"
-                     data-method="{{ $channel['code'] }}"
-                     data-type="payment_gateway"
-                     data-gateway="espay"
-                     data-bank-id=""
-                     data-pay-method="{{ $channel['pay_method'] }}"
-                     data-pay-option="{{ $channel['pay_option'] }}">
-                    {{-- content card sama seperti sebelumnya --}}
-                    <div class="card-body d-flex justify-content-between align-items-center py-2">
-                        <div class="d-flex align-items-center">
-                            @if(isset($channel['icon_url']) && $channel['icon_url'])
-                                <img src="{{ $channel['icon_url'] }}" alt="{{ $channel['name'] }}" height="30" class="me-3"
-                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                            @endif
-                            <div class="bg-light rounded me-3 align-items-center justify-content-center"
-                                 style="width:40px;height:30px;display:{{ isset($channel['icon_url']) && $channel['icon_url'] ? 'none' : 'flex' }};">
-                                <i class="fa-solid
-                                    @if($category == 'qris') fa-qrcode
-                                    @elseif($category == 'virtual_account') fa-building-columns
-                                    @elseif($category == 'ewallet') fa-wallet
-                                    @else fa-money-bill @endif text-danger"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0">{{ $channel['name'] }}</h6>
-                                @if(isset($channel['fee_amount']) && (float)$channel['fee_amount'] > 0)
-                                    <small class="text-muted">
-                                        Estimasi biaya:
-                                        @if($channel['fee_type'] == 'percent')
-                                            {{ $channel['fee_amount'] }}% per transaksi
-                                        @else
-                                            Rp {{ number_format($channel['fee_amount'], 0, ',', '.') }} per transaksi
-                                        @endif
-                                    </small>
-                                @else
-                                    <small class="text-success">Gratis biaya admin</small>
-                                @endif
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
+    @php
+        // Mapping pay_option ke file icon lokal
+        $localIconMap = [
+            'BCAATM'          => 'bca.png',
+            'BRIATM'          => 'bri.png',
+            'CIMBATM'         => 'cimbniaga.png',
+            'LINKAJAAPPLINK'  => 'linkaja.png',
+            'SALDOMUQR'       => 'qris.png',
+            'SHOPEEQRPAY'     => 'qris.png',
+            'MANDIRIATM'      => 'mandiri.png',
+            'BIIATM'          => 'maybank.png',
+            'OVO'             => 'ovo.png',
+            'PERMATAATM'      => 'permata.png',
+            'BNCATM'          => 'neobank.png',
+            'BNIATM'          => 'bni.png',
+            'BANKSINARMASATM' => 'sinarmas.png',
+            'GOPAYJUMPAPP'    => 'gopay.png',
+            'SEABANKATM'      => 'seabank.png',
+            'DANAMONATM'      => null,
+            'CREDITCARD'      => null,
+        ];
+        $localIcon = $localIconMap[$channel['pay_option']] ?? null;
+    @endphp
+
+    <div class="payment-method-card card mb-2 va-method-{{ $category === 'virtual_account' ? 'true' : 'false' }}"
+         data-method="{{ $channel['code'] }}"
+         data-type="payment_gateway"
+         data-gateway="espay"
+         data-bank-id=""
+         data-pay-method="{{ $channel['pay_method'] }}"
+         data-pay-option="{{ $channel['pay_option'] }}">
+        <div class="card-body d-flex justify-content-between align-items-center py-2">
+            <div class="d-flex align-items-center">
+                {{-- Prioritas: 1) icon lokal, 2) icon_url dari espay, 3) fallback FA icon --}}
+                @if($localIcon)
+                    <img src="{{ asset('assets/img/icon/' . $localIcon) }}"
+                         alt="{{ $channel['name'] }}"
+                         style="width:40px;height:30px;object-fit:contain;"
+                         class="me-3">
+                @elseif(isset($channel['icon_url']) && $channel['icon_url'])
+                    <img src="{{ $channel['icon_url'] }}"
+                         alt="{{ $channel['name'] }}"
+                         height="30"
+                         class="me-3"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                    <div class="bg-light rounded me-3 align-items-center justify-content-center"
+                         style="width:40px;height:30px;display:none;">
+                        <i class="fa-solid
+                            @if($category == 'qris') fa-qrcode
+                            @elseif($category == 'virtual_account') fa-building-columns
+                            @elseif($category == 'ewallet') fa-wallet
+                            @else fa-money-bill @endif text-danger"></i>
                     </div>
+                @else
+                    <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center"
+                         style="width:40px;height:30px;">
+                        <i class="fa-solid
+                            @if($category == 'qris') fa-qrcode
+                            @elseif($category == 'virtual_account') fa-building-columns
+                            @elseif($category == 'ewallet') fa-wallet
+                            @elseif($category == 'credit_card') fa-credit-card
+                            @else fa-money-bill @endif text-danger"></i>
+                    </div>
+                @endif
+
+                <div>
+                    <h6 class="mb-0">{{ $channel['name'] }}</h6>
+                    @if(isset($channel['fee_amount']) && (float)$channel['fee_amount'] > 0)
+                        <small class="text-muted">
+                            Estimasi biaya:
+                            @if($channel['fee_type'] == 'percent')
+                                {{ $channel['fee_amount'] }}% per transaksi
+                            @else
+                                Rp {{ number_format($channel['fee_amount'], 0, ',', '.') }} per transaksi
+                            @endif
+                        </small>
+                    @else
+                        <small class="text-success">Gratis biaya admin</small>
+                    @endif
                 </div>
-            @endforeach
+            </div>
+            <i class="fa-solid fa-circle-check text-success payment-check-icon d-none"></i>
+        </div>
+    </div>
+@endforeach
         @endif
     @endforeach
 @endif

@@ -1181,6 +1181,14 @@ public function ceklis(Request $request)
         if ($request->has('campaign_id') && $request->campaign_id) {
             $query->where('campaign_id', $request->campaign_id);
         }
+
+        // Apply date range filter
+if ($request->filled('date_from')) {
+    $query->whereDate('created_at', '>=', $request->date_from);
+}
+if ($request->filled('date_to')) {
+    $query->whereDate('created_at', '<=', $request->date_to);
+}
         
         // IMPORTANT: Use the query builder version of DataTables, not the collection version
         return DataTables::of($query->latest())
@@ -1356,6 +1364,13 @@ public function exportCeklis(Request $request)
     if ($request->filled('is_contactable')) {
         $baseQuery->where('is_contactable', $request->boolean('is_contactable'));
     }
+    // Apply date range filter
+if ($request->filled('date_from')) {
+    $baseQuery->whereDate('created_at', '>=', $request->date_from);
+}
+if ($request->filled('date_to')) {
+    $baseQuery->whereDate('created_at', '<=', $request->date_to);
+}
     if ($request->filled('search')) {
         $search = $request->search;
         $baseQuery->where(function($q) use ($search) {
