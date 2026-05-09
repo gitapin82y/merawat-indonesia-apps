@@ -30,7 +30,7 @@
                 <button type="button" data-toggle="modal" data-target="#statusFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
                     <i class="fas fa-filter fa-sm mr-1"></i> Filter Status
                 </button>
-                <button type="button" data-toggle="modal" data-target="#methodFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm">
+                <button type="button" data-toggle="modal" data-target="#methodFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
                     <i class="fas fa-filter fa-sm mr-1"></i> Filter Metode
                 </button>
                 <button type="button" data-toggle="modal" data-target="#dateFilterModal" class="btn btn-danger float-left mt-3 mt-sm-0 float-sm-right shadow-sm ml-2">
