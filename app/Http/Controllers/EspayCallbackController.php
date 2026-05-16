@@ -524,34 +524,53 @@ class EspayCallbackController extends Controller
     // PRIVATE HELPERS
     // =========================================================================
 
-    private function processFundraisingCommission(Donation $donation): void
-    {
-        try {
-            $fundraising = Fundraising::where('referral_code', $donation->referral_code)->first();
-            if (!$fundraising) return;
-
-            $commissionRate = Commission::value('fundraising_commission') ?? 0;
-            $commission     = ($commissionRate / 100) * $donation->amount;
-
-            $fundraising->increment('total_commission', $commission);
-            $fundraising->increment('total_amount',     $donation->amount);
-
-            $donations   = json_decode($fundraising->donations ?? '[]', true) ?: [];
-            $donations[] = [
-                'donation_id' => $donation->id,
-                'amount'      => $donation->amount,
-                'commission'  => $commission,
-                'user_name'   => $donation->user->name  ?? null,
-                'user_email'  => $donation->user->email ?? null,
-                'created_at'  => now()->format('Y-m-d H:i:s'),
-            ];
-            $fundraising->donations = json_encode($donations);
-            $fundraising->save();
-
-        } catch (\Exception $e) {
-            Log::error('processFundraisingCommission error: ' . $e->getMessage());
+private function processFundraisingCommission(Donation $donation): void
+{
+    try {
+        // FIX: gunakan 'code_link' bukan 'referral_code'
+        $fundraising = Fundraising::where('code_link', $donation->referral_code)->first();
+        if (!$fundraising) {
+            Log::warning('processFundraisingCommission: fundraising not found', [
+                'referral_code' => $donation->referral_code,
+                'donation_id'   => $donation->id,
+            ]);
+            return;
         }
+
+        // FIX: gunakan Commission::first()->amount bukan Commission::value('fundraising_commission')
+        $commissionSetting = Commission::first();
+        $commissionPercent = $commissionSetting->amount ?? 0;
+        $commission        = ($donation->amount * $commissionPercent) / 100;
+
+        // FIX: gunakan field yang sesuai schema tabel fundraisings
+        $fundraising->total_donatur += 1;        // ✅ ada di schema
+        $fundraising->jumlah_donasi += $donation->amount;  // ✅ ada di schema
+        $fundraising->commission    += $commission;         // ✅ ada di schema
+
+        $donations   = json_decode($fundraising->donations ?? '[]', true) ?: [];
+        $donations[] = [
+            'donation_id' => $donation->id,
+            'amount'      => $donation->amount,
+            'commission'  => $commission,
+            'user_name'   => $donation->user->name  ?? null,
+            'user_email'  => $donation->user->email ?? null,
+            'created_at'  => now()->format('Y-m-d H:i:s'),
+        ];
+        $fundraising->donations = json_encode($donations);
+        $fundraising->save();
+
+        Log::info('Fundraising commission processed', [
+            'donation_id'    => $donation->id,
+            'fundraising_id' => $fundraising->id,
+            'commission'     => $commission,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('processFundraisingCommission error: ' . $e->getMessage(), [
+            'donation_id' => $donation->id,
+        ]);
     }
+}
 
     private function sendNotifications(Donation $donation): void
     {

@@ -1497,7 +1497,7 @@ public function updateStatus(Request $request)
         try {
  
             // ── REVERSE: sukses → pending/gagal ──────────────────────
-            if ($oldStatus === 'sukses' && $donation->payment_type === 'manual') {
+            if ($oldStatus === 'sukses') {
                 // amount sudah = total (50.819) sejak create, langsung gunakan
                 $campaign = $donation->campaign;
                 $campaign->jumlah_donasi    = max(0, $campaign->jumlah_donasi    - $donation->amount);
@@ -1534,7 +1534,7 @@ public function updateStatus(Request $request)
             }
  
             // ── FORWARD: → sukses (admin approve manual) ─────────────
-            if ($newStatus === 'sukses' && $donation->payment_type === 'manual') {
+            if ($newStatus === 'sukses') {
                 // amount sudah = total (50.819) sejak create
                 // TIDAK perlu update amount di sini — sudah benar!
                 $this->trackServerSideConversion($donation);
