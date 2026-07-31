@@ -728,11 +728,12 @@ const expiration = new Date(new Date("{{ $donation->created_at }}").getTime() +
     updateClock();
     setInterval(updateClock, 1000);
 
-    // ── Tombol manual cek status (Espay) ─────────────────────────────
-    $('#checkStatus').click(function(e) {
-        e.preventDefault();
-        $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Mengecek...');
-        $('#statusResult').html('<div class="d-flex justify-content-center my-2"><div class="spinner-border text-primary"></div></div>');
+    // ── Cek status pembayaran (Espay) — manual & auto-poll ────────────
+    function checkEspayPaymentStatus(isAuto) {
+        if (!isAuto) {
+            $('#checkStatus').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Mengecek...');
+            $('#statusResult').html('<div class="d-flex justify-content-center my-2"><div class="spinner-border text-primary"></div></div>');
+        }
 
         $.ajax({
             url: '{{ route("donations.check-status", $donation->snap_token) }}',
@@ -741,20 +742,28 @@ const expiration = new Date(new Date("{{ $donation->created_at }}").getTime() +
                 $('#checkStatus').prop('disabled', false).html('<i class="fa fa-refresh me-1"></i> Cek Status Pembayaran');
                 if (response.success && response.data) {
                     const s = response.data.status;
-                    let text = 'Masih menunggu pembayaran...', cls = 'alert-warning';
-                    if (s === 'PAID')    { text = 'Pembayaran berhasil! Memuat ulang...'; cls = 'alert-success'; setTimeout(() => location.reload(), 2000); }
-                    if (s === 'EXPIRED') { text = 'Pembayaran kadaluarsa.'; cls = 'alert-danger'; setTimeout(() => location.reload(), 2000); }
-                    $('#statusResult').html(`<div class="alert ${cls} mt-2">${text}</div>`);
-                } else {
+                    if (s === 'PAID')    { $('#statusResult').html('<div class="alert alert-success mt-2">Pembayaran berhasil! Memuat ulang...</div>'); setTimeout(() => location.reload(), 1500); }
+                    else if (s === 'EXPIRED') { $('#statusResult').html('<div class="alert alert-danger mt-2">Pembayaran kadaluarsa.</div>'); setTimeout(() => location.reload(), 1500); }
+                    else if (!isAuto) { $('#statusResult').html('<div class="alert alert-warning mt-2">Masih menunggu pembayaran...</div>'); }
+                } else if (!isAuto) {
                     $('#statusResult').html('<div class="alert alert-danger mt-2">Gagal mendapatkan status. Coba lagi.</div>');
                 }
             },
             error: function() {
                 $('#checkStatus').prop('disabled', false).html('<i class="fa fa-refresh me-1"></i> Cek Status Pembayaran');
-                $('#statusResult').html('<div class="alert alert-danger mt-2">Terjadi kesalahan jaringan. Coba lagi.</div>');
+                if (!isAuto) $('#statusResult').html('<div class="alert alert-danger mt-2">Terjadi kesalahan jaringan. Coba lagi.</div>');
             }
         });
+    }
+
+    $('#checkStatus').click(function(e) {
+        e.preventDefault();
+        checkEspayPaymentStatus(false);
     });
+
+@if($donation->status == 'pending' && $donation->payment_type == 'payment_gateway' && !str_starts_with($donation->payment_method ?? '', 'moota'))
+    setInterval(function() { checkEspayPaymentStatus(true); }, 5000);
+@endif
 
     // ── Validasi file bukti manual ────────────────────────────────────
     const proofInput = document.getElementById('payment_proof');
