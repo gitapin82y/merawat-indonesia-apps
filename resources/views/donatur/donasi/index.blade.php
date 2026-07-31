@@ -466,6 +466,11 @@
 
 @push('after-script')
 @php $adsense = \App\Models\Adsense::first(); @endphp
+@if(session('error'))
+<script>
+    Swal.fire({ icon: 'error', title: 'Gagal', text: @json(session('error')), toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+</script>
+@endif
 <script>
     @if($adsense && $adsense->facebook_pixel)
     fbq('track', 'AddToCart', { content_name: '{{ $campaign->title ?? "" }}', value: {{ $donation->amount ?? 0 }}, currency: 'IDR' });

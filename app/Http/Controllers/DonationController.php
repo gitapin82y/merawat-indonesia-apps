@@ -639,12 +639,9 @@ protected function createTransaction($donation, $campaign)
         }
 
 
-$isQris = $paymentMethod->category === 'qris' ||
-          str_contains(strtoupper($paymentMethod->pay_option ?? ''), 'QR');
-
-$result = $isQris
-    ? $this->espayService->createQrisPayment($donation, $campaign, $paymentMethod)
-    : $this->espayService->createPaymentHostToHost($donation, $campaign, $paymentMethod);
+// QRIS goes through the same host-to-host redirect flow as VA/e-wallet,
+// which returns Espay's hosted payment page URL (webRedirectUrl) instead of a raw QR image.
+$result = $this->espayService->createPaymentHostToHost($donation, $campaign, $paymentMethod);
 
 if (isset($result['success']) && $result['success']) {
     $donation->snap_token   = $result['data']['reference'];

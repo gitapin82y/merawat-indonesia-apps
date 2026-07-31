@@ -70,15 +70,18 @@
   </script>
 
 <script>
-  document.getElementById('phone').addEventListener('input', function (e) {
-    let value = e.target.value.replace(/\D/g, ''); // Hapus karakter non-digit
+  const phoneInput = document.getElementById('phone');
+  if (phoneInput) {
+    phoneInput.addEventListener('input', function (e) {
+      let value = e.target.value.replace(/\D/g, ''); // Hapus karakter non-digit
 
-    if (value.startsWith('62')) {
-        value = '0' + value.substring(2);
-    }
+      if (value.startsWith('62')) {
+          value = '0' + value.substring(2);
+      }
 
-    e.target.value = value;
-});
+      e.target.value = value;
+    });
+  }
 </script>
 
 @if(session('toast'))
@@ -103,20 +106,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterPopup = document.getElementById('filterPopup');
     const cariSekarangBtn = document.getElementById('cariSekarangBtn');
     const searchInput = document.querySelector('.search input');
-    
+
+    // Elemen-elemen di atas hanya ada di halaman yang punya search/filter (mis. eksplore).
+    if (!filterBtn || !filterPopup || !cariSekarangBtn) {
+        return;
+    }
+
     // Toggle popup ketika filter button diklik
     filterBtn.addEventListener('click', function(e) {
         e.preventDefault();
         filterPopup.style.display = filterPopup.style.display === 'none' ? 'flex' : 'none';
     });
-    
+
     // Tutup popup ketika di klik di luar filter-container
     filterPopup.addEventListener('click', function(e) {
         if (e.target === filterPopup) {
             filterPopup.style.display = 'none';
         }
     });
-    
+
     // Fungsi untuk mengumpulkan parameter filter
     function collectFilterParams() {
         const params = new URLSearchParams();

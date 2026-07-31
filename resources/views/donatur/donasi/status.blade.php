@@ -295,8 +295,16 @@ window.paymentConfig = {
                                             <img src="{{ $paymentDetail['qr_url'] }}" alt="QR Code" class="img-fluid">
                                         </div>
                                     @endif
-                                    {{-- QR Code untuk QRIS / E-Wallet --}}
-@if(isset($paymentDetail['qr_image']) && $paymentDetail['qr_image'])
+                                    {{-- Semua metode (termasuk QRIS) redirect ke halaman pembayaran Espay --}}
+@if(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
+    <a href="{{ $paymentDetail['checkout_url'] }}" target="_blank" class="btn btn-danger btn-lg w-100 mb-3">
+        <i class="fa fa-external-link-alt me-2"></i> Lanjutkan Pembayaran
+    </a>
+                               <p class="text-muted mb-0 mt-2" style="font-size:0.78rem;">
+                <i class="fa fa-info-circle me-1"></i>
+                Nominal + fee akan tertera setelah menekan tombol lanjutkan pembayaran di halaman Espay.
+            </p>
+@elseif(isset($paymentDetail['qr_image']) && $paymentDetail['qr_image'])
     <div class="text-center my-3">
         <p class="text-muted mb-2">Scan QR Code dengan aplikasi pembayaran Anda</p>
         <div class="qr-code-container">
@@ -313,15 +321,6 @@ window.paymentConfig = {
             <i class="fa fa-clock me-1"></i> QR berlaku selama 10 menit
         </p>
     </div>
-@elseif(isset($paymentDetail['checkout_url']) && $paymentDetail['checkout_url'])
-    {{-- Fallback: tidak ada QR image, tampilkan tombol --}}
-    <a href="{{ $paymentDetail['checkout_url'] }}" target="_blank" class="btn btn-danger btn-lg w-100 mb-3">
-        <i class="fa fa-external-link-alt me-2"></i> Lanjutkan Pembayaran
-    </a>
-                               <p class="text-muted mb-0 mt-2" style="font-size:0.78rem;">
-                <i class="fa fa-info-circle me-1"></i>
-                Nominal + fee akan tertera setelah menekan tombol lanjutkan pembayaran di halaman Espay.
-            </p>
 @endif
                                     
                                 </div>
